@@ -1,4 +1,4 @@
-import { ArrowTrendingUp, Users as UsersIcon, CalendarCheck, TrendingUp, DollarSign } from 'lucide-react';
+import { Users as UsersIcon, CalendarCheck, TrendingUp, DollarSign } from 'lucide-react';
 
 const stats = [
   {

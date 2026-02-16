@@ -12,18 +12,17 @@ export const HeroSection: React.FC = () => {
           {/* Left Content */}
           <div>
             <div className="inline-block px-3 py-1 bg-blue-50 text-brand-blue text-sm font-medium rounded-full mb-4">
-              AMICALE PHARMACEUTIQUE ESTUDIANTINE
+              AMICALE DES ENSEIGNANTS
             </div>
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Bienvenue dans votre{' '}
-              <span className="text-brand-blue">famille Pharma</span>
+              L'Excellence Académique{' '}
+              <span className="text-brand-blue">au cœur de notre mission</span>
             </h1>
             
             <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-              L'Amicale de la Faculté de Pharmacie t'accompagne et te professionnalise 
-              pour t'offrir la faculté de la parenthèse pharmaceutique pour construire ensemble  
-              votre avenir et l'avenir de vos études.
+              L'Amicale des Enseignants de la Faculté de Pharmacie de Monastir œuvre pour le rayonnement 
+              académique, la cohésion du corps professoral et l'excellence de la formation pharmaceutique.
             </p>
             
             <div className="flex flex-wrap gap-4 mb-12">

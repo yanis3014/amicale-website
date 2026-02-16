@@ -54,7 +54,7 @@ export default function EspaceMemberModal({ isOpen, onClose }: EspaceMemberModal
                   <GraduationCap className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Portail Étudiant
+                  Espace Membre
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
                   Accédez à votre profil, vos inscriptions et vos événements

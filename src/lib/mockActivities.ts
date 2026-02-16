@@ -37,7 +37,7 @@ Des anciens et des étudiants actuels ont partagé leur expérience et leur parc
 
 Cette journée s'inscrit dans notre mission de rayonnement et de communication autour des études pharmaceutiques.`,
     category: 'evenement',
-    main_image: null,
+    main_image: 'https://images.pexels.com/photos/267885/pexels-photo-267885.jpeg?auto=compress&cs=tinysrgb&w=800',
     gallery_images: [],
     published_at: '2026-02-10T10:00:00Z',
     created_at: '2026-02-08T14:30:00Z',
@@ -72,7 +72,7 @@ Chaque séance dure 2 heures et accueille des groupes de 10 à 15 étudiants max
 
 Les inscriptions sont ouvertes dès maintenant via le formulaire en ligne sur notre plateforme. Les places sont limitées !`,
     category: 'projet',
-    main_image: null,
+    main_image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80',
     gallery_images: [],
     published_at: '2026-02-08T09:00:00Z',
     created_at: '2026-02-05T16:00:00Z',
@@ -110,7 +110,7 @@ Tenue de soirée élégante exigée. Messieurs : costume / smoking. Dames : robe
 
 N'attendez pas pour réserver vos places ! L'événement de l'année dernière affichait complet en moins d'une semaine.`,
     category: 'flash_info',
-    main_image: null,
+    main_image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80',
     gallery_images: [],
     published_at: '2026-02-05T12:00:00Z',
     created_at: '2026-02-03T10:00:00Z',
@@ -149,7 +149,7 @@ La signature officielle a eu lieu en présence du Doyen de la Faculté, du Prés
 
 Ce partenariat représente une avancée majeure pour l'insertion professionnelle de nos étudiants et la reconnaissance de la qualité de notre formation.`,
     category: 'partenariat',
-    main_image: null,
+    main_image: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&q=80',
     gallery_images: [],
     published_at: '2026-01-28T14:00:00Z',
     created_at: '2026-01-25T11:00:00Z',
@@ -195,7 +195,7 @@ Chaque don effectué vous rapporte 50 points de fidélité sur votre carte membr
 
 Ensemble, mobilisons-nous pour cette cause noble ! 💉❤️`,
     category: 'vie_etudiante',
-    main_image: null,
+    main_image: 'https://images.unsplash.com/photo-1615461066159-fea0960485d5?w=800&q=80',
     gallery_images: [],
     published_at: '2026-01-20T08:00:00Z',
     created_at: '2026-01-18T13:00:00Z',
@@ -245,7 +245,7 @@ Chaque participant repartira avec :
 
 Inscrivez-vous dès maintenant via le formulaire en ligne. Les places étant limitées, ne tardez pas !`,
     category: 'vie_etudiante',
-    main_image: null,
+    main_image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80',
     gallery_images: [],
     published_at: '2026-01-15T10:00:00Z',
     created_at: '2026-01-12T15:00:00Z',

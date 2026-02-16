@@ -6,9 +6,14 @@ export const VideoSection: React.FC = () => {
     <section className="py-16 md:py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 h-[400px] md:h-[500px]">
-          {/* Background Image Overlay - À remplacer par une vraie image */}
-          <div className="absolute inset-0 bg-black/40">
-            <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 opacity-50"></div>
+          {/* Background Image */}
+          <div className="absolute inset-0">
+            <img 
+              src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&q=80" 
+              alt="Congrès National"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/50"></div>
           </div>
           
           {/* Play Button */}

@@ -42,7 +42,7 @@ export const HeroSection: React.FC = () => {
             
             {/* Statistics */}
             <div className="grid grid-cols-3 gap-8 pt-8 border-t border-gray-200">
-              <StatCard value="1,200+" label="Étudiants" />
+              <StatCard value="100+" label="Membres" />
               <StatCard value="50+" label="Événements" />
               <StatCard value="100%" label="Engagement" />
             </div>

@@ -19,11 +19,13 @@ export const PartnersSection: React.FC = () => {
           {partners.map((partner, index) => (
             <div 
               key={index}
-              className="flex items-center justify-center h-16 px-8 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+              className="flex items-center justify-center h-16 px-8 opacity-70 hover:opacity-100 transition-all duration-300 transform hover:scale-105"
             >
-              {/* Placeholder - À remplacer par de vraies images */}
-              <div className="text-xl font-bold text-gray-400 text-center">
-                {partner.logo}
+              {/* Logo badge moderne */}
+              <div className="px-6 py-3 bg-gradient-to-r from-slate-100 to-slate-50 rounded-lg border border-slate-200 hover:border-brand-blue hover:shadow-md transition-all duration-300">
+                <span className="text-base font-bold text-slate-700">
+                  {partner.logo}
+                </span>
               </div>
             </div>
           ))}

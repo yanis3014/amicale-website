@@ -113,9 +113,7 @@ export default function StudentDashboardPage() {
                 <h1 className="text-3xl font-bold">
                   {studentData.prenom} {studentData.nom}
                 </h1>
-                <p className="text-blue-100 mt-1">
-                  {studentData.annee}ème année Pharmacie
-                </p>
+                
               </div>
             </div>
             <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-green-500 rounded-full">
@@ -195,9 +193,7 @@ export default function StudentDashboardPage() {
                     <p className="text-2xl font-bold">
                       {studentData.prenom} {studentData.nom}
                     </p>
-                    <p className="text-sm opacity-75 mt-1">
-                      {studentData.annee}ème année
-                    </p>
+                    
                   </div>
                   <div className="text-right">
                     <p className="text-xs opacity-75">Valide jusqu'au</p>
@@ -224,12 +220,6 @@ export default function StudentDashboardPage() {
                     Téléphone
                   </label>
                   <p className="text-gray-900">{studentData.telephone}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">
-                    Année d'étude
-                  </label>
-                  <p className="text-gray-900">{studentData.annee}ème année</p>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-600 mb-2">

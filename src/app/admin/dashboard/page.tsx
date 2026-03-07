@@ -158,7 +158,7 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="p-4 border-t border-gray-200 text-center">
-          <button className="text-brand-blue font-semibold hover:text-brand-blue-600 transition-colors">
+          <button className="text-primary-600 font-semibold hover:text-primary-600-600 transition-colors">
             Voir toutes les transactions →
           </button>
         </div>

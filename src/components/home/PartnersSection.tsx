@@ -9,21 +9,20 @@ const partners = [
 
 export const PartnersSection: React.FC = () => {
   return (
-    <section className="py-16 bg-neutral-bg">
+    <section className="py-16 bg-neutral-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h3 className="text-center text-sm font-semibold text-gray-500 uppercase tracking-wider mb-8">
+        <h3 className="text-center text-sm font-semibold text-neutral-400 uppercase tracking-wide mb-8">
           Nos Partenaires
         </h3>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center">
           {partners.map((partner, index) => (
-            <div 
+            <div
               key={index}
-              className="flex items-center justify-center h-16 px-8 opacity-70 hover:opacity-100 transition-all duration-300 transform hover:scale-105"
+              className="flex items-center justify-center h-16 px-8 text-neutral-400 hover:text-primary-600 transition-colors duration-300 grayscale hover:grayscale-0"
             >
-              {/* Logo badge moderne */}
-              <div className="px-6 py-3 bg-gradient-to-r from-slate-100 to-slate-50 rounded-lg border border-slate-200 hover:border-brand-blue hover:shadow-md transition-all duration-300">
-                <span className="text-base font-bold text-slate-700">
+              <div className="px-6 py-3 rounded-xl border border-neutral-200 hover:border-primary-200 transition-all duration-300">
+                <span className="text-base font-bold text-current">
                   {partner.logo}
                 </span>
               </div>

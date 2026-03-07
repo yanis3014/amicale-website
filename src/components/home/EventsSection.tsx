@@ -13,7 +13,7 @@ const upcomingEvents = [
     prix: 25,
     image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800&q=80',
     categorie: 'Social' as const,
-    description: 'La soirée la plus attendue de l\'année pour célébrer nos étudiants et notre communauté pharmaceutique.',
+    description: 'La soirée annuelle de l\'Amicale qui réunit les enseignants de la faculté et leurs invités.',
   },
   {
     id: '2',
@@ -41,21 +41,21 @@ const upcomingEvents = [
 
 export const EventsSection: React.FC = () => {
   return (
-    <section className="py-16 md:py-20 bg-white">
+    <section className="py-16 md:py-20 bg-neutral-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-12">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+          <div className="border-l-4 border-primary-500 pl-4">
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-neutral-900 mb-2">
               Prochains Événements
             </h2>
-            <p className="text-gray-600">
-              Ne manquez pas les temps forts de la Vie étudiante de la communauté
+            <p className="text-neutral-600 font-body">
+              Les événements organisés par et pour l&apos;Amicale
             </p>
           </div>
-          <Link 
-            href="/events" 
-            className="hidden md:block text-brand-blue font-semibold hover:text-brand-blue-600 transition-colors"
+          <Link
+            href="/evenements"
+            className="hidden md:block text-primary-600 font-semibold hover:text-primary-700 transition-colors"
           >
             Voir tout le calendrier →
           </Link>
@@ -71,8 +71,8 @@ export const EventsSection: React.FC = () => {
         {/* Mobile "See all" link */}
         <div className="mt-8 text-center md:hidden">
           <Link 
-            href="/events" 
-            className="text-brand-blue font-semibold hover:text-brand-blue-600 transition-colors"
+            href="/evenements" 
+            className="text-primary-600 font-semibold hover:text-primary-700 transition-colors"
           >
             Voir tout le calendrier →
           </Link>

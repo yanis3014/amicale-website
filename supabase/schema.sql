@@ -3,15 +3,18 @@
 -- Extension UUID
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Table profiles (profils des étudiants et admins)
+-- Table profiles (enseignants membres et admins)
 CREATE TABLE profiles (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   nom VARCHAR(100) NOT NULL,
   prenom VARCHAR(100) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
-  role VARCHAR(20) NOT NULL CHECK (role IN ('etudiant', 'admin')) DEFAULT 'etudiant',
-  annee INTEGER CHECK (annee BETWEEN 1 AND 6),
+  role VARCHAR(20) NOT NULL CHECK (role IN ('member', 'admin')) DEFAULT 'member',
+  grade VARCHAR(100),
+  departement VARCHAR(150),
+  matricule VARCHAR(50),
   telephone VARCHAR(20),
+  numero_membre VARCHAR(50),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -28,6 +31,7 @@ CREATE TABLE events (
   places_restantes INTEGER NOT NULL DEFAULT 100,
   lieu VARCHAR(255),
   categorie VARCHAR(50) CHECK (categorie IN ('conference', 'social', 'formation', 'autre')) DEFAULT 'autre',
+  ouvert_etudiants BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -37,7 +41,7 @@ CREATE TABLE transactions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   montant DECIMAL(10, 2) NOT NULL,
   status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'completed', 'failed', 'refunded')) DEFAULT 'pending',
-  id_etudiant UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  id_membre UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   id_event UUID REFERENCES events(id) ON DELETE SET NULL,
   methode_paiement VARCHAR(20) NOT NULL CHECK (methode_paiement IN ('flouci', 'espece', 'virement')),
   reference_paiement VARCHAR(255),
@@ -48,14 +52,12 @@ CREATE TABLE transactions (
 -- Table registrations (inscriptions aux événements)
 CREATE TABLE registrations (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  id_etudiant UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  id_membre UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   id_event UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
   status_paiement VARCHAR(20) NOT NULL CHECK (status_paiement IN ('pending', 'completed', 'failed')) DEFAULT 'pending',
   date_inscription TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  
-  -- Contrainte unique pour éviter les inscriptions multiples
-  UNIQUE(id_etudiant, id_event)
+  UNIQUE(id_membre, id_event)
 );
 
 -- Index pour optimiser les performances
@@ -63,9 +65,9 @@ CREATE INDEX idx_profiles_email ON profiles(email);
 CREATE INDEX idx_profiles_role ON profiles(role);
 CREATE INDEX idx_events_date ON events(date);
 CREATE INDEX idx_events_categorie ON events(categorie);
-CREATE INDEX idx_registrations_etudiant ON registrations(id_etudiant);
+CREATE INDEX idx_registrations_membre ON registrations(id_membre);
 CREATE INDEX idx_registrations_event ON registrations(id_event);
-CREATE INDEX idx_transactions_etudiant ON transactions(id_etudiant);
+CREATE INDEX idx_transactions_membre ON transactions(id_membre);
 CREATE INDEX idx_transactions_status ON transactions(status);
 
 -- Fonction pour mettre à jour automatiquement updated_at
@@ -153,6 +155,6 @@ CREATE TRIGGER update_activities_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 
 -- Données d'exemple (optionnel - à retirer en production)
--- INSERT INTO profiles (nom, prenom, email, role) VALUES
--- ('Admin', 'Test', 'admin@pharmacie.tn', 'admin'),
--- ('Dupont', 'Jean', 'jean.dupont@student.pharmacie.tn', 'etudiant');
+-- INSERT INTO profiles (nom, prenom, email, role, grade, departement) VALUES
+-- ('Admin', 'Test', 'admin@fphm.tn', 'admin', NULL, NULL),
+-- ('Ben Salem', 'Ahmed', 'ahmed.bensalem@fphm.tn', 'member', 'Maître de Conférences', 'Pharmacie Clinique');

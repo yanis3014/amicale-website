@@ -13,16 +13,16 @@ export const VideoSection: React.FC = () => {
               alt="Congrès National"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black/50"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
           </div>
           
           {/* Play Button */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <button 
-              className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all duration-300 shadow-2xl group"
+            <button
+              className="w-24 h-24 bg-white/90 rounded-full flex items-center justify-center hover:bg-white hover:scale-105 transition-all duration-300 shadow-2xl ring-4 ring-white/30 animate-pulse-glow group"
               aria-label="Lire la vidéo"
             >
-              <Play className="w-8 h-8 text-brand-blue ml-1 group-hover:text-brand-blue-600" fill="currentColor" />
+              <Play className="w-10 h-10 text-primary-600 ml-1" fill="currentColor" />
             </button>
           </div>
           

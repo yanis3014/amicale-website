@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { Plus, Edit, Download } from 'lucide-react';
 
 const members = [
-  { id: '1', nom: 'Ben Salem', prenom: 'Ahmed', email: 'ahmed.bensalem@student.fphm.tn', annee: 3, statut: 'Actif' },
-  { id: '2', nom: 'Gharbi', prenom: 'Amira', email: 'amira.gharbi@student.fphm.tn', annee: 2, statut: 'Actif' },
-  { id: '3', nom: 'Dhouib', prenom: 'Karim', email: 'karim.dhouib@student.fphm.tn', annee: 4, statut: 'Actif' },
-  { id: '4', nom: 'Trabelsi', prenom: 'Sonia', email: 'sonia.trabelsi@student.fphm.tn', annee: 1, statut: 'Actif' },
-  { id: '5', nom: 'Mansour', prenom: 'Youssef', email: 'youssef.mansour@student.fphm.tn', annee: 5, statut: 'Actif' },
-  { id: '6', nom: 'Bouaziz', prenom: 'Leila', email: 'leila.bouaziz@student.fphm.tn', annee: 3, statut: 'Inactif' },
+  { id: '1', nom: 'Ben Salem', prenom: 'Ahmed', email: 'ahmed.bensalem@fphm.tn', grade: 'Maître de Conférences', departement: 'Pharmacie Clinique', statut: 'Actif' as const },
+  { id: '2', nom: 'Gharbi', prenom: 'Amira', email: 'amira.gharbi@fphm.tn', grade: 'Professeur', departement: 'Biochimie', statut: 'Actif' as const },
+  { id: '3', nom: 'Dhouib', prenom: 'Karim', email: 'karim.dhouib@fphm.tn', grade: 'Assistant', departement: 'Pharmacie Galénique', statut: 'Actif' as const },
+  { id: '4', nom: 'Trabelsi', prenom: 'Sonia', email: 'sonia.trabelsi@fphm.tn', grade: 'Maître Assistant', departement: 'Chimie Thérapeutique', statut: 'Actif' as const },
+  { id: '5', nom: 'Mansour', prenom: 'Youssef', email: 'youssef.mansour@fphm.tn', grade: 'Maître de Conférences', departement: 'Microbiologie', statut: 'Actif' as const },
+  { id: '6', nom: 'Bouaziz', prenom: 'Leila', email: 'leila.bouaziz@fphm.tn', grade: 'Professeur', departement: 'Pharmacologie', statut: 'Inactif' as const },
 ];
 
 export default function AdminMembersPage() {
@@ -33,7 +33,7 @@ export default function AdminMembersPage() {
             Gestion des Membres
           </h1>
           <p className="text-gray-600">
-            Liste des étudiants inscrits à l'amicale
+            Liste des enseignants membres de l&apos;Amicale
           </p>
         </div>
         <div className="flex gap-3">
@@ -44,7 +44,7 @@ export default function AdminMembersPage() {
             <Download className="w-5 h-5" />
             Exporter Excel
           </button>
-          <button className="px-6 py-3 bg-brand-blue text-white rounded-lg font-semibold hover:bg-brand-blue-600 transition-colors flex items-center gap-2">
+          <button className="px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-600 transition-colors flex items-center gap-2">
             <Plus className="w-5 h-5" />
             Nouveau Membre
           </button>
@@ -58,7 +58,7 @@ export default function AdminMembersPage() {
           placeholder="Rechercher par nom ou email..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-brand-blue focus:outline-none text-gray-900 placeholder-gray-400"
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none text-gray-900 placeholder-gray-400"
         />
       </div>
 
@@ -75,7 +75,10 @@ export default function AdminMembersPage() {
                   Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Année
+                  Grade
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Département
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Statut
@@ -97,7 +100,10 @@ export default function AdminMembersPage() {
                     <div className="text-sm text-gray-600">{member.email}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{member.annee}ème année</div>
+                    <div className="text-sm text-gray-900">{member.grade}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-600">{member.departement}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
@@ -111,7 +117,7 @@ export default function AdminMembersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <button className="text-brand-blue hover:text-brand-blue-600 font-medium flex items-center gap-2">
+                    <button className="text-primary hover:text-primary-600 font-medium flex items-center gap-2">
                       <Edit className="w-4 h-4" />
                       Modifier
                     </button>
@@ -132,7 +138,7 @@ export default function AdminMembersPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-sm font-semibold text-gray-600 mb-2">Total Membres</h3>
+          <h3 className="text-sm font-semibold text-gray-600 mb-2">Total Enseignants membres</h3>
           <p className="text-3xl font-bold text-gray-900">{members.length}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">

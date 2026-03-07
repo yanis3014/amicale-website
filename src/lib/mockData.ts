@@ -6,7 +6,7 @@ export const mockEvents = [
     description: 'Célébration exceptionnelle des 50 ans de la Faculté de Pharmacie de Monastir',
     longDescription: `Rejoignez-nous pour une célébration historique marquant le 50ème anniversaire de la Faculté de Pharmacie de Monastir.
 
-Cet événement exceptionnel réunira étudiants, professeurs, alumni et personnalités du monde pharmaceutique pour célébrer un demi-siècle d'excellence académique, de recherche et d'innovation.
+Cet événement exceptionnel réunira enseignants, personnalités du monde pharmaceutique et invités pour célébrer un demi-siècle d'excellence académique, de recherche et d'innovation.
 
 Au programme de cette journée mémorable :
 - Cérémonie d'ouverture officielle (08h00)
@@ -15,7 +15,7 @@ Au programme de cette journée mémorable :
 - Tables rondes sur l'avenir de la pharmacie en Tunisie (11h00)
 - Déjeuner de gala avec personnalités invitées (13h00)
 - Remise des prix d'excellence académique (15h00)
-- Témoignages d'anciens étudiants (16h00)
+- Témoignages et retours d'expérience (16h00)
 - Spectacle musical et animations (19h00)
 - Dîner officiel et feux d'artifice (21h00)
 
@@ -31,6 +31,7 @@ Un événement à ne manquer sous aucun prétexte pour tous les membres de la co
     places_restantes: 45,
     lieu: 'Faculté de Pharmacie de Monastir',
     categorie: 'Social',
+    ouvert_etudiants: false,
   },
   {
     id: '2',
@@ -50,7 +51,7 @@ Intervenants confirmés :
 - Prof. Ahmed Khalil (Université de Tunis)
 - Dr. Marie Dupont (Sanofi R&D)
 
-Cette conférence s'adresse aux étudiants en pharmacie, chercheurs, et professionnels du secteur désireux de rester à la pointe de l'innovation.
+Cette conférence s'adresse aux enseignants, chercheurs et professionnels du secteur désireux de rester à la pointe de l'innovation.
 
 Inscription gratuite mais places limitées !`,
     date: '2026-03-20T14:00:00',
@@ -60,6 +61,7 @@ Inscription gratuite mais places limitées !`,
     places_restantes: 23,
     lieu: 'Amphithéâtre A, Faculté de Pharmacie',
     categorie: 'Académique',
+    ouvert_etudiants: true,
   },
   {
     id: '3',
@@ -98,35 +100,24 @@ IMPORTANT : Prévoir une tenue confortable pour les exercices pratiques.`,
     places_restantes: 3,
     lieu: 'Salle de formation, Bloc B',
     categorie: 'Formation',
+    ouvert_etudiants: false,
   },
   {
     id: '4',
-    titre: 'Atelier : Préparation aux Concours',
-    description: 'Préparation intensive pour les concours de résidanat et internat',
-    longDescription: `Maximisez vos chances de réussite aux concours avec notre atelier de préparation intensive animé par des lauréats et des professeurs expérimentés.
+    titre: 'Formation continue : Bonnes pratiques pédagogiques',
+    description: 'Session de formation continue pour les enseignants sur les bonnes pratiques pédagogiques.',
+    longDescription: `Une journée de formation continue organisée par l'Amicale à destination des enseignants de la faculté.
 
-Programme de l'atelier :
-- Méthodologie de révision efficace
-- Stratégies de gestion du temps
-- Entraînement sur QCM types
-- Correction détaillée des sujets précédents
-- Conseils de gestion du stress
-- Simulations d'examens blancs
+Au programme :
+- Méthodologies d'enseignement actif
+- Évaluation des apprentissages et feedback
+- Utilisation du numérique en cours
+- Travail en équipe pédagogique
+- Retours d'expérience et échanges de pratiques
 
-Points forts :
-✓ Encadrement par des majors de promotion
-✓ Supports de révision exclusifs
-✓ Accès à une banque de 1000+ QCM
-✓ Groupe WhatsApp de suivi post-atelier
+Intervenants : formateurs certifiés et enseignants référents de la FPHM.
 
-Cet atelier s'adresse aux :
-- Étudiants en 5ème et 6ème année
-- Futurs candidats au résidanat
-- Étudiants préparant l'internat
-
-Matériel fourni : Classeurs de QCM, fiches de révision, planning de révision personnalisé.
-
-Places très limitées pour garantir un suivi individualisé !`,
+Places limitées. Inscription réservée aux membres de l'Amicale.`,
     date: '2026-04-12T08:30:00',
     prix: 35,
     image_url: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80',
@@ -134,5 +125,6 @@ Places très limitées pour garantir un suivi individualisé !`,
     places_restantes: 8,
     lieu: 'Amphithéâtre B, Faculté de Pharmacie',
     categorie: 'Formation',
+    ouvert_etudiants: false,
   },
 ];

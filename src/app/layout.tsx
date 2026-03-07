@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Amicale de la Faculté de Pharmacie",
-  description: "L'Amicale de la Faculté de Pharmacie de Monastir - Événements, formations et activités pour les étudiants en pharmacie",
+  description: "L'Amicale des Enseignants de la Faculté de Pharmacie de Monastir - Association des enseignants, congrès, journées scientifiques et vie associative",
 };
 
 export default function RootLayout({

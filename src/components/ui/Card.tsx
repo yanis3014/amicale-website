@@ -1,21 +1,39 @@
+'use client';
+
 import React from 'react';
 
+type CardVariant = 'default' | 'elevated' | 'bordered' | 'glass';
+
 interface CardProps {
+  variant?: CardVariant;
+  hover?: boolean;
   children: React.ReactNode;
   className?: string;
-  hover?: boolean;
 }
 
-export const Card: React.FC<CardProps> = ({ 
-  children, 
-  className = '', 
-  hover = false 
+const variantClasses: Record<CardVariant, string> = {
+  default:
+    'bg-white rounded-2xl shadow-card border border-neutral-100',
+  elevated: 'bg-white rounded-2xl shadow-card-lg',
+  bordered: 'border-2 border-neutral-200 rounded-2xl bg-white',
+  glass:
+    'bg-white/70 backdrop-blur-md border border-white/50 rounded-2xl shadow-card',
+};
+
+export const Card: React.FC<CardProps> = ({
+  variant = 'default',
+  hover = false,
+  children,
+  className = '',
 }) => {
-  const baseClasses = 'bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden';
-  const hoverClasses = hover ? 'transition-all duration-300 hover:shadow-xl hover:-translate-y-1' : '';
-  
+  const hoverClasses = hover
+    ? 'hover:-translate-y-1 hover:shadow-card-lg transition-all duration-300'
+    : '';
+
   return (
-    <div className={`${baseClasses} ${hoverClasses} ${className}`}>
+    <div
+      className={`${variantClasses[variant]} ${hoverClasses} ${className}`}
+    >
       {children}
     </div>
   );
@@ -26,36 +44,28 @@ interface CardHeaderProps {
   className?: string;
 }
 
-export const CardHeader: React.FC<CardHeaderProps> = ({ children, className = '' }) => {
-  return (
-    <div className={`px-6 py-4 border-b border-gray-200 dark:border-gray-700 ${className}`}>
-      {children}
-    </div>
-  );
-};
+export const CardHeader: React.FC<CardHeaderProps> = ({ children, className = '' }) => (
+  <div className={`px-6 py-4 border-b border-neutral-100 ${className}`}>
+    {children}
+  </div>
+);
 
 interface CardBodyProps {
   children: React.ReactNode;
   className?: string;
 }
 
-export const CardBody: React.FC<CardBodyProps> = ({ children, className = '' }) => {
-  return (
-    <div className={`px-6 py-4 ${className}`}>
-      {children}
-    </div>
-  );
-};
+export const CardBody: React.FC<CardBodyProps> = ({ children, className = '' }) => (
+  <div className={`px-6 py-4 ${className}`}>{children}</div>
+);
 
 interface CardFooterProps {
   children: React.ReactNode;
   className?: string;
 }
 
-export const CardFooter: React.FC<CardFooterProps> = ({ children, className = '' }) => {
-  return (
-    <div className={`px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 ${className}`}>
-      {children}
-    </div>
-  );
-};
+export const CardFooter: React.FC<CardFooterProps> = ({ children, className = '' }) => (
+  <div className={`px-6 py-4 bg-neutral-50 border-t border-neutral-100 ${className}`}>
+    {children}
+  </div>
+);

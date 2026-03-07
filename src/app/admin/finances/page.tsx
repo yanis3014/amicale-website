@@ -85,7 +85,7 @@ export default function AdminFinancesPage() {
                 </div>
                 <div className="flex-1 bg-gray-100 rounded-full h-10 relative overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-brand-blue to-brand-blue-600 h-full rounded-full flex items-center justify-end px-4 transition-all duration-500"
+                    className="bg-gradient-to-r from-primary to-primary-600 h-full rounded-full flex items-center justify-end px-4 transition-all duration-500"
                     style={{ width: `${percentage}%` }}
                   >
                     <span className="text-white font-bold text-sm">
@@ -102,7 +102,7 @@ export default function AdminFinancesPage() {
         <div className="mt-6 pt-6 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <span className="text-gray-600">Total période (6 mois)</span>
-            <span className="text-2xl font-bold text-brand-blue">
+            <span className="text-2xl font-bold text-primary">
               6,850 DT
             </span>
           </div>

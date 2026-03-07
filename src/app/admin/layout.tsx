@@ -1,36 +1,54 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Calendar,
   Newspaper,
-  DollarSign,
   Users,
   ArrowLeft,
   LogOut,
   Menu,
-  X,
 } from 'lucide-react';
+import { AdminGuard } from '@/components/auth/AdminGuard';
+import { useAuth } from '@/contexts/AuthContext';
+import { getAdminStats } from '@/lib/api/admin';
 
-const navItems: { href: string; label: string; icon: typeof Users; badge?: number }[] = [
+const navItems: { href: string; label: string; icon: typeof Users; badgeKey?: 'cotisations' }[] = [
   { href: '/admin/dashboard', label: 'Vue d\'ensemble', icon: LayoutDashboard },
   { href: '/admin/evenements', label: 'Événements', icon: Calendar },
   { href: '/admin/annonces', label: 'Annonces', icon: Newspaper },
   { href: '/admin/enseignants', label: 'Enseignants', icon: Users },
-  { href: '/admin/members', label: 'Membres', icon: Users, badge: 3 },
-  { href: '/admin/finances', label: 'Finances', icon: DollarSign },
+  { href: '/admin/members', label: 'Membres & Cotisations', icon: Users, badgeKey: 'cotisations' },
 ];
 
-export default function AdminLayout({
+function AdminLayoutInner({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [cotisationsPending, setCotisationsPending] = useState<number>(0);
+
+  useEffect(() => {
+    getAdminStats()
+      .then((stats) => setCotisationsPending(stats.cotisations_en_attente))
+      .catch(() => setCotisationsPending(0));
+  }, [pathname]);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
+
+  const initials = user?.prenom && user?.nom
+    ? `${user.prenom[0]}${user.nom[0]}`.toUpperCase()
+    : 'AD';
 
   const sidebar = (
     <aside className="w-64 bg-forest-900 flex flex-col h-full">
@@ -45,6 +63,7 @@ export default function AdminLayout({
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
+          const badge = item.badgeKey === 'cotisations' ? cotisationsPending : 0;
           return (
             <Link
               key={item.href}
@@ -58,9 +77,9 @@ export default function AdminLayout({
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
               <span className="flex-1">{item.label}</span>
-              {item.badge != null && item.badge > 0 && (
+              {badge > 0 && (
                 <span className="w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-bold">
-                  {item.badge}
+                  {badge}
                 </span>
               )}
             </Link>
@@ -71,10 +90,10 @@ export default function AdminLayout({
       <div className="p-4 border-t border-white/10 space-y-2">
         <div className="px-4 py-3 rounded-xl flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary-500/30 flex items-center justify-center font-display font-bold text-primary-300">
-            AD
+            {initials}
           </div>
           <div>
-            <p className="font-semibold text-white text-sm">Admin</p>
+            <p className="font-semibold text-white text-sm">{user?.prenom} {user?.nom}</p>
             <p className="text-white/50 text-xs">Administrateur</p>
           </div>
         </div>
@@ -88,6 +107,7 @@ export default function AdminLayout({
         </Link>
         <button
           type="button"
+          onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-300 hover:text-red-200 hover:bg-red-500/10 font-medium transition-colors"
         >
           <LogOut className="w-5 h-5" />
@@ -138,5 +158,13 @@ export default function AdminLayout({
         {children}
       </main>
     </div>
+  );
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <AdminGuard>
+      <AdminLayoutInner>{children}</AdminLayoutInner>
+    </AdminGuard>
   );
 }

@@ -13,3 +13,17 @@ export async function submitCotisation(
 ): Promise<ApiCotisation> {
   return api.post<ApiCotisation>('/api/cotisations/submit', payload);
 }
+
+// Admin
+export async function getCotisations(statut?: 'pending' | 'confirmed' | 'rejected'): Promise<ApiCotisation[]> {
+  const q = statut ? `?statut=${statut}` : '';
+  return api.get<ApiCotisation[]>(`/api/admin/cotisations${q}`);
+}
+
+export async function confirmCotisation(id: number | string): Promise<ApiCotisation> {
+  return api.patch<ApiCotisation>(`/api/admin/cotisations/${id}/confirm`, {});
+}
+
+export async function rejectCotisation(id: number | string): Promise<ApiCotisation> {
+  return api.patch<ApiCotisation>(`/api/admin/cotisations/${id}/reject`, {});
+}

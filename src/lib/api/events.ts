@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api, getToken, getBaseUrl, ApiError } from './client';
 import type { ApiEvent, ApiRegistration } from './types';
 
 export interface EventsQuery {
@@ -72,4 +72,25 @@ export async function cancelRegistration(
     `/api/events/${eventId}/registrations/${regId}/cancel`,
     {}
   );
+}
+
+/** Upload image for an event (multipart/form-data). */
+export async function uploadEventImage(
+  eventId: number | string,
+  file: File
+): Promise<{ image_url: string }> {
+  const formData = new FormData();
+  formData.append('image', file);
+  const token = getToken();
+  const url = `${getBaseUrl()}/api/events/${eventId}/upload-image`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new ApiError(data?.error || res.statusText, res.status, data);
+  }
+  return data;
 }

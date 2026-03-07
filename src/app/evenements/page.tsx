@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Search,
@@ -10,7 +10,10 @@ import {
   ArrowRight,
   CalendarDays,
 } from 'lucide-react';
-import { mockEvents } from '@/lib/mockData';
+import { getEvents } from '@/lib/api/events';
+import { getImageUrl } from '@/lib/api/utils/imageUrl';
+import { useAuth } from '@/contexts/AuthContext';
+import type { ApiEvent } from '@/lib/api/types';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
@@ -18,10 +21,9 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 
-type Category = 'all' | 'Social' | 'Académique' | 'Formation' | 'Autre';
+type Category = 'all' | string;
 
-const categoryLabels: Category[] = ['all', 'Social', 'Académique', 'Formation', 'Autre'];
-const categoryLabelMap: Record<Category, string> = {
+const categoryLabelMap: Record<string, string> = {
   all: 'Tout',
   Social: 'Social',
   Académique: 'Académique',
@@ -36,25 +38,47 @@ function getPlacesColor(restantes: number, capacite: number) {
   return 'bg-red-500';
 }
 
+function displayPrice(event: ApiEvent, isAdherent: boolean): string {
+  if (event.prix === 0) return 'Gratuit';
+  const prixAdherent = event.prix_adherent ?? event.prix;
+  if (isAdherent && event.prix_adherent != null && event.prix_adherent < event.prix) {
+    return `${prixAdherent} DT`;
+  }
+  return `${event.prix} DT`;
+}
+
 export default function EventsPage() {
+  const { isAdherent } = useAuth();
+  const [events, setEvents] = useState<ApiEvent[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category>('all');
-  const [loading] = useState(false);
 
-  const featuredEvent = mockEvents[0];
-  const filteredEvents = mockEvents.slice(1).filter((event) => {
-    const matchesSearch = event.titre
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const cat = (event.categorie || 'Autre') as Category;
-    const matchesCategory =
-      selectedCategory === 'all' || cat === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    getEvents({
+      search: searchQuery || undefined,
+      categorie: selectedCategory === 'all' ? undefined : selectedCategory,
+    })
+      .then((data) => {
+        if (!cancelled) setEvents(data);
+      })
+      .catch(() => {
+        if (!cancelled) setEvents([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [searchQuery, selectedCategory]);
+
+  const categories = ['all', ...Array.from(new Set(events.map((e) => e.categorie || 'Autre')))];
+  const featuredEvent = events[0];
+  const gridEvents = events.slice(1);
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
       <div className="relative bg-white overflow-hidden">
         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-96 h-96 opacity-30 pointer-events-none">
           <div className="absolute inset-0 rounded-full border-4 border-primary-100" />
@@ -68,7 +92,6 @@ export default function EventsPage() {
         </div>
       </div>
 
-      {/* Sticky filters */}
       <div className="sticky top-[4rem] z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-100">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -81,7 +104,7 @@ export default function EventsPage() {
               />
             </div>
             <div className="flex gap-2 flex-wrap">
-              {categoryLabels.map((cat) => (
+              {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
@@ -91,7 +114,7 @@ export default function EventsPage() {
                       : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
                   }`}
                 >
-                  {categoryLabelMap[cat]}
+                  {categoryLabelMap[cat] ?? cat}
                 </button>
               ))}
             </div>
@@ -100,15 +123,14 @@ export default function EventsPage() {
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Featured event */}
-        {featuredEvent && (
+        {featuredEvent && !loading && (
           <Link href={`/evenements/${featuredEvent.id}`} className="block mb-12">
             <Card variant="elevated" className="overflow-hidden">
               <div className="grid grid-cols-1 md:grid-cols-[40%_60%]">
                 <div className="relative h-64 md:h-auto min-h-[280px] overflow-hidden">
                   {featuredEvent.image_url ? (
                     <img
-                      src={featuredEvent.image_url}
+                      src={getImageUrl(featuredEvent.image_url)}
                       alt={featuredEvent.titre}
                       className="w-full h-full object-cover"
                     />
@@ -122,11 +144,8 @@ export default function EventsPage() {
                   <div className="flex flex-wrap gap-2 mb-3">
                     <Badge variant="primary">À la une</Badge>
                     <Badge variant="neutral" size="sm">
-                      {featuredEvent.categorie}
+                      {featuredEvent.categorie ?? 'Autre'}
                     </Badge>
-                    {(featuredEvent as { ouvert_etudiants?: boolean }).ouvert_etudiants && (
-                      <Badge variant="info" size="sm">Ouvert aux étudiants</Badge>
-                    )}
                     <span className="text-sm text-neutral-500">
                       {new Date(featuredEvent.date).toLocaleDateString('fr-FR', {
                         day: 'numeric',
@@ -144,8 +163,7 @@ export default function EventsPage() {
                   <div className="flex items-center gap-4 text-sm text-neutral-600 mb-4">
                     <span className="flex items-center gap-1">
                       <Users className="w-4 h-4" />
-                      {featuredEvent.places_restantes} / {featuredEvent.capacite}{' '}
-                      places
+                      {featuredEvent.places_restantes} / {featuredEvent.capacite} places
                     </span>
                   </div>
                   <div className="h-1.5 bg-neutral-200 rounded-full overflow-hidden mb-4">
@@ -155,7 +173,7 @@ export default function EventsPage() {
                         featuredEvent.capacite
                       )}`}
                       style={{
-                        width: `${(featuredEvent.places_restantes / featuredEvent.capacite) * 100}%`,
+                        width: `${featuredEvent.capacite > 0 ? (featuredEvent.places_restantes / featuredEvent.capacite) * 100 : 0}%`,
                       }}
                     />
                   </div>
@@ -168,14 +186,13 @@ export default function EventsPage() {
           </Link>
         )}
 
-        {/* Events grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <SkeletonCard key={i} />
             ))}
           </div>
-        ) : filteredEvents.length === 0 ? (
+        ) : gridEvents.length === 0 && !featuredEvent ? (
           <EmptyState
             icon={<Calendar className="w-12 h-12" />}
             title="Aucun événement trouvé"
@@ -190,7 +207,7 @@ export default function EventsPage() {
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredEvents.map((event) => {
+            {gridEvents.map((event) => {
               const placesPct =
                 event.capacite > 0
                   ? (event.places_restantes / event.capacite) * 100
@@ -201,7 +218,7 @@ export default function EventsPage() {
                     <div className="relative h-48 overflow-hidden">
                       {event.image_url ? (
                         <img
-                          src={event.image_url}
+                          src={getImageUrl(event.image_url)}
                           alt={event.titre}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
@@ -212,13 +229,10 @@ export default function EventsPage() {
                       )}
                       <div className="absolute top-3 left-3 flex flex-wrap gap-2">
                         <Badge variant="primary" size="sm">
-                          {event.categorie}
+                          {event.categorie ?? 'Autre'}
                         </Badge>
-                        {(event as { ouvert_etudiants?: boolean }).ouvert_etudiants && (
-                          <Badge variant="info" size="sm">Ouvert aux étudiants</Badge>
-                        )}
                         <span className="px-2.5 py-1 bg-white rounded-lg text-sm font-mono font-semibold text-neutral-700 shadow-sm">
-                          {event.prix === 0 ? 'Gratuit' : `${event.prix} DT`}
+                          {displayPrice(event, isAdherent)}
                         </span>
                       </div>
                     </div>
@@ -237,10 +251,12 @@ export default function EventsPage() {
                       <p className="text-neutral-600 text-sm line-clamp-2 flex-1 mb-4">
                         {event.description}
                       </p>
-                      <div className="flex items-center gap-2 text-sm text-neutral-600 mb-2">
-                        <MapPin className="w-4 h-4 flex-shrink-0" />
-                        <span className="line-clamp-1">{event.lieu}</span>
-                      </div>
+                      {event.lieu && (
+                        <div className="flex items-center gap-2 text-sm text-neutral-600 mb-2">
+                          <MapPin className="w-4 h-4 flex-shrink-0" />
+                          <span className="line-clamp-1">{event.lieu}</span>
+                        </div>
+                      )}
                       <div className="h-1.5 bg-neutral-200 rounded-full overflow-hidden mb-4">
                         <div
                           className={`h-full rounded-full ${getPlacesColor(

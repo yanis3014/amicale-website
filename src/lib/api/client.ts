@@ -47,7 +47,8 @@ async function request<T>(
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  const data = await res.json().catch(() => ({}));
+  const data =
+    res.status === 204 ? {} : await res.json().catch(() => ({}));
   if (!res.ok) {
     const msg =
       data?.error ||

@@ -13,6 +13,19 @@ exports.list = async (req, res) => {
   }
 };
 
+// Admin: tous les enseignants (actifs + inactifs)
+exports.listAll = async (req, res) => {
+  try {
+    const result = await query(
+      'SELECT * FROM enseignants ORDER BY ordre ASC, nom ASC'
+    );
+    return res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
+
 exports.getById = async (req, res) => {
   try {
     const result = await query('SELECT * FROM enseignants WHERE id = $1', [req.params.id]);

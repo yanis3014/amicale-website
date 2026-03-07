@@ -1,54 +1,90 @@
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft, Calendar, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { Metadata } from 'next';
-import { mockActivities, type ActivityCategory } from '@/lib/mockActivities';
-import { Card } from '@/components/ui/Card';
-import { ActivityGallery } from '@/components/annonces/ActivityGallery';
+'use client';
 
-type Props = {
-  params: Promise<{ id: string }>;
-};
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { ArrowLeft, Calendar, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { getActivity, getActivities } from '@/lib/api/activities';
+import { getImageUrl } from '@/lib/api/utils/imageUrl';
+import type { ApiActivity } from '@/lib/api/types';
+import type { ActivityCategory } from '@/lib/api/activities';
+import { Card } from '@/components/ui/Card';
+import { ActivityGallery } from '@/components/activites/ActivityGallery';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const categoryLabels: Record<ActivityCategory, string> = {
   projet: 'Projet',
-  vie_etudiante: 'Vie de l\'Amicale',
+  vie_etudiante: "Vie de l'Amicale",
   flash_info: 'Flash Info',
   evenement: 'Événement',
   partenariat: 'Partenariat',
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const activity = mockActivities.find((a) => a.id === id);
-  if (!activity) return { title: 'Activité non trouvée' };
-  return {
-    title: `${activity.title} - Activités Amicale`,
-    description: activity.summary,
-  };
-}
+export default function ActivityDetailPage() {
+  const params = useParams();
+  const id = params?.id as string;
+  const [activity, setActivity] = useState<ApiActivity | null>(null);
+  const [allActivities, setAllActivities] = useState<ApiActivity[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function ActivityDetailPage({ params }: Props) {
-  const { id } = await params;
-  const activity = mockActivities.find((a) => a.id === id);
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    setLoading(true);
+    Promise.all([getActivity(id), getActivities()])
+      .then(([single, list]) => {
+        if (!cancelled) {
+          setActivity(single);
+          setAllActivities(list);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setActivity(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [id]);
 
-  if (!activity) notFound();
+  if (loading) {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
-  const currentIndex = mockActivities.findIndex((a) => a.id === id);
+  if (!activity) {
+    return (
+      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4">
+        <p className="text-neutral-600">Activité introuvable</p>
+        <Link href="/annonces" className="text-primary-600 font-semibold hover:underline">
+          Retour aux activités
+        </Link>
+      </div>
+    );
+  }
+
+  const currentIndex = allActivities.findIndex((a) => String(a.id) === String(id));
   const previousActivity =
-    currentIndex > 0 ? mockActivities[currentIndex - 1] : null;
+    currentIndex > 0 ? allActivities[currentIndex - 1] : null;
   const nextActivity =
-    currentIndex < mockActivities.length - 1
-      ? mockActivities[currentIndex + 1]
+    currentIndex >= 0 && currentIndex < allActivities.length - 1
+      ? allActivities[currentIndex + 1]
       : null;
+
+  const galleryUrls =
+    activity.gallery_images?.map((path) => getImageUrl(path)).filter(Boolean) ?? [];
+  const mainImageUrl = getImageUrl(activity.main_image);
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Hero 55vh */}
       <div className="relative h-[55vh] min-h-[320px] w-full overflow-hidden">
-        {activity.main_image ? (
+        {mainImageUrl ? (
           <img
-            src={activity.main_image}
+            src={mainImageUrl}
             alt={activity.title}
             className="w-full h-full object-cover"
           />
@@ -66,16 +102,18 @@ export default async function ActivityDetailPage({ params }: Props) {
             <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 max-w-4xl mx-auto drop-shadow-lg">
               {activity.title}
             </h1>
-            <div className="flex items-center justify-center gap-2 text-white/90">
-              <Calendar className="w-5 h-5" />
-              <time dateTime={activity.published_at} className="text-lg">
-                {new Date(activity.published_at).toLocaleDateString('fr-FR', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </time>
-            </div>
+            {activity.published_at && (
+              <div className="flex items-center justify-center gap-2 text-white/90">
+                <Calendar className="w-5 h-5" />
+                <time dateTime={activity.published_at} className="text-lg">
+                  {new Date(activity.published_at).toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </time>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -92,76 +130,21 @@ export default async function ActivityDetailPage({ params }: Props) {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="max-w-3xl mx-auto">
-          <p className="text-xl text-neutral-600 font-medium italic mb-10 font-body">
-            {activity.summary}
-          </p>
+          {activity.summary && (
+            <p className="text-xl text-neutral-600 font-medium italic mb-10 font-body">
+              {activity.summary}
+            </p>
+          )}
 
-          <article className="activity-prose">
-            {activity.content.split('\n\n').map((paragraph, index) => {
-              if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
-                const title = paragraph.replace(/\*\*/g, '');
-                return (
-                  <h2
-                    key={index}
-                    className="font-display text-2xl text-forest-800 border-b border-primary-200 pb-2 mt-10 mb-4"
-                  >
-                    {title}
-                  </h2>
-                );
-              }
-              if (paragraph.includes('\n-')) {
-                const lines = paragraph.split('\n');
-                const items = lines.filter((line) => line.startsWith('-'));
-                return (
-                  <ul
-                    key={index}
-                    className="list-disc text-neutral-700 space-y-2 pl-6 mb-5 font-body"
-                  >
-                    {items.map((item, i) => (
-                      <li key={i} className="leading-relaxed">
-                        {item.substring(2).replace(/\*\*/g, '')}
-                      </li>
-                    ))}
-                  </ul>
-                );
-              }
-              return (
-                <p
-                  key={index}
-                  className="text-neutral-700 leading-relaxed mb-5 font-body"
-                >
-                  {paragraph.split('\n').map((line, i) => {
-                    const strongMatch = line.match(/\*\*(.+?)\*\*/g);
-                    if (strongMatch) {
-                      let rest = line;
-                      const parts: React.ReactNode[] = [];
-                      strongMatch.forEach((match) => {
-                        const idx = rest.indexOf(match);
-                        if (idx > 0)
-                          parts.push(rest.slice(0, idx));
-                        parts.push(
-                          <strong
-                            key={parts.length}
-                            className="text-forest-800 font-semibold"
-                          >
-                            {match.replace(/\*\*/g, '')}
-                          </strong>
-                        );
-                        rest = rest.slice(idx + match.length);
-                      });
-                      if (rest) parts.push(rest);
-                      return <span key={i}>{parts}</span>;
-                    }
-                    return <span key={i}>{line}</span>;
-                  })}
-                </p>
-              );
-            })}
-          </article>
+          {activity.content && (
+            <article className="prose prose-neutral prose-lg max-w-none font-body">
+              <ReactMarkdown>{activity.content}</ReactMarkdown>
+            </article>
+          )}
 
-          {activity.gallery_images && activity.gallery_images.length > 0 && (
+          {galleryUrls.length > 0 && (
             <ActivityGallery
-              images={activity.gallery_images}
+              images={galleryUrls}
               title={activity.title}
             />
           )}
@@ -176,9 +159,7 @@ export default async function ActivityDetailPage({ params }: Props) {
                   <ChevronLeft className="w-5 h-5 text-primary-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-neutral-500 mb-1">
-                    Article précédent
-                  </p>
+                  <p className="text-sm text-neutral-500 mb-1">Article précédent</p>
                   <h3 className="font-semibold text-neutral-900 group-hover:text-primary-600 transition-colors line-clamp-2">
                     {previousActivity.title}
                   </h3>
@@ -193,9 +174,7 @@ export default async function ActivityDetailPage({ params }: Props) {
                 className="group flex items-center gap-4 p-6 rounded-2xl bg-primary-50 border-2 border-transparent hover:border-primary-500 transition-all md:text-right"
               >
                 <div className="flex-1 min-w-0 md:order-2">
-                  <p className="text-sm text-neutral-500 mb-1">
-                    Article suivant
-                  </p>
+                  <p className="text-sm text-neutral-500 mb-1">Article suivant</p>
                   <h3 className="font-semibold text-neutral-900 group-hover:text-primary-600 transition-colors line-clamp-2">
                     {nextActivity.title}
                   </h3>

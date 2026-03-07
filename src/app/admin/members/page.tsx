@@ -1,159 +1,604 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, Edit, Download } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { Edit, Trash2, Download, Check, X } from 'lucide-react';
+import {
+  getAllMembers,
+  updateMember,
+  deleteMember,
+} from '@/lib/api/members';
+import {
+  getCotisations,
+  confirmCotisation,
+  rejectCotisation,
+} from '@/lib/api/cotisations';
+import { getAdminStats } from '@/lib/api/admin';
+import type { ApiUser } from '@/lib/api/types';
+import type { ApiCotisation } from '@/lib/api/types';
+import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { useToast } from '@/components/ui/Toast';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
-const members = [
-  { id: '1', nom: 'Ben Salem', prenom: 'Ahmed', email: 'ahmed.bensalem@fphm.tn', grade: 'Maître de Conférences', departement: 'Pharmacie Clinique', statut: 'Actif' as const },
-  { id: '2', nom: 'Gharbi', prenom: 'Amira', email: 'amira.gharbi@fphm.tn', grade: 'Professeur', departement: 'Biochimie', statut: 'Actif' as const },
-  { id: '3', nom: 'Dhouib', prenom: 'Karim', email: 'karim.dhouib@fphm.tn', grade: 'Assistant', departement: 'Pharmacie Galénique', statut: 'Actif' as const },
-  { id: '4', nom: 'Trabelsi', prenom: 'Sonia', email: 'sonia.trabelsi@fphm.tn', grade: 'Maître Assistant', departement: 'Chimie Thérapeutique', statut: 'Actif' as const },
-  { id: '5', nom: 'Mansour', prenom: 'Youssef', email: 'youssef.mansour@fphm.tn', grade: 'Maître de Conférences', departement: 'Microbiologie', statut: 'Actif' as const },
-  { id: '6', nom: 'Bouaziz', prenom: 'Leila', email: 'leila.bouaziz@fphm.tn', grade: 'Professeur', departement: 'Pharmacologie', statut: 'Inactif' as const },
-];
+type Tab = 'membres' | 'cotisations';
+
+function exportMembersToCsv(members: ApiUser[]) {
+  const headers = [
+    'Nom',
+    'Prénom',
+    'Email',
+    'N° Membre',
+    'Année',
+    'Téléphone',
+    'Adhérent',
+    'Expiration adhésion',
+  ];
+  const rows = members.map((m) => [
+    m.nom,
+    m.prenom,
+    m.email,
+    m.numero_membre ?? '',
+    m.annee ?? '',
+    m.telephone ?? '',
+    m.is_adherent ? 'Oui' : 'Non',
+    m.adherent_expires_at
+      ? new Date(m.adherent_expires_at).toLocaleDateString('fr-FR')
+      : '',
+  ]);
+  const csv = [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `membres-amicale-${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function AdminMembersPage() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [tab, setTab] = useState<Tab>('membres');
+  const [members, setMembers] = useState<ApiUser[]>([]);
+  const [cotisations, setCotisations] = useState<ApiCotisation[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(true);
+  const [loadingCotisations, setLoadingCotisations] = useState(false);
+  const [search, setSearch] = useState('');
+  const [filterAdherent, setFilterAdherent] = useState<boolean | undefined>(undefined);
+  const [cotisationStatut, setCotisationStatut] = useState<'pending' | 'confirmed' | 'rejected' | ''>('');
+  const [editMember, setEditMember] = useState<ApiUser | null>(null);
+  const [editForm, setEditForm] = useState({
+    nom: '',
+    prenom: '',
+    email: '',
+    annee: '' as number | '',
+    telephone: '',
+    is_adherent: false,
+    adherent_expires_at: '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<ApiUser | null>(null);
+  const [pendingCotisationsCount, setPendingCotisationsCount] = useState(0);
+  const toast = useToast();
 
-  const filteredMembers = members.filter((member) =>
-    `${member.prenom} ${member.nom}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    getAdminStats()
+      .then((s) => setPendingCotisationsCount(s.cotisations_en_attente))
+      .catch(() => setPendingCotisationsCount(0));
+  }, []);
 
-  const handleExport = () => {
-    alert('Export Excel généré (simulation) !');
+  const loadMembers = useCallback(() => {
+    setLoadingMembers(true);
+    getAllMembers({ search: search || undefined, is_adherent: filterAdherent })
+      .then(setMembers)
+      .catch(() => {
+        toast.error('Erreur chargement des membres');
+        setMembers([]);
+      })
+      .finally(() => setLoadingMembers(false));
+  }, [search, filterAdherent, toast]);
+
+  const loadCotisations = useCallback(() => {
+    setLoadingCotisations(true);
+    const statut =
+      cotisationStatut === ''
+        ? undefined
+        : (cotisationStatut as 'pending' | 'confirmed' | 'rejected');
+    getCotisations(statut)
+      .then(setCotisations)
+      .catch(() => {
+        toast.error('Erreur chargement des cotisations');
+        setCotisations([]);
+      })
+      .finally(() => setLoadingCotisations(false));
+  }, [cotisationStatut, toast]);
+
+  useEffect(() => {
+    if (tab === 'membres') loadMembers();
+  }, [tab, loadMembers]);
+
+  useEffect(() => {
+    if (tab === 'cotisations') loadCotisations();
+  }, [tab, loadCotisations]);
+
+  const openEdit = (m: ApiUser) => {
+    setEditMember(m);
+    setEditForm({
+      nom: m.nom,
+      prenom: m.prenom,
+      email: m.email,
+      annee: m.annee ?? '',
+      telephone: m.telephone ?? '',
+      is_adherent: m.is_adherent ?? false,
+      adherent_expires_at: m.adherent_expires_at
+        ? new Date(m.adherent_expires_at).toISOString().slice(0, 10)
+        : '',
+    });
   };
 
+  const handleSaveMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editMember) return;
+    try {
+      setSaving(true);
+      await updateMember(editMember.id, {
+        nom: editForm.nom,
+        prenom: editForm.prenom,
+        email: editForm.email,
+        annee: editForm.annee === '' ? undefined : Number(editForm.annee),
+        telephone: editForm.telephone || undefined,
+        is_adherent: editForm.is_adherent,
+        adherent_expires_at: editForm.adherent_expires_at || undefined,
+      });
+      toast.success('Membre mis à jour');
+      setEditMember(null);
+      loadMembers();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteMember = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteMember(deleteTarget.id);
+      toast.success('Membre supprimé');
+      setDeleteTarget(null);
+      loadMembers();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
+    }
+  };
+
+  const handleConfirmCotisation = async (id: number) => {
+    try {
+      await confirmCotisation(id);
+      setPendingCotisationsCount((c) => Math.max(0, c - 1));
+      toast.success('Cotisation confirmée');
+      loadCotisations();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
+    }
+  };
+
+  const handleRejectCotisation = async (id: number) => {
+    try {
+      await rejectCotisation(id);
+      setPendingCotisationsCount((c) => Math.max(0, c - 1));
+      toast.success('Cotisation rejetée');
+      loadCotisations();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
+    }
+  };
+
+
   return (
-    <div className="p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Gestion des Membres
-          </h1>
-          <p className="text-gray-600">
-            Liste des enseignants membres de l&apos;Amicale
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={handleExport}
-            className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center gap-2"
-          >
-            <Download className="w-5 h-5" />
-            Exporter Excel
-          </button>
-          <button className="px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-600 transition-colors flex items-center gap-2">
-            <Plus className="w-5 h-5" />
-            Nouveau Membre
-          </button>
-        </div>
+    <div className="p-6 lg:p-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-neutral-900 mb-2">
+          Membres & Cotisations
+        </h1>
+        <p className="text-neutral-600">
+          Gestion des membres et validation des cotisations
+        </p>
       </div>
 
-      {/* Search */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <input
-          type="text"
-          placeholder="Rechercher par nom ou email..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none text-gray-900 placeholder-gray-400"
-        />
+      {/* Tabs */}
+      <div className="flex gap-2 border-b border-neutral-200 mb-6">
+        <button
+          type="button"
+          onClick={() => setTab('membres')}
+          className={`px-4 py-2 font-medium border-b-2 -mb-px transition-colors ${
+            tab === 'membres'
+              ? 'border-primary-500 text-primary-600'
+              : 'border-transparent text-neutral-600 hover:text-neutral-900'
+          }`}
+        >
+          Membres
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('cotisations')}
+          className={`px-4 py-2 font-medium border-b-2 -mb-px transition-colors flex items-center gap-2 ${
+            tab === 'cotisations'
+              ? 'border-primary-500 text-primary-600'
+              : 'border-transparent text-neutral-600 hover:text-neutral-900'
+          }`}
+        >
+          Cotisations
+          {pendingCotisationsCount > 0 && (
+            <span className="rounded-full bg-red-500 text-white text-xs px-2 py-0.5 font-bold">
+              {pendingCotisationsCount} en attente
+            </span>
+          )}
+        </button>
       </div>
 
-      {/* Members Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Nom Complet
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Grade
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Département
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Statut
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredMembers.map((member) => (
-                <tr key={member.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="font-medium text-gray-900">
-                      {member.prenom} {member.nom}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-600">{member.email}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{member.grade}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-600">{member.departement}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        member.statut === 'Actif'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-700'
-                      }`}
-                    >
-                      {member.statut}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button className="text-primary hover:text-primary-600 font-medium flex items-center gap-2">
-                      <Edit className="w-4 h-4" />
-                      Modifier
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredMembers.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">Aucun membre trouvé</p>
+      {tab === 'membres' && (
+        <>
+          <div className="flex flex-wrap items-center gap-4 mb-6">
+            <input
+              type="text"
+              placeholder="Rechercher par nom ou email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 min-w-[200px] px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+            <select
+              value={filterAdherent === undefined ? '' : filterAdherent ? 'true' : 'false'}
+              onChange={(e) => {
+                const v = e.target.value;
+                setFilterAdherent(v === '' ? undefined : v === 'true');
+              }}
+              className="px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="">Tous les membres</option>
+              <option value="true">Adhérents uniquement</option>
+              <option value="false">Non adhérents</option>
+            </select>
+            <Button
+              variant="outline"
+              leftIcon={<Download className="w-4 h-4" />}
+              onClick={() => exportMembersToCsv(members)}
+              disabled={members.length === 0}
+            >
+              Exporter CSV
+            </Button>
           </div>
-        )}
-      </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-sm font-semibold text-gray-600 mb-2">Total Enseignants membres</h3>
-          <p className="text-3xl font-bold text-gray-900">{members.length}</p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-sm font-semibold text-gray-600 mb-2">Actifs</h3>
-          <p className="text-3xl font-bold text-green-600">
-            {members.filter((m) => m.statut === 'Actif').length}
-          </p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-sm font-semibold text-gray-600 mb-2">Inactifs</h3>
-          <p className="text-3xl font-bold text-gray-600">
-            {members.filter((m) => m.statut === 'Inactif').length}
-          </p>
-        </div>
-      </div>
+          {loadingMembers ? (
+            <div className="flex justify-center py-12">
+              <LoadingSpinner size="lg" />
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl shadow-sm border border-neutral-100 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-neutral-50 border-b border-neutral-100">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                        Nom
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                        Email
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                        N° Membre
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                        Adhérent
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-100">
+                    {members.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center text-neutral-500">
+                          Aucun membre trouvé
+                        </td>
+                      </tr>
+                    ) : (
+                      members.map((m) => (
+                        <tr key={m.id} className="hover:bg-neutral-50/50">
+                          <td className="px-6 py-4">
+                            <div className="font-medium text-neutral-900">
+                              {m.prenom} {m.nom}
+                            </div>
+                            {m.annee && (
+                              <div className="text-xs text-neutral-500">Année {m.annee}</div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-neutral-600">{m.email}</td>
+                          <td className="px-6 py-4 text-sm text-neutral-600">
+                            {m.numero_membre ?? '—'}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                                m.is_adherent ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-600'
+                              }`}
+                            >
+                              {m.is_adherent ? 'Oui' : 'Non'}
+                            </span>
+                            {m.adherent_expires_at && (
+                              <div className="text-xs text-neutral-500 mt-1">
+                                Jusqu&apos;au{' '}
+                                {new Date(m.adherent_expires_at).toLocaleDateString('fr-FR')}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEdit(m)}
+                                leftIcon={<Edit className="w-4 h-4" />}
+                              >
+                                Modifier
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 border-red-200 hover:bg-red-50"
+                                onClick={() => setDeleteTarget(m)}
+                                leftIcon={<Trash2 className="w-4 h-4" />}
+                              >
+                                Supprimer
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {tab === 'cotisations' && (
+        <>
+          <div className="flex flex-wrap items-center gap-4 mb-6">
+            <select
+              value={cotisationStatut}
+              onChange={(e) =>
+                setCotisationStatut(
+                  e.target.value as 'pending' | 'confirmed' | 'rejected' | ''
+                )
+              }
+              className="px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="">Tous les statuts</option>
+              <option value="pending">En attente</option>
+              <option value="confirmed">Confirmées</option>
+              <option value="rejected">Rejetées</option>
+            </select>
+          </div>
+
+          {loadingCotisations ? (
+            <div className="flex justify-center py-12">
+              <LoadingSpinner size="lg" />
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl shadow-sm border border-neutral-100 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-neutral-50 border-b border-neutral-100">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                        Membre
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                        Montant
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                        Année univ.
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                        Statut
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                        Date
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-100">
+                    {cotisations.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center text-neutral-500">
+                          Aucune cotisation trouvée
+                        </td>
+                      </tr>
+                    ) : (
+                      cotisations.map((c) => (
+                        <tr key={c.id} className="hover:bg-neutral-50/50">
+                          <td className="px-6 py-4">
+                            <div className="font-medium text-neutral-900">
+                              {c.prenom} {c.nom}
+                            </div>
+                            <div className="text-sm text-neutral-500">{c.email}</div>
+                          </td>
+                          <td className="px-6 py-4 font-semibold text-neutral-900">
+                            {c.montant} DT
+                          </td>
+                          <td className="px-6 py-4 text-sm text-neutral-600">
+                            {c.annee_universitaire}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                                c.statut === 'confirmed'
+                                  ? 'bg-green-100 text-green-700'
+                                  : c.statut === 'rejected'
+                                    ? 'bg-red-100 text-red-700'
+                                    : 'bg-amber-100 text-amber-700'
+                              }`}
+                            >
+                              {c.statut === 'confirmed'
+                                ? 'Confirmée'
+                                : c.statut === 'rejected'
+                                  ? 'Rejetée'
+                                  : 'En attente'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-neutral-600">
+                            {new Date(c.created_at).toLocaleDateString('fr-FR')}
+                          </td>
+                          <td className="px-6 py-4">
+                            {c.statut === 'pending' && (
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleConfirmCotisation(c.id)}
+                                  leftIcon={<Check className="w-4 h-4" />}
+                                >
+                                  Confirmer
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-red-600 border-red-200"
+                                  onClick={() => handleRejectCotisation(c.id)}
+                                  leftIcon={<X className="w-4 h-4" />}
+                                >
+                                  Rejeter
+                                </Button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Modal édition membre */}
+      <Modal
+        isOpen={!!editMember}
+        onClose={() => setEditMember(null)}
+        title="Modifier le membre"
+        size="md"
+      >
+        {editMember && (
+          <form onSubmit={handleSaveMember} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">Nom</label>
+              <input
+                type="text"
+                required
+                value={editForm.nom}
+                onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })}
+                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">Prénom</label>
+              <input
+                type="text"
+                required
+                value={editForm.prenom}
+                onChange={(e) => setEditForm({ ...editForm, prenom: e.target.value })}
+                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+              <input
+                type="email"
+                required
+                value={editForm.email}
+                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">Année</label>
+              <input
+                type="number"
+                min={1}
+                max={6}
+                value={editForm.annee}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, annee: e.target.value === '' ? '' : Number(e.target.value) })
+                }
+                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">Téléphone</label>
+              <input
+                type="text"
+                value={editForm.telephone}
+                onChange={(e) => setEditForm({ ...editForm, telephone: e.target.value })}
+                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="edit_is_adherent"
+                checked={editForm.is_adherent}
+                onChange={(e) => setEditForm({ ...editForm, is_adherent: e.target.checked })}
+                className="rounded border-neutral-300 text-primary-600"
+              />
+              <label htmlFor="edit_is_adherent" className="text-sm font-medium text-neutral-700">
+                Adhérent
+              </label>
+            </div>
+            {editForm.is_adherent && (
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Expiration adhésion
+                </label>
+                <input
+                  type="date"
+                  value={editForm.adherent_expires_at}
+                  onChange={(e) => setEditForm({ ...editForm, adherent_expires_at: e.target.value })}
+                  className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            )}
+            <div className="flex gap-3 justify-end pt-4">
+              <Button type="button" variant="secondary" onClick={() => setEditMember(null)}>
+                Annuler
+              </Button>
+              <Button type="submit" loading={saving}>
+                Enregistrer
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      <ConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteMember}
+        title="Supprimer le membre"
+        message={
+          deleteTarget
+            ? `Êtes-vous sûr de vouloir supprimer ${deleteTarget.prenom} ${deleteTarget.nom} ? Cette action est irréversible.`
+            : ''
+        }
+        confirmLabel="Supprimer"
+        dangerMode
+      />
     </div>
   );
 }

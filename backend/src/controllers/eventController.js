@@ -1,6 +1,23 @@
 const { body, validationResult, query: q } = require('express-validator');
 const { query } = require('../config/db');
 
+// Admin: liste tous les événements (publiés + brouillons)
+exports.listAdmin = async (req, res) => {
+  try {
+    let sql = `
+      SELECT id, titre, description, long_description, date, prix, prix_adherent, image_url,
+             capacite, places_restantes, lieu, categorie, is_published, created_at
+      FROM events
+      ORDER BY date DESC
+    `;
+    const result = await query(sql);
+    return res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
+
 exports.list = async (req, res) => {
   try {
     const { categorie, search, upcoming } = req.query;

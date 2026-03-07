@@ -53,6 +53,7 @@ export const Header: React.FC = () => {
     { href: '/a-propos', label: 'À propos' },
     { href: '/evenements', label: 'Événements' },
     { href: '/annonces', label: 'Annonces' },
+    { href: '/enseignants', label: 'Enseignants' },
     { href: '/adhesion', label: 'Adhésion' },
     { href: '/partenaires', label: 'Partenaires' },
   ];

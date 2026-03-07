@@ -25,20 +25,29 @@ psql $env:DATABASE_URL -f src/config/schema.sql
 
 Sous Linux/Mac : `psql $DATABASE_URL -f src/config/schema.sql`
 
-## Créer l’admin par défaut
+## Créer le compte admin
 
-Après le premier utilisateur inscrit, ou manuellement avec un hash bcrypt pour le mot de passe `Admin2026!` :
+**Méthode recommandée — script :**
+
+Depuis le dossier `backend`, avec la base de données déjà créée et le fichier `.env` configuré (`DATABASE_URL`) :
 
 ```bash
-node -e "const bcrypt=require('bcryptjs'); bcrypt.hash('Admin2026!',12).then(h=>console.log(h));"
+node scripts/create-admin.js
 ```
 
-Puis en SQL :
+Cela crée un compte avec :
+- **Email :** `admin@fphm.tn`
+- **Mot de passe :** `Admin2026!`
 
-```sql
-INSERT INTO users (nom, prenom, email, password_hash, role, numero_membre)
-VALUES ('Admin', 'FPHM', 'admin@fphm.tn', '<hash_genere>', 'admin', 'ADMIN-001');
+Pour personnaliser (optionnel), définir avant d’exécuter le script :
+- `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NOM`, `ADMIN_PRENOM`
+
+Exemple (PowerShell) :
+```powershell
+$env:ADMIN_EMAIL="moi@example.com"; $env:ADMIN_PASSWORD="MonMotDePasseSecurise"; node scripts/create-admin.js
 ```
+
+Ensuite, connectez-vous sur le site avec ces identifiants et accédez à `/admin`.
 
 ## Démarrer le serveur
 

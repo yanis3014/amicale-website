@@ -2,13 +2,41 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { useAuth } from '@/contexts/AuthContext';
+import { ApiError } from '@/lib/api/client';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { login, isAuthenticated } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const redirectTo = searchParams.get('redirect') || '/membres';
+
+  React.useEffect(() => {
+    if (isAuthenticated) router.replace(redirectTo);
+  }, [isAuthenticated, redirectTo, router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSubmitting(true);
+    try {
+      await login({ email, password });
+      router.push(redirectTo);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Connexion impossible');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -41,10 +69,15 @@ export default function LoginPage() {
         <Card variant="elevated" className="max-w-md w-full mx-auto p-8 md:p-10">
           <h2 className="font-display text-2xl font-bold text-neutral-900 mb-2">Connexion</h2>
           <p className="text-neutral-600 text-sm mb-6">Espace réservé aux enseignants membres de l&apos;Amicale.</p>
-          <form className="space-y-5">
+          {error && (
+            <p className="text-red-600 text-sm mb-4 bg-red-50 rounded-xl px-4 py-2">{error}</p>
+          )}
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <Input label="Email" type="email" placeholder="vous@exemple.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
             <Input label="Mot de passe" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            <Button type="submit" variant="primary" size="xl" className="w-full">Se connecter</Button>
+            <Button type="submit" variant="primary" size="xl" className="w-full" disabled={submitting}>
+              {submitting ? 'Connexion...' : 'Se connecter'}
+            </Button>
             <p className="text-center text-sm">
               <Link href="/forgot-password" className="text-primary-600 hover:underline font-medium">Mot de passe oublié ?</Link>
             </p>

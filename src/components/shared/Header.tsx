@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, LayoutDashboard, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/contexts/AuthContext';
 import EspaceMemberModal from './EspaceMemberModal';
 
 const PharmaCrossIcon = () => (
@@ -25,15 +26,21 @@ const PharmaCrossIcon = () => (
   </svg>
 );
 
+function getInitials(nom: string, prenom: string): string {
+  const p = (prenom || '').trim().charAt(0);
+  const n = (nom || '').trim().charAt(0);
+  return (p + n).toUpperCase() || '?';
+}
+
 export const Header: React.FC = () => {
   const pathname = usePathname();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const isLoggedIn = false;
-  const isAdmin = false;
-  const userInitials = '?';
+  const isLoggedIn = isAuthenticated;
+  const userInitials = user ? getInitials(user.nom, user.prenom) : '?';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -145,7 +152,10 @@ export const Header: React.FC = () => {
                       <div className="border-t border-neutral-100 my-2" />
                       <button
                         className="flex items-center gap-2 w-full px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors"
-                        onClick={() => setUserDropdownOpen(false)}
+                        onClick={() => {
+                          setUserDropdownOpen(false);
+                          logout();
+                        }}
                       >
                         <LogOut className="w-4 h-4" />
                         Déconnexion

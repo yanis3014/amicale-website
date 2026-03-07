@@ -2,10 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { useAuth } from '@/contexts/AuthContext';
+import { ApiError } from '@/lib/api/client';
 
 function passwordStrength(pwd: string): { score: number; label: string; color: string } {
   if (!pwd) return { score: 0, label: '', color: 'bg-neutral-200' };
@@ -19,7 +22,17 @@ function passwordStrength(pwd: string): { score: number; label: string; color: s
   return { score, label: labels[score - 1] || '', color: colors[score - 1] || 'bg-neutral-200' };
 }
 
+const GRADE_TO_ANNEE: Record<string, number> = {
+  Professeur: 6,
+  'Maître de Conférences': 5,
+  'Maître Assistant': 4,
+  Assistant: 3,
+  Autre: 1,
+};
+
 export default function RegisterPage() {
+  const router = useRouter();
+  const { register } = useAuth();
   const [prenom, setPrenom] = useState('');
   const [nom, setNom] = useState('');
   const [email, setEmail] = useState('');
@@ -30,9 +43,33 @@ export default function RegisterPage() {
   const [telephone, setTelephone] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordMatch, setPasswordMatch] = useState<boolean | null>(null);
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const strength = passwordStrength(password);
   const isConfirmMatch = confirmPassword ? password === confirmPassword : null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password !== confirmPassword) return;
+    setError('');
+    setSubmitting(true);
+    try {
+      await register({
+        nom,
+        prenom,
+        email,
+        password,
+        telephone: telephone || undefined,
+        annee: grade ? GRADE_TO_ANNEE[grade] : undefined,
+      });
+      router.push('/membres');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Inscription impossible');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -77,7 +114,10 @@ export default function RegisterPage() {
           <p className="text-neutral-600 text-sm mb-6">
             Accédez à l&apos;espace membre de l&apos;Amicale (réservé aux enseignants de la FPHM).
           </p>
-          <form className="space-y-5">
+          {error && (
+            <p className="text-red-600 text-sm mb-4 bg-red-50 rounded-xl px-4 py-2">{error}</p>
+          )}
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 gap-4">
               <Input
                 label="Prénom"
@@ -180,8 +220,8 @@ export default function RegisterPage() {
               value={telephone}
               onChange={(e) => setTelephone(e.target.value)}
             />
-            <Button type="submit" variant="primary" size="xl" className="w-full">
-              S&apos;inscrire
+            <Button type="submit" variant="primary" size="xl" className="w-full" disabled={submitting}>
+              {submitting ? 'Inscription...' : "S'inscrire"}
             </Button>
           </form>
           <p className="mt-6 text-center text-neutral-600 text-sm">

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import ProtectedMembres from './ProtectedMembres';
 
 export const metadata: Metadata = {
   title: 'Espace Membre - Amicale FPHM',
@@ -10,5 +11,5 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <ProtectedMembres>{children}</ProtectedMembres>;
 }

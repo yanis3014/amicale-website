@@ -1,0 +1,25 @@
+const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const enseignantController = require('../controllers/enseignantController');
+const { authMiddleware } = require('../middleware/authMiddleware');
+const { adminMiddleware } = require('../middleware/adminMiddleware');
+
+const router = express.Router();
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, '../../uploads/enseignants')),
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/\s/g, '-')}`),
+});
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+
+router.get('/', enseignantController.list);
+router.get('/:id', enseignantController.getById);
+
+router.post('/', authMiddleware, adminMiddleware, enseignantController.create);
+router.put('/:id', authMiddleware, adminMiddleware, enseignantController.update);
+router.delete('/:id', authMiddleware, adminMiddleware, enseignantController.remove);
+router.patch('/:id/reorder', authMiddleware, adminMiddleware, enseignantController.reorder);
+router.post('/:id/upload-photo', authMiddleware, adminMiddleware, upload.single('photo'), enseignantController.uploadPhoto);
+
+module.exports = router;

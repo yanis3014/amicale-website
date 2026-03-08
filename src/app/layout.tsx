@@ -14,6 +14,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+/** Évite la pré-génération statique au build (l’API backend n’est pas disponible sur Vercel). */
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Amicale de la Faculté de Pharmacie",
   description: "L'Amicale des Enseignants de la Faculté de Pharmacie de Monastir - Association des enseignants, congrès, journées scientifiques et vie associative",

@@ -2,7 +2,7 @@ const { query } = require('../config/db');
 
 exports.stats = async (req, res) => {
   try {
-    const [totalMembers, adherents, eventsTotal, eventsUpcoming, cotisationsPending, inscriptionsMonth, revenus, lastRegs] = await Promise.all([
+    const [totalMembers, adherents, eventsTotal, eventsUpcoming, cotisationsPending, inscriptionsMonth, revenus, revenusMois, lastRegs] = await Promise.all([
       query('SELECT COUNT(*) AS c FROM users WHERE role = \'member\''),
       query('SELECT COUNT(*) AS c FROM users WHERE is_adherent = true AND (adherent_expires_at IS NULL OR adherent_expires_at >= NOW())'),
       query('SELECT COUNT(*) AS c FROM events'),
@@ -10,6 +10,7 @@ exports.stats = async (req, res) => {
       query('SELECT COUNT(*) AS c FROM cotisations WHERE statut = \'pending\''),
       query('SELECT COUNT(*) AS c FROM registrations WHERE created_at >= date_trunc(\'month\', CURRENT_DATE) AND statut != \'cancelled\''),
       query('SELECT COALESCE(SUM(montant_paye), 0) AS total FROM registrations WHERE statut = \'confirmed\' AND montant_paye IS NOT NULL'),
+      query(`SELECT COALESCE(SUM(montant_paye), 0) AS total FROM registrations WHERE statut = 'confirmed' AND montant_paye IS NOT NULL AND created_at >= date_trunc('month', CURRENT_DATE)`),
       query(
         `SELECT r.id, r.statut, r.montant_paye, r.created_at, r.user_id, r.event_id,
                 u.nom, u.prenom, u.email,
@@ -30,6 +31,7 @@ exports.stats = async (req, res) => {
       cotisations_en_attente: parseInt(cotisationsPending.rows[0].c, 10),
       inscriptions_ce_mois: parseInt(inscriptionsMonth.rows[0].c, 10),
       revenus_total: parseFloat(revenus.rows[0].total) || 0,
+      revenus_ce_mois: parseFloat(revenusMois.rows[0].total) || 0,
       dernieres_inscriptions: lastRegs.rows,
     });
   } catch (err) {

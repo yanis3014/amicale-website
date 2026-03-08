@@ -12,6 +12,7 @@ import {
   reorderEnseignant,
   uploadEnseignantPhoto,
 } from '@/lib/api/enseignants';
+import { getPageSetting, uploadEnseignantsHeaderImage } from '@/lib/api/settings';
 import type { ApiEnseignant } from '@/lib/api/types';
 import { getImageUrl } from '@/lib/api/utils/imageUrl';
 import { Button } from '@/components/ui/Button';
@@ -40,7 +41,15 @@ export default function AdminEnseignantsPage() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ApiEnseignant | null>(null);
+  const [headerImage, setHeaderImage] = useState<string | null>(null);
+  const [headerUploading, setHeaderUploading] = useState(false);
   const toast = useToast();
+
+  const loadHeader = useCallback(() => {
+    getPageSetting('enseignants_header_image')
+      .then((s) => setHeaderImage(s.value || null))
+      .catch(() => setHeaderImage(null));
+  }, []);
 
   const load = useCallback(() => {
     if (!getToken()) {
@@ -60,7 +69,27 @@ export default function AdminEnseignantsPage() {
 
   useEffect(() => {
     load();
-  }, [load]);
+    loadHeader();
+  }, [load, loadHeader]);
+
+  const handleHeaderImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith('image/')) {
+      toast.error('Veuillez sélectionner une image (JPG, PNG, etc.)');
+      return;
+    }
+    setHeaderUploading(true);
+    try {
+      await uploadEnseignantsHeaderImage(file);
+      loadHeader();
+      toast.success('Photo du header mise à jour');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erreur lors de l\'upload');
+    } finally {
+      setHeaderUploading(false);
+      e.target.value = '';
+    }
+  };
 
   const openCreate = () => {
     setEditing(null);
@@ -178,6 +207,40 @@ export default function AdminEnseignantsPage() {
         </Button>
       </div>
 
+      {/* Photo header page Nos Enseignants */}
+      <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-6 mb-8">
+        <h2 className="text-lg font-semibold text-neutral-900 mb-2">Photo header — Page « Nos Enseignants »</h2>
+        <p className="text-sm text-neutral-600 mb-4">
+          Image affichée en bannière sur la page publique. Vous pouvez la changer (ex. tous les 3 ans).
+        </p>
+        <div className="flex flex-wrap items-end gap-4">
+          {headerImage && (
+            <div className="w-48 h-24 rounded-lg overflow-hidden bg-neutral-100 border border-neutral-200">
+              <img
+                src={getImageUrl(headerImage)}
+                alt="Header actuel"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          <label className="inline-flex flex-col gap-1">
+            <span className="text-sm font-medium text-neutral-700">
+              {headerImage ? 'Changer la photo' : 'Ajouter une photo'}
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleHeaderImageChange}
+              disabled={headerUploading}
+              className="text-sm text-neutral-600 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary-50 file:text-primary-700 file:font-semibold"
+            />
+          </label>
+          {headerUploading && (
+            <span className="text-sm text-neutral-500">Envoi en cours…</span>
+          )}
+        </div>
+      </div>
+
       {enseignants.length === 0 ? (
         <EmptyState
           title="Aucun enseignant"
@@ -189,7 +252,7 @@ export default function AdminEnseignantsPage() {
           {enseignants.map((e, idx) => (
             <div
               key={e.id}
-              className={`bg-white rounded-xl shadow-sm border p-6 transition-shadow hover:shadow-md ${
+              className={`bg-white rounded-xl shadow-sm border p-6 transition-shadow hover:shadow-md overflow-hidden ${
                 e.is_active ? 'border-neutral-100' : 'border-amber-200 bg-amber-50/30'
               }`}
             >
@@ -214,9 +277,17 @@ export default function AdminEnseignantsPage() {
                   {e.titre && (
                     <p className="text-sm text-neutral-600">{e.titre}</p>
                   )}
-                  {e.specialite && (
-                    <p className="text-xs text-neutral-500">{e.specialite}</p>
-                  )}
+                  {(() => {
+                    const spec = e.specialite?.trim();
+                    const sameCharOnly = spec && new Set(spec.replace(/\s/g, '').split('')).size <= 1;
+                    if (!spec || sameCharOnly) return null;
+                    return (
+                      <p className="text-xs text-neutral-500">
+                        <span className="text-neutral-400">Spécialité : </span>
+                        {spec}
+                      </p>
+                    );
+                  })()}
                   <span
                     className={`inline-block mt-2 px-2 py-0.5 rounded text-xs font-medium ${
                       e.is_active ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
@@ -226,8 +297,8 @@ export default function AdminEnseignantsPage() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-neutral-100">
-                <div className="flex gap-1">
+              <div className="flex flex-wrap items-center justify-between gap-2 mt-4 pt-4 border-t border-neutral-100 min-w-0">
+                <div className="flex gap-1 flex-shrink-0">
                   <button
                     type="button"
                     onClick={() => moveOrder(e, 'up')}
@@ -247,21 +318,22 @@ export default function AdminEnseignantsPage() {
                     <ChevronDown className="w-5 h-5 text-neutral-600" />
                   </button>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2 min-w-0 flex-shrink">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => openEdit(e)}
-                    leftIcon={<Edit className="w-4 h-4" />}
+                    leftIcon={<Edit className="w-4 h-4 flex-shrink-0" />}
+                    className="!px-3 whitespace-nowrap"
                   >
                     Modifier
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-red-600 border-red-200 hover:bg-red-50"
+                    className="text-red-600 border-red-200 hover:bg-red-50 !px-3 whitespace-nowrap"
                     onClick={() => setDeleteTarget(e)}
-                    leftIcon={<Trash2 className="w-4 h-4" />}
+                    leftIcon={<Trash2 className="w-4 h-4 flex-shrink-0" />}
                   >
                     Suppr.
                   </Button>

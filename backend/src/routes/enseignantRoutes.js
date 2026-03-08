@@ -4,6 +4,7 @@ const path = require('path');
 const enseignantController = require('../controllers/enseignantController');
 const { authMiddleware } = require('../middleware/authMiddleware');
 const { adminMiddleware } = require('../middleware/adminMiddleware');
+const { auditMiddleware } = require('../middleware/auditMiddleware');
 
 const router = express.Router();
 
@@ -16,10 +17,10 @@ const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 router.get('/', enseignantController.list);
 router.get('/:id', enseignantController.getById);
 
-router.post('/', authMiddleware, adminMiddleware, enseignantController.create);
-router.put('/:id', authMiddleware, adminMiddleware, enseignantController.update);
-router.delete('/:id', authMiddleware, adminMiddleware, enseignantController.remove);
-router.patch('/:id/reorder', authMiddleware, adminMiddleware, enseignantController.reorder);
-router.post('/:id/upload-photo', authMiddleware, adminMiddleware, upload.single('photo'), enseignantController.uploadPhoto);
+router.post('/', authMiddleware, adminMiddleware, auditMiddleware, enseignantController.create);
+router.put('/:id', authMiddleware, adminMiddleware, auditMiddleware, enseignantController.update);
+router.delete('/:id', authMiddleware, adminMiddleware, auditMiddleware, enseignantController.remove);
+router.patch('/:id/reorder', authMiddleware, adminMiddleware, auditMiddleware, enseignantController.reorder);
+router.post('/:id/upload-photo', authMiddleware, adminMiddleware, auditMiddleware, upload.single('photo'), enseignantController.uploadPhoto);
 
 module.exports = router;

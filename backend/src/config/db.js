@@ -1,13 +1,18 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 
-const pool = new Pool({
-  host: 'localhost',
-  port: 5432,
-  database: 'amicale',
-  user: 'postgres',
-  password: 'my404796',
-});
+// Render et Heroku fournissent DATABASE_URL ; en local on peut utiliser DB_*
+const poolConfig = process.env.DATABASE_URL
+  ? { connectionString: process.env.DATABASE_URL, ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false }
+  : {
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT, 10) || 5432,
+      database: process.env.DB_NAME || 'amicale',
+      user: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD,
+    };
+
+const pool = new Pool(poolConfig);
 
 pool.connect((err) => {
   if (err) {

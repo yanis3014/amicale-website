@@ -21,6 +21,7 @@ export interface ApiEvent {
   description?: string | null;
   long_description?: string | null;
   date: string;
+  date_fin?: string | null;
   prix: number;
   prix_adherent?: number | null;
   image_url?: string | null;
@@ -30,6 +31,8 @@ export interface ApiEvent {
   lieu?: string | null;
   categorie?: string | null;
   is_published?: boolean;
+  featured_on_home?: boolean;
+  home_order?: number;
   created_at: string;
   updated_at?: string;
 }
@@ -42,6 +45,8 @@ export interface ApiRegistration {
   montant_paye?: number | null;
   methode_paiement?: string | null;
   reference_paiement?: string | null;
+  titulaire_compte?: string | null;
+  carte_expiry?: string | null;
   created_at: string;
   titre?: string;
   date?: string;
@@ -78,6 +83,27 @@ export interface ApiEnseignant {
   updated_at?: string;
 }
 
+export interface ApiAvantage {
+  id: number;
+  libelle: string;
+  type_avantage: 'avantage' | 'reduction' | 'autre';
+  ordre: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ApiPartenaire {
+  id: number;
+  nom: string;
+  logo_url?: string | null;
+  url?: string | null;
+  ordre: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
 export interface ApiCotisation {
   id: number;
   user_id: number;
@@ -93,6 +119,8 @@ export interface ApiCotisation {
   prenom?: string;
   email?: string;
   numero_membre?: string | null;
+  coupon_code?: string | null;
+  coupon_created_by_admin?: string | null;
 }
 
 export interface LoginPayload {

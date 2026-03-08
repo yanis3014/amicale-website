@@ -1,46 +1,54 @@
-import React from 'react';
-import { Play } from 'lucide-react';
+'use client';
 
-export const VideoSection: React.FC = () => {
+import React from 'react';
+
+function getEmbedUrl(url: string): string | null {
+  if (!url) return null;
+  const u = url.trim();
+  // YouTube: watch?v=ID ou youtu.be/ID ou embed/ID
+  const ytMatch = u.match(/(?:youtube\.com\/watch\?v=|youtube\.com\/embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?rel=0`;
+  // Vimeo
+  const vimeoMatch = u.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+  return null;
+}
+
+interface VideoSectionProps {
+  videoUrl: string | null;
+}
+
+export const VideoSection: React.FC<VideoSectionProps> = ({ videoUrl }) => {
+  const embedUrl = videoUrl ? getEmbedUrl(videoUrl) : null;
+  const isDirectVideo =
+    videoUrl &&
+    !embedUrl &&
+    /\.(mp4|webm|ogg)(\?|$)/i.test(videoUrl);
+
+  if (!videoUrl) {
+    return null;
+  }
+
   return (
     <section className="py-16 md:py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 h-[400px] md:h-[500px]">
-          {/* Background Image */}
-          <div className="absolute inset-0">
-            <img 
-              src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&q=80" 
-              alt="Congrès National"
-              className="w-full h-full object-cover"
+        <div className="relative rounded-2xl overflow-hidden bg-neutral-900 aspect-video max-h-[500px]">
+          {embedUrl ? (
+            <iframe
+              src={embedUrl}
+              title="Vidéo Amicale"
+              className="absolute inset-0 w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
-          </div>
-          
-          {/* Play Button */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <button
-              className="w-24 h-24 bg-white/90 rounded-full flex items-center justify-center hover:bg-white hover:scale-105 transition-all duration-300 shadow-2xl ring-4 ring-white/30 animate-pulse-glow group"
-              aria-label="Lire la vidéo"
-            >
-              <Play className="w-10 h-10 text-primary-600 ml-1" fill="currentColor" />
-            </button>
-          </div>
-          
-          {/* Text Content */}
-          <div className="absolute bottom-8 left-8 right-8 text-white">
-            <h2 className="text-3xl md:text-4xl font-bold mb-2">
-              Retour sur le Congrès National 2023
-            </h2>
-            <p className="text-lg text-gray-200 max-w-2xl">
-              Revivez les meilleurs moments, les interventions inspirantes et l'excellence 
-              académique de notre dernier rassemblement national.
-            </p>
-          </div>
-          
-          {/* Duration Badge */}
-          <div className="absolute top-6 right-6 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-white text-sm font-medium">
-            📅 Amical, Le 12 Dec 2023
-          </div>
+          ) : isDirectVideo ? (
+            <video
+              src={videoUrl}
+              controls
+              className="w-full h-full object-contain"
+              playsInline
+            />
+          ) : null}
         </div>
       </div>
     </section>

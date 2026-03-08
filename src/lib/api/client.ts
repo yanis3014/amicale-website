@@ -49,7 +49,7 @@ export class ApiError extends Error {
 
 async function request<T>(
   path: string,
-  options: RequestInit & { body?: unknown } = {}
+  options: Omit<RequestInit, 'body'> & { body?: unknown } = {}
 ): Promise<T> {
   const { body, ...rest } = options;
   const url = `${BASE_URL.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
@@ -63,7 +63,7 @@ async function request<T>(
   const res = await fetch(url, {
     ...rest,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: body !== undefined ? (JSON.stringify(body) as BodyInit) : undefined,
     credentials: 'include',
   });
 

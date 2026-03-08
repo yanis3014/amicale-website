@@ -1,5 +1,12 @@
+const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const { query } = require('../config/db');
+
+const SALT_ROUNDS = 12;
+
+function generateNumeroMembre(year, id) {
+  return `FPHM-${year}-${String(id).padStart(4, '0')}`;
+}
 
 exports.getMyProfile = async (req, res) => {
   try {
@@ -31,6 +38,49 @@ exports.getMyEvents = async (req, res) => {
     return res.status(500).json({ error: 'Erreur serveur' });
   }
 };
+
+// Admin: create a member (traced via created_by_admin_id and audit)
+exports.createMember = [
+  body('nom').trim().notEmpty().withMessage('Nom requis'),
+  body('prenom').trim().notEmpty().withMessage('Prénom requis'),
+  body('email').trim().isEmail().withMessage('Email invalide'),
+  body('password').isLength({ min: 8 }).withMessage('Mot de passe min 8 caractères'),
+  body('annee').optional().isInt({ min: 1, max: 6 }),
+  body('telephone').optional().trim(),
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      const { nom, prenom, email, password, annee, telephone } = req.body;
+      const adminId = req.user.id;
+
+      const existing = await query('SELECT id FROM users WHERE email = $1', [email]);
+      if (existing.rows.length > 0) {
+        return res.status(400).json({ error: 'Cet email est déjà utilisé' });
+      }
+
+      const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
+      const year = new Date().getFullYear();
+      const result = await query(
+        `INSERT INTO users (nom, prenom, email, password_hash, annee, telephone, role, created_by_admin_id)
+         VALUES ($1, $2, $3, $4, $5, $6, 'member', $7)
+         RETURNING id, nom, prenom, email, role, annee, telephone, numero_membre, is_adherent, adherent_expires_at, created_at, created_by_admin_id`,
+        [nom, prenom, email, password_hash, annee || null, telephone || null, adminId]
+      );
+      const user = result.rows[0];
+      const numero_membre = generateNumeroMembre(year, user.id);
+      await query('UPDATE users SET numero_membre = $1 WHERE id = $2', [numero_membre, user.id]);
+      user.numero_membre = numero_membre;
+      delete user.created_by_admin_id;
+      return res.status(201).json(user);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Erreur serveur' });
+    }
+  },
+];
 
 // Admin: list all members
 exports.listAdmin = async (req, res) => {

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, Calendar, ArrowRight } from 'lucide-react';
-import { getEvents } from '@/lib/api/events';
+import { getEvents, getFeaturedEvents } from '@/lib/api/events';
 import { getImageUrl } from '@/lib/api/utils/imageUrl';
 import type { ApiEvent } from '@/lib/api/types';
 import { Input } from '@/components/ui/Input';
@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 
 export default function AnnoncesPage() {
+  const [featuredEvent, setFeaturedEvent] = useState<ApiEvent | null>(null);
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState('');
@@ -20,24 +21,43 @@ export default function AnnoncesPage() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    getEvents({
-      upcoming: true,
-      search: searchQuery || undefined,
-    })
-      .then((data) => {
-        if (!cancelled) setEvents(data);
-      })
-      .catch(() => {
-        if (!cancelled) setEvents([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    const hasSearch = !!searchQuery.trim();
+    if (hasSearch) {
+      getEvents({ upcoming: true, search: searchQuery })
+        .then((data) => {
+          if (!cancelled) {
+            setFeaturedEvent(null);
+            setEvents(data);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setFeaturedEvent(null);
+            setEvents([]);
+          }
+        })
+        .finally(() => { if (!cancelled) setLoading(false); });
+    } else {
+      Promise.all([getFeaturedEvents(), getEvents({ upcoming: true })])
+        .then(([featured, allUpcoming]) => {
+          if (!cancelled) {
+            setFeaturedEvent(featured.length > 0 ? featured[0] : null);
+            const featuredId = featured.length > 0 ? featured[0].id : null;
+            setEvents(allUpcoming.filter((e) => e.id !== featuredId));
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setFeaturedEvent(null);
+            setEvents([]);
+          }
+        })
+        .finally(() => { if (!cancelled) setLoading(false); });
+    }
     return () => { cancelled = true; };
   }, [searchQuery]);
 
-  const featuredEvent = events[0];
-  const gridEvents = events.slice(1);
+  const gridEvents = events;
 
   return (
     <div className="min-h-screen bg-neutral-50">

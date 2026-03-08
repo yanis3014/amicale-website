@@ -8,9 +8,16 @@ import {
   Calendar,
   Newspaper,
   Users,
+  Handshake,
   ArrowLeft,
   LogOut,
   Menu,
+  ClipboardList,
+  Wallet,
+  FileText,
+  Tag,
+  Mail,
+  Home,
 } from 'lucide-react';
 import { AdminGuard } from '@/components/auth/AdminGuard';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,7 +29,14 @@ const navItems: { href: string; label: string; icon: typeof Users; badgeKey?: 'c
   { href: '/admin/evenements', label: 'Événements', icon: Calendar },
   { href: '/admin/annonces', label: 'Annonces', icon: Newspaper },
   { href: '/admin/enseignants', label: 'Enseignants', icon: Users },
+  { href: '/admin/a-propos', label: 'Contenus À propos', icon: FileText },
+  { href: '/admin/accueil', label: 'Page d\'accueil', icon: Home },
   { href: '/admin/members', label: 'Membres & Cotisations', icon: Users, badgeKey: 'cotisations' },
+  { href: '/admin/emails', label: 'Envoi d\'emails', icon: Mail },
+  { href: '/admin/coupons', label: 'Coupons', icon: Tag },
+  { href: '/admin/finances', label: 'Finances', icon: Wallet },
+  { href: '/admin/partenaires', label: 'Partenaires', icon: Handshake },
+  { href: '/admin/suivi', label: 'Suivi des actions', icon: ClipboardList },
 ];
 
 function AdminLayoutInner({
@@ -53,15 +67,15 @@ function AdminLayoutInner({
     : 'AD';
 
   const sidebar = (
-    <aside className="w-64 bg-forest-900 flex flex-col h-full">
-      <div className="p-6 border-b border-white/10">
-        <h1 className="font-display text-xl font-bold text-white">
+    <aside className="w-56 bg-forest-900 flex flex-col h-full min-h-0">
+      <div className="flex-shrink-0 p-3 border-b border-white/10">
+        <h1 className="font-display text-base font-bold text-white">
           Amicale Admin
         </h1>
-        <p className="text-sm text-white/50 mt-1">Dashboard</p>
+        <p className="text-xs text-white/50">Dashboard</p>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 min-h-0 p-2 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -71,16 +85,16 @@ function AdminLayoutInner({
               key={item.href}
               href={item.href}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                 isActive
-                  ? 'bg-primary-500/20 text-primary-300 border-l-2 border-primary-400 rounded-l-xl rounded-r-none'
+                  ? 'bg-primary-500/20 text-primary-300 border-l-2 border-primary-400 rounded-l-lg rounded-r-none'
                   : 'text-white/60 hover:bg-white/8 hover:text-white'
               }`}
             >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              <span className="flex-1">{item.label}</span>
+              <Icon className="w-4 h-4 flex-shrink-0" />
+              <span className="flex-1 truncate">{item.label}</span>
               {badge > 0 && (
-                <span className="w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-bold">
+                <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold flex-shrink-0">
                   {badge}
                 </span>
               )}
@@ -89,30 +103,30 @@ function AdminLayoutInner({
         })}
       </nav>
 
-      <div className="p-4 border-t border-white/10 space-y-2">
-        <div className="px-4 py-3 rounded-xl flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary-500/30 flex items-center justify-center font-display font-bold text-primary-300">
+      <div className="flex-shrink-0 p-2 border-t border-white/10 space-y-1">
+        <div className="px-2 py-2 rounded-lg flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-primary-500/30 flex items-center justify-center font-display font-bold text-primary-300 text-xs flex-shrink-0">
             {initials}
           </div>
-          <div>
-            <p className="font-semibold text-white text-sm">{user?.prenom} {user?.nom}</p>
-            <p className="text-white/50 text-xs">Administrateur</p>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-white text-xs truncate">{user?.prenom} {user?.nom}</p>
+            <p className="text-white/50 text-[10px]">Administrateur</p>
           </div>
         </div>
         <Link
           href="/"
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-white/60 hover:bg-white/8 hover:text-white font-medium transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white/60 hover:bg-white/8 hover:text-white font-medium transition-colors"
           onClick={() => setSidebarOpen(false)}
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4 flex-shrink-0" />
           Retour au site
         </Link>
         <button
           type="button"
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-300 hover:text-red-200 hover:bg-red-500/10 font-medium transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-300 hover:text-red-200 hover:bg-red-500/10 font-medium transition-colors"
         >
-          <LogOut className="w-5 h-5" />
+          <LogOut className="w-4 h-4 flex-shrink-0" />
           Déconnexion
         </button>
       </div>
@@ -120,9 +134,9 @@ function AdminLayoutInner({
   );
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:flex sticky top-0 h-screen flex-shrink-0">
+    <div className="h-screen bg-neutral-50 flex overflow-hidden">
+      {/* Desktop Sidebar — fixe, ne défile pas */}
+      <div className="hidden lg:flex flex-shrink-0 w-56 h-full overflow-hidden">
         {sidebar}
       </div>
 
@@ -137,16 +151,16 @@ function AdminLayoutInner({
 
       {/* Mobile drawer */}
       <div
-        className={`fixed top-0 left-0 z-50 h-full w-64 transform transition-transform duration-300 ease-out lg:hidden ${
+        className={`fixed top-0 left-0 z-50 h-full w-56 transform transition-transform duration-300 ease-out lg:hidden ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {sidebar}
       </div>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-auto min-w-0">
-        <div className="lg:hidden sticky top-0 z-30 flex items-center gap-4 bg-neutral-50 border-b border-neutral-100 px-4 py-3">
+      {/* Zone droite — scroll seule si le contenu dépasse */}
+      <main className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        <div className="lg:hidden flex-shrink-0 flex items-center gap-4 bg-neutral-50 border-b border-neutral-100 px-4 py-3">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
@@ -157,7 +171,9 @@ function AdminLayoutInner({
           </button>
           <span className="font-display font-bold text-neutral-900">Admin</span>
         </div>
-        {children}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {children}
+        </div>
       </main>
     </div>
   );

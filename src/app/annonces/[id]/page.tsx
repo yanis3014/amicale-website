@@ -201,7 +201,7 @@ export default function AnnonceDetailPage() {
             <div className="sticky top-24 space-y-6">
               <Card
                 variant="elevated"
-                className={fewPlaces ? 'animate-pulse-glow' : ''}
+                className={`p-6 ${fewPlaces ? 'animate-pulse-glow' : ''}`}
               >
                 <h3 className="text-lg font-display font-bold text-neutral-900 mb-4">
                   Inscription
@@ -210,18 +210,18 @@ export default function AnnonceDetailPage() {
                   {showAdherentPrice ? (
                     <div className="flex flex-wrap items-center gap-2 mb-1">
                       <span className="text-2xl font-display font-bold text-primary-600">
-                        {prixAdherent} DT
+                        {Number(prixAdherent).toFixed(2)} DT
                       </span>
                       <Badge variant="gold" size="sm">
                         Tarif membre
                       </Badge>
                       <span className="text-neutral-400 line-through text-lg">
-                        {event.prix} DT
+                        {Number(event.prix).toFixed(2)} DT
                       </span>
                     </div>
                   ) : (
                     <p className="text-3xl md:text-4xl font-display font-bold text-primary-600">
-                      {event.prix === 0 ? 'Gratuit' : `${event.prix} DT`}
+                      {event.prix === 0 ? 'Gratuit' : `${Number(event.prix).toFixed(2)} DT`}
                     </p>
                   )}
                 </div>

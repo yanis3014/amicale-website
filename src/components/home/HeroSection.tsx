@@ -5,8 +5,73 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { ArrowRight, Play } from 'lucide-react';
+import { getImageUrl } from '@/lib/api/utils/imageUrl';
+import type { ApiEvent } from '@/lib/api/types';
 
-export const HeroSection: React.FC = () => {
+const DEFAULT_HERO_TITLE = "L'Amicale qui *fédère* les enseignants de la Faculté de Pharmacie";
+const DEFAULT_HERO_TEXT =
+  "L'association des enseignants de la FPHM : congrès, journées scientifiques, formations continues et réseau professionnel au service de l'excellence de l'enseignement pharmaceutique.";
+const DEFAULT_MEMBERS_COUNT_TEXT = '120+ Enseignants membres';
+
+/** Découpe un titre contenant *mot* pour afficher "mot" en surligné. */
+function parseHeroTitle(title: string): React.ReactNode {
+  const parts = title.split(/(\*[^*]*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('*') && part.endsWith('*')) {
+      const word = part.slice(1, -1);
+      return (
+        <span key={i} className="relative inline-block text-primary-500">
+          {word}
+          <svg
+            className="absolute -bottom-1 left-0 w-full"
+            viewBox="0 0 200 8"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden
+          >
+            <path
+              d="M1 5.5C25 2 75 2 100 5.5S175 2 199 5.5"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              className="text-primary-500"
+            />
+          </svg>
+        </span>
+      );
+    }
+    return <React.Fragment key={i}>{part}</React.Fragment>;
+  });
+}
+
+interface HeroSectionProps {
+  anneeUniversitaire: string;
+  nextEvent: ApiEvent | null;
+  heroImageUrl: string | null;
+  /** Titre principal de la hero (soutien *mot* pour le surligner). Si null, utilise le texte par défaut. */
+  heroTitle?: string | null;
+  /** Texte de présentation sous le titre (hero). Si null, utilise le texte par défaut. */
+  heroText?: string | null;
+  /** Texte affiché pour le nombre de membres (ex. "120+ Enseignants membres"). Si null, utilise le texte par défaut. */
+  membersCountText?: string | null;
+}
+
+export const HeroSection: React.FC<HeroSectionProps> = ({
+  anneeUniversitaire,
+  nextEvent,
+  heroImageUrl,
+  heroTitle: heroTitleProp,
+  heroText: heroTextProp,
+  membersCountText: membersCountTextProp,
+}) => {
+  const heroTitle = heroTitleProp?.trim() || DEFAULT_HERO_TITLE;
+  const heroText = heroTextProp?.trim() || DEFAULT_HERO_TEXT;
+  const membersCountText = membersCountTextProp?.trim() || DEFAULT_MEMBERS_COUNT_TEXT;
+  const heroSrc = heroImageUrl ? getImageUrl(heroImageUrl) : '/images/hero2.jpeg';
+  const eventDate = nextEvent?.date
+    ? new Date(nextEvent.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null;
+
   return (
     <section className="bg-neutral-50 py-16 md:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -21,41 +86,21 @@ export const HeroSection: React.FC = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500" />
               </span>
-              Année universitaire 2025-2026
+              Année universitaire {anneeUniversitaire}
             </div>
 
             <h1
               className="font-display text-5xl md:text-7xl font-extrabold leading-tight text-neutral-900 mb-6 animate-fade-up"
               style={{ animationDelay: '150ms' }}
             >
-              L&apos;Amicale qui{' '}
-              <span className="relative inline-block text-primary-500">
-                fédère
-                <svg
-                  className="absolute -bottom-1 left-0 w-full"
-                  viewBox="0 0 200 8"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden
-                >
-                  <path
-                    d="M1 5.5C25 2 75 2 100 5.5S175 2 199 5.5"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    className="text-primary-500"
-                  />
-                </svg>
-              </span>{' '}
-              les enseignants de la Faculté de Pharmacie
+              {parseHeroTitle(heroTitle)}
             </h1>
 
             <p
               className="text-lg text-neutral-500 max-w-md font-body mb-8 animate-fade-up"
               style={{ animationDelay: '300ms' }}
             >
-              L&apos;association des enseignants de la FPHM : congrès, journées scientifiques,
-              formations continues et réseau professionnel au service de l&apos;excellence de l&apos;enseignement pharmaceutique.
+              {heroText}
             </p>
 
             <div
@@ -80,7 +125,7 @@ export const HeroSection: React.FC = () => {
               style={{ animationDelay: '600ms' }}
             >
               <span className="font-display text-primary-600 font-bold text-lg">
-                120+ Enseignants membres
+                {membersCountText}
               </span>
               <span className="text-neutral-300">|</span>
               <span className="font-display text-primary-600 font-bold text-lg">
@@ -93,31 +138,43 @@ export const HeroSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Right - Image + Floating card */}
+          {/* Right - Image + Floating card (prochain événement) */}
           <div
             className="relative animate-fade-up"
             style={{ animationDelay: '200ms' }}
           >
             <div className="relative rounded-3xl overflow-hidden shadow-card-lg bg-white">
               <div className="relative aspect-[4/3] w-full">
-                <Image
-                  src="/images/hero2.jpeg"
-                  alt="Communauté Amicale FPHM"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 45vw"
-                  priority
-                />
+                {heroImageUrl ? (
+                  <img
+                    src={heroSrc}
+                    alt="Communauté Amicale FPHM"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Image
+                    src={heroSrc}
+                    alt="Communauté Amicale FPHM"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 45vw"
+                    priority
+                  />
+                )}
               </div>
-              <div className="absolute bottom-4 left-4 right-4 md:right-auto md:w-64 bg-white/80 backdrop-blur-md rounded-2xl p-4 shadow-card border border-white/50">
-                <p className="text-xs font-semibold text-neutral-500 mb-1">
-                  Prochain événement
-                </p>
-                <p className="font-display font-bold text-neutral-900">
-                  Gala de la Pharmacie 2026
-                </p>
-                <p className="text-sm text-neutral-500">15 mars 2026</p>
-              </div>
+              {nextEvent && (
+                <div className="absolute bottom-4 left-4 right-4 md:right-auto md:w-64 bg-white/80 backdrop-blur-md rounded-2xl p-4 shadow-card border border-white/50">
+                  <p className="text-xs font-semibold text-neutral-500 mb-1">
+                    Prochain événement
+                  </p>
+                  <Link href={`/evenements/${nextEvent.id}`} className="block hover:opacity-90">
+                    <p className="font-display font-bold text-neutral-900">
+                      {nextEvent.titre}
+                    </p>
+                  </Link>
+                  <p className="text-sm text-neutral-500">{eventDate}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

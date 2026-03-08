@@ -15,6 +15,19 @@ export interface AdminMembersQuery {
   is_adherent?: boolean;
 }
 
+export interface CreateMemberPayload {
+  nom: string;
+  prenom: string;
+  email: string;
+  password: string;
+  annee?: number;
+  telephone?: string;
+}
+
+export async function createMember(data: CreateMemberPayload): Promise<ApiUser> {
+  return api.post<ApiUser>('/api/admin/members', data);
+}
+
 export async function getAllMembers(params?: AdminMembersQuery): Promise<ApiUser[]> {
   const search = new URLSearchParams();
   if (params?.search) search.set('search', params.search);

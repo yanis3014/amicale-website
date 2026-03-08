@@ -1,266 +1,150 @@
 'use client';
 
-import { useState } from 'react';
-import { notFound, useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CreditCard, Lock, Loader2 } from 'lucide-react';
-import { mockEvents } from '@/lib/mockData';
+import { Gift, ArrowRight, Users, CheckCircle2, Loader2 } from 'lucide-react';
+import { getAvantages } from '@/lib/api/avantages';
+import type { ApiAvantage } from '@/lib/api/types';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
 export default function AdhesionPage() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get('event') ?? searchParams.get('id');
-  const router = useRouter();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [cardData, setCardData] = useState({
-    name: '',
-    number: '',
-    expiry: '',
-    cvv: '',
-  });
+  const [avantages, setAvantages] = useState<ApiAvantage[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const event = id ? mockEvents.find((e) => e.id === id) : null;
-
-  if (!id || !event) notFound();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!cardData.name || !cardData.number || !cardData.expiry || !cardData.cvv) {
-      alert('Veuillez remplir tous les champs');
-      return;
-    }
-    setIsProcessing(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    router.push('/adhesion/success');
-  };
-
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\s/g, '');
-    if (value.length <= 16 && /^\d*$/.test(value)) {
-      const formatted = value.replace(/(\d{4})/g, '$1 ').trim();
-      setCardData({ ...cardData, number: formatted });
-    }
-  };
-
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\//g, '');
-    if (value.length <= 4 && /^\d*$/.test(value)) {
-      const formatted = value.length >= 2 ? `${value.slice(0, 2)}/${value.slice(2)}` : value;
-      setCardData({ ...cardData, expiry: formatted });
-    }
-  };
-
-  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value.length <= 3 && /^\d*$/.test(value)) {
-      setCardData({ ...cardData, cvv: value });
-    }
-  };
+  useEffect(() => {
+    let cancelled = false;
+    getAvantages()
+      .then((data) => {
+        if (!cancelled) setAvantages(data);
+      })
+      .catch(() => {
+        if (!cancelled) setAvantages([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <Link
-          href={`/evenements/${event!.id}`}
-          className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-600 font-medium mb-8 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Retour à l&apos;événement
-        </Link>
+    <div className="min-h-screen bg-neutral-50">
+      {/* Hero */}
+      <div className="relative bg-gradient-to-br from-primary-600 to-forest-700 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-5" aria-hidden />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative z-10">
+          <h1 className="font-display text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
+            Adhésion
+          </h1>
+          <p className="text-lg md:text-xl text-primary-100 max-w-2xl">
+            Rejoignez l&apos;Amicale des Enseignants de la Faculté de Pharmacie de Monastir
+            et bénéficiez d&apos;avantages réservés aux membres.
+          </p>
+        </div>
+      </div>
 
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full mb-4">
-              <Lock className="w-4 h-4" />
-              <span className="text-sm font-semibold">Paiement sécurisé SSL</span>
-            </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              Paiement
-            </h1>
-            <p className="text-gray-600">
-              Finalisez votre inscription en toute sécurité
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        {/* Principe de l'adhésion */}
+        <section className="max-w-3xl mx-auto mb-16">
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-neutral-900 mb-6 flex items-center gap-3">
+            <Users className="w-8 h-8 text-primary-600" />
+            Principe de l&apos;adhésion
+          </h2>
+          <div className="prose prose-neutral text-neutral-600 space-y-4 font-body">
+            <p className="leading-relaxed">
+              L&apos;<strong>Amicale</strong> rassemble les enseignants de la Faculté de Pharmacie de Monastir
+              autour de la vie associative, des événements scientifiques et de la solidarité entre pairs.
+            </p>
+            <p className="leading-relaxed">
+              En adhérant, vous devenez membre à part entière : vous participez aux décisions,
+              vous avez accès aux activités (ateliers, formations, journées scientifiques) et
+              vous bénéficiez des avantages négociés par l&apos;Amicale pour ses adhérents.
+            </p>
+            <p className="leading-relaxed">
+              L&apos;adhésion se fait par une cotisation annuelle. Une fois votre dossier validé
+              par le Bureau, vous accédez à votre espace membre et à l&apos;ensemble des avantages
+              listés ci-dessous.
             </p>
           </div>
+        </section>
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <div className="lg:col-span-3">
-              <div className="bg-white rounded-xl shadow-lg p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <CreditCard className="w-6 h-6 text-primary-600" />
-                  Informations de paiement
-                </h2>
+        {/* Avantages (définis par l'admin dans le dashboard) */}
+        <section className="max-w-4xl mx-auto mb-16">
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-neutral-900 mb-6 flex items-center gap-3">
+            <Gift className="w-8 h-8 text-primary-600" />
+            Les avantages adhérent
+          </h2>
+          <p className="text-neutral-600 mb-8 font-body">
+            Les avantages ci-dessous sont accordés aux membres à jour de leur cotisation.
+            Ils sont définis et mis à jour par l&apos;Amicale.
+          </p>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
-                      Nom sur la carte
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      value={cardData.name}
-                      onChange={(e) => setCardData({ ...cardData, name: e.target.value })}
-                      placeholder="JOHN DOE"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-colors text-gray-900 placeholder-gray-400"
-                      required
-                      disabled={isProcessing}
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="number" className="block text-sm font-semibold text-gray-700 mb-2">
-                      Numéro de carte
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        id="number"
-                        value={cardData.number}
-                        onChange={handleCardNumberChange}
-                        placeholder="1234 5678 9012 3456"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-colors text-gray-900 placeholder-gray-400"
-                        required
-                        disabled={isProcessing}
-                      />
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2">
-                        <div className="w-10 h-6 bg-gradient-to-r from-blue-600 to-blue-400 rounded" />
-                        <div className="w-10 h-6 bg-gradient-to-r from-orange-600 to-red-400 rounded" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="expiry" className="block text-sm font-semibold text-gray-700 mb-2">
-                        Date d&apos;expiration
-                      </label>
-                      <input
-                        type="text"
-                        id="expiry"
-                        value={cardData.expiry}
-                        onChange={handleExpiryChange}
-                        placeholder="MM/YY"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-colors text-gray-900 placeholder-gray-400"
-                        required
-                        disabled={isProcessing}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="cvv" className="block text-sm font-semibold text-gray-700 mb-2">
-                        CVV
-                      </label>
-                      <input
-                        type="text"
-                        id="cvv"
-                        value={cardData.cvv}
-                        onChange={handleCvvChange}
-                        placeholder="123"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-colors text-gray-900 placeholder-gray-400"
-                        required
-                        disabled={isProcessing}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <Lock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-semibold text-blue-900 mb-1">
-                          Vos informations sont sécurisées
-                        </p>
-                        <p className="text-xs text-blue-700">
-                          Toutes les transactions sont cryptées via SSL 256-bit. Nous ne stockons jamais vos informations bancaires.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isProcessing}
-                    className={`w-full py-4 rounded-lg font-bold text-white text-lg transition-all ${
-                      isProcessing
-                        ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-primary hover:bg-primary-600 hover:shadow-lg transform hover:-translate-y-0.5'
-                    }`}
-                  >
-                    {isProcessing ? (
-                      <span className="flex items-center justify-center gap-3">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Traitement en cours...
-                      </span>
-                    ) : (
-                      `Confirmer le paiement de ${event!.prix} DT`
-                    )}
-                  </button>
-                </form>
-              </div>
+          {loading ? (
+            <div className="flex items-center justify-center gap-2 text-neutral-500 py-12">
+              <Loader2 className="w-6 h-6 animate-spin" />
+              <span>Chargement des avantages…</span>
             </div>
-
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">
-                  Récapitulatif
-                </h2>
-
-                <div className="space-y-4 mb-6">
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Événement</p>
-                    <p className="font-semibold text-gray-900">{event!.titre}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Date</p>
-                    <p className="font-medium text-gray-700">
-                      {new Date(event!.date).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Lieu</p>
-                    <p className="font-medium text-gray-700">{event!.lieu}</p>
-                  </div>
-                </div>
-
-                <div className="border-t-2 border-gray-200 pt-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-gray-600">Prix unitaire</span>
-                    <span className="font-medium text-gray-900">
-                      {event!.prix} DT
+          ) : avantages.length === 0 ? (
+            <Card variant="bordered" className="p-8 text-center">
+              <p className="text-neutral-500 font-body">
+                Aucun avantage n&apos;est affiché pour le moment. Les avantages sont configurés
+                par l&apos;équipe de l&apos;Amicale et apparaîtront ici une fois définis.
+              </p>
+            </Card>
+          ) : (
+            <ul className="space-y-4">
+              {avantages.map((a) => (
+                <li key={a.id}>
+                  <Card variant="default" className="p-4 flex items-start gap-4">
+                    <span
+                      className={`shrink-0 rounded-lg px-2.5 py-1 text-sm font-medium ${
+                        a.type_avantage === 'reduction'
+                          ? 'bg-amber-100 text-amber-800'
+                          : a.type_avantage === 'autre'
+                            ? 'bg-neutral-100 text-neutral-700'
+                            : 'bg-primary-100 text-primary-700'
+                      }`}
+                    >
+                      {a.type_avantage === 'reduction' ? 'Réduction' : a.type_avantage === 'autre' ? 'Autre' : 'Avantage'}
                     </span>
-                  </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-gray-600">Quantité</span>
-                    <span className="font-medium text-gray-900">× 1</span>
-                  </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-gray-600">Frais de service</span>
-                    <span className="font-medium text-gray-900">0 DT</span>
-                  </div>
-                  <div className="border-t-2 border-gray-200 mt-4 pt-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-gray-900">Total</span>
-                      <span className="text-2xl font-bold text-primary-600">
-                        {event!.prix} DT
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                    <span className="flex items-center gap-2 text-neutral-800 font-body">
+                      <CheckCircle2 className="w-5 h-5 text-primary-600 shrink-0" />
+                      {a.libelle}
+                    </span>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <Lock className="w-3 h-3" />
-                    <span>Paiement 100% sécurisé</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* CTA Devenir membre */}
+        <section className="max-w-2xl mx-auto text-center">
+          <Card variant="bordered" className="p-8 md:p-12">
+            <h2 className="font-display text-2xl font-bold text-neutral-900 mb-3">
+              Devenir membre
+            </h2>
+            <p className="text-neutral-600 mb-6 font-body">
+              Enseignant à la FPHM ? Créez votre compte et soumettez votre demande d&apos;adhésion.
+              Après validation de votre cotisation, vous aurez accès à votre espace membre et à tous les avantages.
+            </p>
+            <Link href="/register">
+              <Button
+                size="xl"
+                className="inline-flex items-center gap-2 bg-primary-500 text-white hover:bg-primary-600"
+              >
+                Créer un compte et adhérer
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
+            <p className="text-sm text-neutral-500 mt-6 font-body">
+              Vous avez déjà un compte ?{' '}
+              <Link href="/login" className="text-primary-600 font-medium hover:underline">
+                Se connecter
+              </Link>
+            </p>
+          </Card>
+        </section>
       </div>
     </div>
   );

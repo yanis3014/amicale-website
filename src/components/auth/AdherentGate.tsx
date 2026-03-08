@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 
 interface AdherentGateProps {
   children: React.ReactNode;
@@ -39,9 +38,12 @@ export function AdherentGate({ children, fallback }: AdherentGateProps) {
         Cette section est réservée aux membres à jour de leur cotisation. Renouvelez votre adhésion
         pour accéder aux avantages.
       </p>
-      <Button asChild variant="primary">
-        <Link href="/adhesion">Voir l&apos;adhésion</Link>
-      </Button>
+      <Link
+        href="/adhesion"
+        className="inline-flex items-center justify-center gap-2 rounded-xl font-body font-semibold transition-all duration-200 bg-primary-500 text-white hover:bg-primary-600 shadow-sm hover:shadow-glow px-5 py-2.5 text-base"
+      >
+        Voir l&apos;adhésion
+      </Link>
     </Card>
   );
 }

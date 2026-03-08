@@ -1,0 +1,20 @@
+# Render Blueprint - Backend Amicale (API Express)
+# Déployer le backend : connecter ce repo, Render créera le service depuis le dossier backend.
+
+services:
+  - type: web
+    name: amicale-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # À définir dans le dashboard Render (Environment) :
+      # - DATABASE_URL (fourni si vous ajoutez une base PostgreSQL Render)
+      # - JWT_SECRET
+      # - JWT_EXPIRES_IN (ex: 7d)
+      # - FRONTEND_URL (ex: https://votre-app.vercel.app)
+      # - PORT (défini automatiquement par Render)
+      # Optionnel : SMTP (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, MAIL_FROM)

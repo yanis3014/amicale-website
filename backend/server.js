@@ -13,13 +13,16 @@ const enseignantRoutes = require('./src/routes/enseignantRoutes');
 const memberRoutes = require('./src/routes/memberRoutes');
 const cotisationRoutes = require('./src/routes/cotisationRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
+const settingsRoutes = require('./src/routes/settingsRoutes');
+const partenaireRoutes = require('./src/routes/partenaireRoutes');
+const avantageRoutes = require('./src/routes/avantageRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 // Create upload directories on startup
-const uploadDirs = ['./uploads', './uploads/events', './uploads/activities', './uploads/enseignants'];
+const uploadDirs = ['./uploads', './uploads/events', './uploads/activities', './uploads/enseignants', './uploads/pages', './uploads/partenaires'];
 uploadDirs.forEach((dir) => {
   fs.mkdirSync(path.join(__dirname, dir), { recursive: true });
 });
@@ -50,6 +53,9 @@ app.use('/api/enseignants', enseignantRoutes);
 app.use('/api/members', memberRoutes);
 app.use('/api/cotisations', cotisationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/partenaires', partenaireRoutes);
+app.use('/api/avantages', avantageRoutes);
 
 // 404 catch-all
 app.use((req, res) => {

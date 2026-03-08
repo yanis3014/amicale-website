@@ -6,6 +6,7 @@ export interface SubmitCotisationPayload {
   annee_universitaire: string;
   methode_paiement?: string;
   reference?: string;
+  coupon_code?: string;
 }
 
 export async function submitCotisation(

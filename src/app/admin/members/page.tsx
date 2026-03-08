@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Edit, Trash2, Download, Check, X } from 'lucide-react';
+import { Edit, Trash2, Download, Check, X, Plus } from 'lucide-react';
 import {
   getAllMembers,
+  createMember,
   updateMember,
   deleteMember,
 } from '@/lib/api/members';
@@ -32,8 +33,6 @@ function exportMembersToCsv(members: ApiUser[]) {
     'N° Membre',
     'Année',
     'Téléphone',
-    'Adhérent',
-    'Expiration adhésion',
   ];
   const rows = members.map((m) => [
     m.nom,
@@ -42,10 +41,6 @@ function exportMembersToCsv(members: ApiUser[]) {
     m.numero_membre ?? '',
     m.annee ?? '',
     m.telephone ?? '',
-    m.is_adherent ? 'Oui' : 'Non',
-    m.adherent_expires_at
-      ? new Date(m.adherent_expires_at).toLocaleDateString('fr-FR')
-      : '',
   ]);
   const csv = [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\n');
   const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
@@ -64,7 +59,6 @@ export default function AdminMembersPage() {
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [loadingCotisations, setLoadingCotisations] = useState(false);
   const [search, setSearch] = useState('');
-  const [filterAdherent, setFilterAdherent] = useState<boolean | undefined>(undefined);
   const [cotisationStatut, setCotisationStatut] = useState<'pending' | 'confirmed' | 'rejected' | ''>('');
   const [editMember, setEditMember] = useState<ApiUser | null>(null);
   const [editForm, setEditForm] = useState({
@@ -73,11 +67,19 @@ export default function AdminMembersPage() {
     email: '',
     annee: '' as number | '',
     telephone: '',
-    is_adherent: false,
-    adherent_expires_at: '',
   });
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ApiUser | null>(null);
+  const [showCreateMember, setShowCreateMember] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    nom: '',
+    prenom: '',
+    email: '',
+    password: '',
+    annee: '' as number | '',
+    telephone: '',
+  });
+  const [savingCreate, setSavingCreate] = useState(false);
   const [pendingCotisationsCount, setPendingCotisationsCount] = useState(0);
   const toast = useToast();
 
@@ -94,7 +96,7 @@ export default function AdminMembersPage() {
       return;
     }
     setLoadingMembers(true);
-    getAllMembers({ search: search || undefined, is_adherent: filterAdherent })
+    getAllMembers({ search: search || undefined })
       .then(setMembers)
       .catch(() => {
         toast.error('Erreur chargement des membres');
@@ -102,7 +104,7 @@ export default function AdminMembersPage() {
       })
       .finally(() => setLoadingMembers(false));
     // toast exclu des deps pour éviter boucle de re-renders
-  }, [search, filterAdherent]);
+  }, [search]);
 
   const loadCotisations = useCallback(() => {
     if (!getToken()) {
@@ -140,10 +142,6 @@ export default function AdminMembersPage() {
       email: m.email,
       annee: m.annee ?? '',
       telephone: m.telephone ?? '',
-      is_adherent: m.is_adherent ?? false,
-      adherent_expires_at: m.adherent_expires_at
-        ? new Date(m.adherent_expires_at).toISOString().slice(0, 10)
-        : '',
     });
   };
 
@@ -158,8 +156,6 @@ export default function AdminMembersPage() {
         email: editForm.email,
         annee: editForm.annee === '' ? undefined : Number(editForm.annee),
         telephone: editForm.telephone || undefined,
-        is_adherent: editForm.is_adherent,
-        adherent_expires_at: editForm.adherent_expires_at || undefined,
       });
       toast.success('Membre mis à jour');
       setEditMember(null);
@@ -205,6 +201,32 @@ export default function AdminMembersPage() {
     }
   };
 
+  const handleCreateMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createForm.nom.trim() || !createForm.prenom.trim() || !createForm.email.trim() || createForm.password.length < 8) {
+      toast.error('Remplissez tous les champs ; le mot de passe doit faire au moins 8 caractères.');
+      return;
+    }
+    try {
+      setSavingCreate(true);
+      await createMember({
+        nom: createForm.nom.trim(),
+        prenom: createForm.prenom.trim(),
+        email: createForm.email.trim(),
+        password: createForm.password,
+        annee: createForm.annee === '' ? undefined : Number(createForm.annee),
+        telephone: createForm.telephone.trim() || undefined,
+      });
+      toast.success('Membre créé. L\'action est enregistrée dans le suivi.');
+      setShowCreateMember(false);
+      setCreateForm({ nom: '', prenom: '', email: '', password: '', annee: '', telephone: '' });
+      loadMembers();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erreur lors de la création');
+    } finally {
+      setSavingCreate(false);
+    }
+  };
 
   return (
     <div className="p-6 lg:p-8">
@@ -258,18 +280,12 @@ export default function AdminMembersPage() {
               onChange={(e) => setSearch(e.target.value)}
               className="flex-1 min-w-[200px] px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
-            <select
-              value={filterAdherent === undefined ? '' : filterAdherent ? 'true' : 'false'}
-              onChange={(e) => {
-                const v = e.target.value;
-                setFilterAdherent(v === '' ? undefined : v === 'true');
-              }}
-              className="px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+            <Button
+              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={() => setShowCreateMember(true)}
             >
-              <option value="">Tous les membres</option>
-              <option value="true">Adhérents uniquement</option>
-              <option value="false">Non adhérents</option>
-            </select>
+              Créer un membre
+            </Button>
             <Button
               variant="outline"
               leftIcon={<Download className="w-4 h-4" />}
@@ -300,9 +316,6 @@ export default function AdminMembersPage() {
                         N° Membre
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
-                        Adhérent
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
                         Actions
                       </th>
                     </tr>
@@ -310,7 +323,7 @@ export default function AdminMembersPage() {
                   <tbody className="divide-y divide-neutral-100">
                     {members.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-6 py-12 text-center text-neutral-500">
+                        <td colSpan={4} className="px-6 py-12 text-center text-neutral-500">
                           Aucun membre trouvé
                         </td>
                       </tr>
@@ -328,21 +341,6 @@ export default function AdminMembersPage() {
                           <td className="px-6 py-4 text-sm text-neutral-600">{m.email}</td>
                           <td className="px-6 py-4 text-sm text-neutral-600">
                             {m.numero_membre ?? '—'}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span
-                              className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                                m.is_adherent ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-600'
-                              }`}
-                            >
-                              {m.is_adherent ? 'Oui' : 'Non'}
-                            </span>
-                            {m.adherent_expires_at && (
-                              <div className="text-xs text-neutral-500 mt-1">
-                                Jusqu&apos;au{' '}
-                                {new Date(m.adherent_expires_at).toLocaleDateString('fr-FR')}
-                              </div>
-                            )}
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex gap-2">
@@ -412,6 +410,9 @@ export default function AdminMembersPage() {
                         Montant
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                        Coupon
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
                         Année univ.
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
@@ -428,7 +429,7 @@ export default function AdminMembersPage() {
                   <tbody className="divide-y divide-neutral-100">
                     {cotisations.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-neutral-500">
+                        <td colSpan={7} className="px-6 py-12 text-center text-neutral-500">
                           Aucune cotisation trouvée
                         </td>
                       </tr>
@@ -443,6 +444,18 @@ export default function AdminMembersPage() {
                           </td>
                           <td className="px-6 py-4 font-semibold text-neutral-900">
                             {c.montant} DT
+                          </td>
+                          <td className="px-6 py-4 text-sm">
+                            {c.coupon_code ? (
+                              <span title={c.coupon_created_by_admin ? `Créé par admin ${c.coupon_created_by_admin}` : ''}>
+                                {c.coupon_code}
+                                {c.coupon_created_by_admin && (
+                                  <span className="text-neutral-500 block text-xs">par admin {c.coupon_created_by_admin}</span>
+                                )}
+                              </span>
+                            ) : (
+                              '—'
+                            )}
                           </td>
                           <td className="px-6 py-4 text-sm text-neutral-600">
                             {c.annee_universitaire}
@@ -561,31 +574,6 @@ export default function AdminMembersPage() {
                 className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="edit_is_adherent"
-                checked={editForm.is_adherent}
-                onChange={(e) => setEditForm({ ...editForm, is_adherent: e.target.checked })}
-                className="rounded border-neutral-300 text-primary-600"
-              />
-              <label htmlFor="edit_is_adherent" className="text-sm font-medium text-neutral-700">
-                Adhérent
-              </label>
-            </div>
-            {editForm.is_adherent && (
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Expiration adhésion
-                </label>
-                <input
-                  type="date"
-                  value={editForm.adherent_expires_at}
-                  onChange={(e) => setEditForm({ ...editForm, adherent_expires_at: e.target.value })}
-                  className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-            )}
             <div className="flex gap-3 justify-end pt-4">
               <Button type="button" variant="secondary" onClick={() => setEditMember(null)}>
                 Annuler
@@ -596,6 +584,91 @@ export default function AdminMembersPage() {
             </div>
           </form>
         )}
+      </Modal>
+
+      {/* Modal création membre */}
+      <Modal
+        isOpen={showCreateMember}
+        onClose={() => setShowCreateMember(false)}
+        title="Créer un membre"
+        size="md"
+      >
+        <form onSubmit={handleCreateMember} className="space-y-4">
+          <p className="text-sm text-neutral-600">
+            Le membre pourra se connecter avec cet email et ce mot de passe. L&apos;action sera enregistrée dans le suivi.
+          </p>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Nom *</label>
+            <input
+              type="text"
+              required
+              value={createForm.nom}
+              onChange={(e) => setCreateForm((f) => ({ ...f, nom: e.target.value }))}
+              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Prénom *</label>
+            <input
+              type="text"
+              required
+              value={createForm.prenom}
+              onChange={(e) => setCreateForm((f) => ({ ...f, prenom: e.target.value }))}
+              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Email *</label>
+            <input
+              type="email"
+              required
+              value={createForm.email}
+              onChange={(e) => setCreateForm((f) => ({ ...f, email: e.target.value }))}
+              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Mot de passe * (min. 8 caractères)</label>
+            <input
+              type="password"
+              required
+              minLength={8}
+              value={createForm.password}
+              onChange={(e) => setCreateForm((f) => ({ ...f, password: e.target.value }))}
+              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Année (1-6)</label>
+            <input
+              type="number"
+              min={1}
+              max={6}
+              value={createForm.annee}
+              onChange={(e) =>
+                setCreateForm((f) => ({ ...f, annee: e.target.value === '' ? '' : Number(e.target.value) }))
+              }
+              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Téléphone</label>
+            <input
+              type="text"
+              value={createForm.telephone}
+              onChange={(e) => setCreateForm((f) => ({ ...f, telephone: e.target.value }))}
+              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+          <div className="flex gap-3 justify-end pt-4">
+            <Button type="button" variant="secondary" onClick={() => setShowCreateMember(false)}>
+              Annuler
+            </Button>
+            <Button type="submit" loading={savingCreate}>
+              Créer le membre
+            </Button>
+          </div>
+        </form>
       </Modal>
 
       <ConfirmModal

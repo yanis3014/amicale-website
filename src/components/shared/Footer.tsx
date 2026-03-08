@@ -80,7 +80,7 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Column 2 - Navigation */}
+          {/* Column 2 - Navigation principale */}
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-primary-400 mb-4">
               Navigation
@@ -93,14 +93,14 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/evenements" className={footerLinkClass}>
-                  Événements
+                <Link href="/a-propos" className={footerLinkClass}>
+                  À propos
                   <ArrowRight className="w-4 h-4 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-1 transition-all" />
                 </Link>
               </li>
               <li>
-                <Link href="/a-propos" className={footerLinkClass}>
-                  À propos
+                <Link href="/evenements" className={footerLinkClass}>
+                  Événements
                   <ArrowRight className="w-4 h-4 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-1 transition-all" />
                 </Link>
               </li>
@@ -110,36 +110,48 @@ export const Footer: React.FC = () => {
                   <ArrowRight className="w-4 h-4 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-1 transition-all" />
                 </Link>
               </li>
+              <li>
+                <Link href="/adhesion" className={footerLinkClass}>
+                  Adhésion
+                  <ArrowRight className="w-4 h-4 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-1 transition-all" />
+                </Link>
+              </li>
+              <li>
+                <Link href="/partenaires" className={footerLinkClass}>
+                  Partenaires
+                  <ArrowRight className="w-4 h-4 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-1 transition-all" />
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Column 3 - Ressources */}
+          {/* Column 3 - À propos (sous-pages) */}
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-primary-400 mb-4">
-              Ressources
+              À propos
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/guides" className={footerLinkClass}>
-                  Guides
+                <Link href="/a-propos/mot-du-president" className={footerLinkClass}>
+                  Mot du président
                   <ArrowRight className="w-4 h-4 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-1 transition-all" />
                 </Link>
               </li>
               <li>
-                <Link href="/bibliotheque" className={footerLinkClass}>
-                  Bibliothèque
+                <Link href="/a-propos/presentation" className={footerLinkClass}>
+                  Présentation
                   <ArrowRight className="w-4 h-4 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-1 transition-all" />
                 </Link>
               </li>
               <li>
-                <Link href="/offres-emploi" className={footerLinkClass}>
-                  Offres d&apos;emploi
+                <Link href="/a-propos/equipe" className={footerLinkClass}>
+                  Équipe
                   <ArrowRight className="w-4 h-4 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-1 transition-all" />
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className={footerLinkClass}>
-                  FAQ
+                <Link href="/a-propos/documents" className={footerLinkClass}>
+                  Documents administratifs
                   <ArrowRight className="w-4 h-4 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-1 transition-all" />
                 </Link>
               </li>

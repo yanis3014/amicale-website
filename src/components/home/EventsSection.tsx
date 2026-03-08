@@ -1,49 +1,56 @@
-import React from 'react';
-import Link from 'next/link';
-import { EventCard } from './EventCard';
+'use client';
 
-// Mock data - À remplacer par des données Supabase
-const upcomingEvents = [
-  {
-    id: '1',
-    titre: '50 eme anniversaire FPHM',
-    date: '2025-10-15',
-    heure: '08h00 - 23h00',
-    lieu: 'Faculté de Pharmacie de Monastir',
-    prix: 25,
-    image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800&q=80',
-    categorie: 'Social' as const,
-    description: 'La soirée annuelle de l\'Amicale qui réunit les enseignants de la faculté et leurs invités.',
-  },
-  {
-    id: '2',
-    titre: 'Conférence Carrière',
-    date: '2026-03-20',
-    heure: '14h00 - 17h00',
-    lieu: 'Amphi A',
-    prix: 0,
-    image: 'https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=800&q=80',
-    categorie: 'Académique' as const,
-    description: 'Rencontrez des professionnels de l\'industrie pharmaceutique et découvrez les opportunités de carrière.',
-  },
-  {
-    id: '3',
-    titre: 'Atelier Premiers Secours',
-    date: '2026-04-05',
-    heure: '10h00 - 16h00',
-    lieu: 'Salle de formation',
-    prix: 15,
-    image: 'https://images.unsplash.com/photo-1584432743501-7d5c27a39189?w=800&q=80',
-    categorie: 'Formation' as const,
-    description: 'Formation certifiante aux gestes de premiers secours dispensée par des professionnels.',
-  },
-];
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { getFeaturedEvents } from '@/lib/api/events';
+import { getImageUrl } from '@/lib/api/utils/imageUrl';
+import type { ApiEvent } from '@/lib/api/types';
+import { EventCard } from './EventCard';
+import { SkeletonCard } from '@/components/ui/Skeleton';
+
+type Categorie = 'Social' | 'Académique' | 'Formation' | 'Autre';
+
+function mapToEventCardEvent(e: ApiEvent) {
+  const categorie = (e.categorie || 'Autre') as Categorie;
+  const validCategorie = ['Social', 'Académique', 'Formation', 'Autre'].includes(categorie)
+    ? categorie
+    : 'Autre';
+  return {
+    id: String(e.id),
+    titre: e.titre,
+    date: e.date,
+    lieu: e.lieu ?? '',
+    prix: Number(e.prix),
+    image: e.image_url ? getImageUrl(e.image_url) : undefined,
+    categorie: validCategorie as Categorie,
+    description: e.description ?? undefined,
+    capacite: e.capacite ?? 0,
+    places_restantes: e.places_restantes ?? 0,
+  };
+}
 
 export const EventsSection: React.FC = () => {
+  const [events, setEvents] = useState<ApiEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    getFeaturedEvents()
+      .then((data) => {
+        if (!cancelled) setEvents(data);
+      })
+      .catch(() => {
+        if (!cancelled) setEvents([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <section className="py-16 md:py-20 bg-neutral-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="flex items-center justify-between mb-12">
           <div className="border-l-4 border-primary-500 pl-4">
             <h2 className="text-3xl md:text-4xl font-display font-bold text-neutral-900 mb-2">
@@ -60,18 +67,31 @@ export const EventsSection: React.FC = () => {
             Voir tout le calendrier →
           </Link>
         </div>
-        
-        {/* Events Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {upcomingEvents.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </div>
-        
-        {/* Mobile "See all" link */}
+
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        ) : events.length === 0 ? (
+          <div className="text-center py-12 text-neutral-500">
+            <p>Aucun événement à la une pour le moment.</p>
+            <Link href="/evenements" className="mt-2 inline-block text-primary-600 font-semibold hover:underline">
+              Voir le calendrier →
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {events.map((event) => (
+              <EventCard key={event.id} event={mapToEventCardEvent(event)} />
+            ))}
+          </div>
+        )}
+
         <div className="mt-8 text-center md:hidden">
-          <Link 
-            href="/evenements" 
+          <Link
+            href="/evenements"
             className="text-primary-600 font-semibold hover:text-primary-700 transition-colors"
           >
             Voir tout le calendrier →

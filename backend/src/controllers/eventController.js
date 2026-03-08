@@ -1,13 +1,16 @@
-const { body, validationResult, query: q } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 const { query } = require('../config/db');
+const { sendConfirmationEventRegistration } = require('../services/emailService');
+const { validateAndApplyCoupon, incrementCouponUse } = require('./couponController');
+const { logAction } = require('../services/auditService');
 
 // Admin: liste tous les événements (publiés + brouillons)
 exports.listAdmin = async (req, res) => {
   try {
     let sql = `
-      SELECT id, titre, description, long_description, date, prix, prix_adherent, image_url,
+      SELECT id, titre, description, long_description, date, date_fin, prix, prix_adherent, image_url,
              COALESCE(gallery_images, '[]'::jsonb) AS gallery_images,
-             capacite, places_restantes, lieu, categorie, is_published, created_at
+             capacite, places_restantes, lieu, categorie, is_published, featured_on_home, home_order, created_at
       FROM events
       ORDER BY date DESC
     `;
@@ -19,11 +22,29 @@ exports.listAdmin = async (req, res) => {
   }
 };
 
+// Page d'accueil : événements mis en avant (publiés, à venir, ordre home_order)
+exports.listFeatured = async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT id, titre, description, long_description, date, date_fin, prix, prix_adherent, image_url,
+             COALESCE(gallery_images, '[]'::jsonb) AS gallery_images,
+             capacite, places_restantes, lieu, categorie, is_published, featured_on_home, home_order, created_at
+      FROM events
+      WHERE is_published = true AND featured_on_home = true AND COALESCE(date_fin, date) >= NOW()
+      ORDER BY home_order ASC, date ASC
+    `);
+    return res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
+
 exports.list = async (req, res) => {
   try {
     const { categorie, search, upcoming, past } = req.query;
     let sql = `
-      SELECT id, titre, description, long_description, date, prix, prix_adherent, image_url,
+      SELECT id, titre, description, long_description, date, date_fin, prix, prix_adherent, image_url,
              COALESCE(gallery_images, '[]'::jsonb) AS gallery_images,
              capacite, places_restantes, lieu, categorie, is_published, created_at
       FROM events WHERE 1=1
@@ -42,11 +63,12 @@ exports.list = async (req, res) => {
       params.push(`%${search}%`);
       i++;
     }
+    // Annonces (à venir) : visible jusqu'à date_fin ; passés : après date_fin (ou date si pas de date_fin)
     if (upcoming === 'true') {
-      sql += ` AND date >= NOW()`;
+      sql += ` AND COALESCE(date_fin, date) >= NOW()`;
     }
     if (past === 'true') {
-      sql += ` AND date < NOW()`;
+      sql += ` AND COALESCE(date_fin, date) < NOW()`;
     }
     sql += ` ORDER BY date ${past === 'true' ? 'DESC' : 'ASC'}`;
     const result = await query(sql, params);
@@ -60,7 +82,7 @@ exports.list = async (req, res) => {
 exports.getById = async (req, res) => {
   try {
     const result = await query(
-      `SELECT id, titre, description, long_description, date, prix, prix_adherent, image_url,
+      `SELECT id, titre, description, long_description, date, date_fin, prix, prix_adherent, image_url,
               COALESCE(gallery_images, '[]'::jsonb) AS gallery_images,
               capacite, places_restantes, lieu, categorie, is_published, created_at
        FROM events WHERE id = $1`,
@@ -81,6 +103,7 @@ exports.create = [
   body('description').optional().trim(),
   body('long_description').optional().trim(),
   body('date').notEmpty().withMessage('Date requise'),
+  body('date_fin').optional(),
   body('prix').optional().isFloat({ min: 0 }).withMessage('Prix invalide'),
   body('prix_adherent').optional().isFloat({ min: 0 }),
   body('capacite').optional().isInt({ min: 0 }),
@@ -91,14 +114,14 @@ exports.create = [
       const errors = validationResult(req);
       if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
       const {
-        titre, description, long_description, date, prix = 0, prix_adherent,
+        titre, description, long_description, date, date_fin, prix = 0, prix_adherent,
         capacite = 0, lieu, categorie
       } = req.body;
       const result = await query(
-        `INSERT INTO events (titre, description, long_description, date, prix, prix_adherent, capacite, places_restantes, lieu, categorie)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $7, $8, $9)
+        `INSERT INTO events (titre, description, long_description, date, date_fin, prix, prix_adherent, capacite, places_restantes, lieu, categorie)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8, $9, $10)
          RETURNING *`,
-        [titre, description || null, long_description || null, date, prix, prix_adherent || null, capacite, lieu || null, categorie || null]
+        [titre, description || null, long_description || null, date, date_fin || null, prix, prix_adherent || null, capacite, lieu || null, categorie || null]
       );
       return res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -113,24 +136,28 @@ exports.update = [
   body('description').optional().trim(),
   body('long_description').optional().trim(),
   body('date').optional(),
+  body('date_fin').optional(),
   body('prix').optional().isFloat({ min: 0 }),
   body('prix_adherent').optional().isFloat({ min: 0 }),
   body('capacite').optional().isInt({ min: 0 }),
   body('lieu').optional().trim(),
   body('categorie').optional().trim(),
+  body('featured_on_home').optional().isBoolean(),
+  body('home_order').optional().isInt({ min: 0 }),
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
       const id = req.params.id;
-      const fields = ['titre', 'description', 'long_description', 'date', 'prix', 'prix_adherent', 'capacite', 'lieu', 'categorie'];
+      const fields = ['titre', 'description', 'long_description', 'date', 'date_fin', 'prix', 'prix_adherent', 'capacite', 'lieu', 'categorie', 'featured_on_home', 'home_order'];
       const updates = [];
       const values = [];
       let i = 1;
       for (const f of fields) {
         if (req.body[f] !== undefined) {
           updates.push(`${f} = $${i}`);
-          values.push(req.body[f]);
+          const val = f === 'date_fin' && (req.body[f] === '' || req.body[f] == null) ? null : req.body[f];
+          values.push(val);
           i++;
         }
       }
@@ -246,17 +273,28 @@ exports.deleteEventGalleryImage = async (req, res) => {
   }
 };
 
-// Registrations
+// Registrations (membres + invités : LEFT JOIN users, guest_* si user_id NULL)
 exports.getRegistrations = async (req, res) => {
   try {
     const result = await query(
-      `SELECT r.*, u.nom, u.prenom, u.email, u.numero_membre
+      `SELECT r.*,
+              u.nom, u.prenom, u.email, u.numero_membre,
+              r.guest_nom, r.guest_prenom, r.guest_email, r.guest_telephone,
+              cp.code AS coupon_code, u_admin.admin_identifier AS coupon_created_by_admin
        FROM registrations r
-       JOIN users u ON u.id = r.user_id
+       LEFT JOIN users u ON u.id = r.user_id
+       LEFT JOIN coupons cp ON cp.id = r.coupon_id
+       LEFT JOIN users u_admin ON u_admin.id = cp.created_by_admin_id
        WHERE r.event_id = $1 ORDER BY r.created_at DESC`,
       [req.params.id]
     );
-    return res.json(result.rows);
+    const rows = result.rows.map((row) => ({
+      ...row,
+      nom: row.nom ?? row.guest_nom,
+      prenom: row.prenom ?? row.guest_prenom,
+      email: row.email ?? row.guest_email,
+    }));
+    return res.json(rows);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Erreur serveur' });
@@ -266,6 +304,9 @@ exports.getRegistrations = async (req, res) => {
 exports.registerToEvent = [
   body('methode_paiement').optional().trim(),
   body('reference_paiement').optional().trim(),
+  body('coupon_code').optional().trim(),
+  body('titulaire_compte').optional().trim(),
+  body('carte_expiry').optional().trim(),
   async (req, res) => {
     try {
       const eventId = req.params.id;
@@ -287,17 +328,162 @@ exports.registerToEvent = [
       }
       const userResult = await query('SELECT is_adherent, adherent_expires_at FROM users WHERE id = $1', [userId]);
       const isAdherent = userResult.rows[0]?.is_adherent && userResult.rows[0]?.adherent_expires_at && new Date(userResult.rows[0].adherent_expires_at) > new Date();
-      const montant = isAdherent && event.prix_adherent != null ? event.prix_adherent : event.prix;
+      let montant = isAdherent && event.prix_adherent != null ? Number(event.prix_adherent) : Number(event.prix);
+      let coupon_id = null;
+      if (req.body.coupon_code) {
+        const applied = await validateAndApplyCoupon(req.body.coupon_code.trim(), 'event', eventId, montant);
+        if (applied.error) return res.status(400).json({ error: applied.error });
+        montant = applied.montantFinal;
+        coupon_id = applied.coupon_id;
+      }
+      // Paiement simulé par carte : on stocke uniquement nom sur carte, ****derniers4, date expiration (jamais numéro complet ni CVV)
+      const methodePaiement = req.body.reference_paiement ? 'carte' : 'Simulation';
+      const referencePaiement = req.body.reference_paiement || `SIM-${Date.now()}`;
+      const titulaireCompte = (req.body.titulaire_compte || '').trim() || null;
+      const carteExpiry = (req.body.carte_expiry || '').trim() || null;
       await query(
-        `INSERT INTO registrations (user_id, event_id, statut, montant_paye, methode_paiement, reference_paiement)
-         VALUES ($1, $2, 'pending', $3, $4, $5)`,
-        [userId, eventId, montant, req.body.methode_paiement || null, req.body.reference_paiement || null]
+        `INSERT INTO registrations (user_id, event_id, statut, montant_paye, methode_paiement, reference_paiement, coupon_id, titulaire_compte, carte_expiry)
+         VALUES ($1, $2, 'confirmed', $3, $4, $5, $6, $7, $8)`,
+        [userId, eventId, montant, methodePaiement, referencePaiement, coupon_id, titulaireCompte, carteExpiry]
       );
+      if (coupon_id) {
+        await incrementCouponUse(coupon_id);
+        const ip = req.ip || req.connection?.remoteAddress || req.headers?.['x-forwarded-for']?.split(',')[0]?.trim();
+        logAction({
+          user_id: req.user.id,
+          user_email: req.user.email || null,
+          admin_identifier: null,
+          action: 'Utilisation coupon (événement)',
+          method: 'POST',
+          path: `/api/events/${eventId}/register`,
+          resource_type: 'coupons',
+          resource_id: coupon_id,
+          details: { body: { code: (req.body.coupon_code || '').trim().toUpperCase(), type: 'Événement', event_id: Number(eventId) } },
+          ip_address: ip || null,
+        }).catch(() => {});
+      }
       await query('UPDATE events SET places_restantes = places_restantes - 1 WHERE id = $1', [eventId]);
       const reg = await query(
         'SELECT * FROM registrations WHERE user_id = $1 AND event_id = $2',
         [userId, eventId]
       );
+      const eventFull = await query(
+        'SELECT id, titre, date, lieu FROM events WHERE id = $1',
+        [eventId]
+      );
+      const userRow = await query('SELECT nom, prenom, email FROM users WHERE id = $1', [userId]);
+      const u = userRow.rows[0];
+      const ev = eventFull.rows[0];
+      if (ev && u) {
+        sendConfirmationEventRegistration({
+          toEmail: u.email,
+          toName: `${u.prenom} ${u.nom}`.trim(),
+          event: ev,
+          isGuest: false,
+        }).catch((e) => console.error('Envoi email confirmation:', e));
+      }
+      return res.status(201).json(reg.rows[0]);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Erreur serveur' });
+    }
+  },
+];
+
+// Inscription invité (sans compte) — pas d'auth
+exports.registerToEventGuest = [
+  body('nom').trim().notEmpty().withMessage('Nom requis'),
+  body('prenom').trim().notEmpty().withMessage('Prénom requis'),
+  body('email').trim().isEmail().withMessage('Email invalide'),
+  body('telephone').optional().trim(),
+  body('methode_paiement').optional().trim(),
+  body('reference_paiement').optional().trim(),
+  body('coupon_code').optional().trim(),
+  body('titulaire_compte').optional().trim(),
+  body('carte_expiry').optional().trim(),
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ error: errors.array()[0]?.msg || 'Données invalides' });
+      }
+      const eventId = req.params.id;
+      const eventResult = await query(
+        'SELECT id, titre, date, lieu, places_restantes, prix, prix_adherent FROM events WHERE id = $1',
+        [eventId]
+      );
+      if (eventResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Événement introuvable' });
+      }
+      const event = eventResult.rows[0];
+      if (event.places_restantes <= 0) {
+        return res.status(400).json({ error: 'Plus de places disponibles' });
+      }
+      const { nom, prenom, email, telephone } = req.body;
+      const existing = await query(
+        'SELECT id FROM registrations WHERE event_id = $1 AND user_id IS NULL AND guest_email = $2',
+        [eventId, email]
+      );
+      if (existing.rows.length > 0) {
+        return res.status(400).json({ error: 'Cet email est déjà inscrit à cet événement' });
+      }
+      let montant = Number(event.prix) || 0;
+      let coupon_id = null;
+      if (req.body.coupon_code) {
+        const applied = await validateAndApplyCoupon(req.body.coupon_code.trim(), 'event', eventId, montant);
+        if (applied.error) return res.status(400).json({ error: applied.error });
+        montant = applied.montantFinal;
+        coupon_id = applied.coupon_id;
+      }
+      // Paiement simulé par carte : on stocke uniquement nom sur carte, ****derniers4, date expiration (jamais numéro complet ni CVV)
+      const methodePaiement = req.body.reference_paiement ? 'carte' : 'Simulation';
+      const referencePaiement = req.body.reference_paiement || `SIM-${Date.now()}`;
+      const titulaireCompte = (req.body.titulaire_compte || '').trim() || null;
+      const carteExpiry = (req.body.carte_expiry || '').trim() || null;
+      await query(
+        `INSERT INTO registrations (user_id, event_id, statut, montant_paye, methode_paiement, reference_paiement, guest_nom, guest_prenom, guest_email, guest_telephone, coupon_id, titulaire_compte, carte_expiry)
+         VALUES (NULL, $1, 'confirmed', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        [
+          eventId,
+          montant,
+          methodePaiement,
+          referencePaiement,
+          nom,
+          prenom,
+          email,
+          telephone || null,
+          coupon_id,
+          titulaireCompte,
+          carteExpiry,
+        ]
+      );
+      if (coupon_id) {
+        await incrementCouponUse(coupon_id);
+        const ip = req.ip || req.connection?.remoteAddress || req.headers?.['x-forwarded-for']?.split(',')[0]?.trim();
+        logAction({
+          user_id: null,
+          user_email: email || null,
+          admin_identifier: null,
+          action: 'Utilisation coupon (événement)',
+          method: 'POST',
+          path: `/api/events/${eventId}/register-guest`,
+          resource_type: 'coupons',
+          resource_id: coupon_id,
+          details: { body: { code: (req.body.coupon_code || '').trim().toUpperCase(), type: 'Événement', event_id: Number(eventId), invite: true } },
+          ip_address: ip || null,
+        }).catch(() => {});
+      }
+      await query('UPDATE events SET places_restantes = places_restantes - 1 WHERE id = $1', [eventId]);
+      const reg = await query(
+        'SELECT * FROM registrations WHERE event_id = $1 AND guest_email = $2 AND user_id IS NULL ORDER BY created_at DESC LIMIT 1',
+        [eventId, email]
+      );
+      sendConfirmationEventRegistration({
+        toEmail: email,
+        toName: `${prenom} ${nom}`.trim(),
+        event: { id: event.id, titre: event.titre, date: event.date, lieu: event.lieu },
+        isGuest: true,
+      }).catch((e) => console.error('Envoi email confirmation invité:', e));
       return res.status(201).json(reg.rows[0]);
     } catch (err) {
       console.error(err);

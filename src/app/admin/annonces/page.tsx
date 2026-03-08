@@ -10,6 +10,7 @@ import {
   Clock,
   MapPin,
   Download,
+  Star,
 } from 'lucide-react';
 import { getAdminEvents } from '@/lib/api/admin';
 import {
@@ -45,6 +46,7 @@ const defaultForm = {
   description: '',
   long_description: '',
   date: '',
+  date_fin: '',
   prix: 0,
   prix_adherent: '' as number | '',
   capacite: 0,
@@ -53,7 +55,7 @@ const defaultForm = {
 };
 
 function exportRegistrationsToCsv(regs: RegistrationWithUser[], eventTitre: string) {
-  const headers = ['Nom', 'Prénom', 'Email', 'N° Membre', 'Statut', 'Montant', 'Date inscription'];
+  const headers = ['Nom', 'Prénom', 'Email', 'N° Membre', 'Statut', 'Montant', 'Titulaire carte', 'Réf. paiement', 'Expiration', 'Date inscription'];
   const rows = regs.map((r) => [
     r.nom ?? '',
     r.prenom ?? '',
@@ -61,6 +63,9 @@ function exportRegistrationsToCsv(regs: RegistrationWithUser[], eventTitre: stri
     r.numero_membre ?? '',
     r.statut,
     r.montant_paye ?? '',
+    r.titulaire_compte ?? '',
+    r.reference_paiement ?? '',
+    r.carte_expiry ?? '',
     r.created_at ? new Date(r.created_at).toLocaleString('fr-FR') : '',
   ]);
   const csv = [headers.join(';'), ...rows.map((row) => row.join(';'))].join('\n');
@@ -85,6 +90,7 @@ export default function AdminAnnoncesPage() {
   const [inscritsEvent, setInscritsEvent] = useState<ApiEvent | null>(null);
   const [registrations, setRegistrations] = useState<RegistrationWithUser[]>([]);
   const [loadingRegs, setLoadingRegs] = useState(false);
+  const [savingFeatured, setSavingFeatured] = useState<number | null>(null);
   const toast = useToast();
 
   const loadEvents = useCallback(() => {
@@ -103,7 +109,23 @@ export default function AdminAnnoncesPage() {
   }, []);
 
   const now = new Date();
-  const upcomingEvents = events.filter((e) => new Date(e.date) >= now);
+  const eventEnd = (e: ApiEvent) => e.date_fin ? new Date(e.date_fin) : new Date(e.date);
+  const upcomingEvents = events
+    .filter((e) => eventEnd(e) >= now)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const handleFeaturedChange = async (event: ApiEvent, featured: boolean, homeOrder: number) => {
+    setSavingFeatured(event.id);
+    try {
+      await updateEvent(event.id, { featured_on_home: featured, home_order: homeOrder });
+      toast.success(featured ? 'Mis à la une (accueil et page Annonces)' : 'Retiré de la une');
+      loadEvents();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
+    } finally {
+      setSavingFeatured(null);
+    }
+  };
 
   useEffect(() => {
     loadEvents();
@@ -123,6 +145,7 @@ export default function AdminAnnoncesPage() {
       description: event.description ?? '',
       long_description: event.long_description ?? '',
       date: event.date.slice(0, 16),
+      date_fin: event.date_fin ? event.date_fin.slice(0, 16) : '',
       prix: event.prix ?? 0,
       prix_adherent: event.prix_adherent ?? '',
       capacite: event.capacite ?? 0,
@@ -147,6 +170,7 @@ export default function AdminAnnoncesPage() {
       description: formData.description || undefined,
       long_description: formData.long_description || undefined,
       date: new Date(formData.date).toISOString(),
+      date_fin: formData.date_fin ? new Date(formData.date_fin).toISOString() : undefined,
       prix: Number(formData.prix) || 0,
       prix_adherent: formData.prix_adherent === '' ? undefined : Number(formData.prix_adherent),
       capacite: Number(formData.capacite) || 0,
@@ -320,7 +344,7 @@ export default function AdminAnnoncesPage() {
                     )}
                     <span className="flex items-center gap-1.5">
                       <Users className="w-4 h-4" />
-                      {event.places_restantes}/{event.capacite} places
+                      {event.places_restantes} / {event.capacite} places
                     </span>
                   </div>
                   <p className="text-neutral-600 line-clamp-2 text-sm">
@@ -374,7 +398,7 @@ export default function AdminAnnoncesPage() {
               </div>
             </div>
           ))}
-        </div>
+          </div>
       )}
 
       <Modal
@@ -383,8 +407,8 @@ export default function AdminAnnoncesPage() {
         title={editingEvent ? "Modifier l'annonce" : 'Nouvelle annonce'}
         size="lg"
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-neutral-700 mb-1">
                 Titre *
@@ -408,6 +432,21 @@ export default function AdminAnnoncesPage() {
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
+                Date de fin (optionnel)
+              </label>
+              <input
+                type="datetime-local"
+                value={formData.date_fin}
+                onChange={(e) => setFormData({ ...formData, date_fin: e.target.value })}
+                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                title="L'annonce reste affichée sur la page Annonces jusqu'à cette date, puis passe dans les événements passés."
+              />
+              <p className="text-xs text-neutral-500 mt-1">
+                Jusqu&apos;à cette date l&apos;annonce reste en « Annonces » ; après, elle passe en « Événements passés ».
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-1">
@@ -492,7 +531,7 @@ export default function AdminAnnoncesPage() {
                 Description longue
               </label>
               <textarea
-                rows={4}
+                rows={3}
                 value={formData.long_description}
                 onChange={(e) => setFormData({ ...formData, long_description: e.target.value })}
                 className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -515,7 +554,7 @@ export default function AdminAnnoncesPage() {
               )}
             </div>
           </div>
-          <div className="flex gap-3 justify-end pt-4">
+          <div className="flex gap-3 justify-end pt-3 border-t border-neutral-100 mt-4 flex-shrink-0">
             <Button type="button" variant="secondary" onClick={closeForm}>
               Annuler
             </Button>

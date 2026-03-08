@@ -51,30 +51,41 @@ CREATE TABLE events (
   lieu VARCHAR(500),
   categorie VARCHAR(100),
   is_published BOOLEAN NOT NULL DEFAULT false,
+  featured_on_home BOOLEAN NOT NULL DEFAULT false,
+  home_order INT NOT NULL DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 CREATE INDEX idx_events_date ON events(date);
+CREATE INDEX idx_events_featured_on_home ON events(featured_on_home);
 CREATE INDEX idx_events_is_published ON events(is_published);
 CREATE INDEX idx_events_categorie ON events(categorie);
 CREATE TRIGGER events_updated_at BEFORE UPDATE ON events
   FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 
--- 3. registrations
+-- 3. registrations (user_id NULL = inscription invité avec guest_*)
 CREATE TABLE registrations (
   id SERIAL PRIMARY KEY,
-  user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
   event_id INT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
   statut VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (statut IN ('pending', 'confirmed', 'cancelled')),
   montant_paye DECIMAL(10, 2),
   methode_paiement VARCHAR(100),
   reference_paiement VARCHAR(255),
+  guest_nom VARCHAR(255),
+  guest_prenom VARCHAR(255),
+  guest_email VARCHAR(255),
+  guest_telephone VARCHAR(50),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-  UNIQUE(user_id, event_id)
+  CONSTRAINT chk_registration_owner CHECK (
+    (user_id IS NOT NULL) OR (guest_nom IS NOT NULL AND guest_prenom IS NOT NULL AND guest_email IS NOT NULL)
+  )
 );
 CREATE INDEX idx_registrations_event_id ON registrations(event_id);
 CREATE INDEX idx_registrations_user_id ON registrations(user_id);
 CREATE INDEX idx_registrations_statut ON registrations(statut);
+CREATE UNIQUE INDEX idx_registrations_event_user ON registrations (event_id, user_id) WHERE user_id IS NOT NULL;
+CREATE UNIQUE INDEX idx_registrations_event_guest_email ON registrations (event_id, guest_email) WHERE user_id IS NULL AND guest_email IS NOT NULL;
 
 -- 4. activities
 CREATE TABLE activities (
@@ -130,6 +141,46 @@ CREATE TABLE cotisations (
 );
 CREATE INDEX idx_cotisations_user_id ON cotisations(user_id);
 CREATE INDEX idx_cotisations_statut ON cotisations(statut);
+
+-- 7. page_settings (clé-valeur pour options de pages : header enseignants, etc.)
+CREATE TABLE page_settings (
+  key VARCHAR(100) PRIMARY KEY,
+  value TEXT,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+CREATE TRIGGER page_settings_updated_at BEFORE UPDATE ON page_settings
+  FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+
+-- 8. partenaires
+CREATE TABLE partenaires (
+  id SERIAL PRIMARY KEY,
+  nom VARCHAR(255) NOT NULL,
+  logo_url VARCHAR(500),
+  url VARCHAR(500),
+  ordre INT NOT NULL DEFAULT 0,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_partenaires_ordre ON partenaires(ordre);
+CREATE INDEX idx_partenaires_is_active ON partenaires(is_active);
+CREATE TRIGGER partenaires_updated_at BEFORE UPDATE ON partenaires
+  FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+
+-- 9. avantages (avantages adhérent, réductions, etc. — affichés dans l'espace membre)
+CREATE TABLE avantages (
+  id SERIAL PRIMARY KEY,
+  libelle VARCHAR(500) NOT NULL,
+  type_avantage VARCHAR(50) NOT NULL DEFAULT 'avantage' CHECK (type_avantage IN ('avantage', 'reduction', 'autre')),
+  ordre INT NOT NULL DEFAULT 0,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_avantages_ordre ON avantages(ordre);
+CREATE INDEX idx_avantages_is_active ON avantages(is_active);
+CREATE TRIGGER avantages_updated_at BEFORE UPDATE ON avantages
+  FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 
 -- Admin par défaut (à exécuter manuellement après création du schéma)
 -- Mot de passe : Admin2026! (bcrypt). À changer en production.

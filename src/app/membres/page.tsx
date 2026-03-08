@@ -15,20 +15,11 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { getMyProfile, getMyEvents } from '@/lib/api/members';
+import { getAvantages } from '@/lib/api/avantages';
 import { useAuth } from '@/contexts/AuthContext';
 import type { ApiUser } from '@/lib/api/types';
 import type { ApiRegistration } from '@/lib/api/types';
-import { AdherentGate } from '@/components/auth/AdherentGate';
-import { CotisationModal } from '@/components/membres/CotisationModal';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-
-const advantages = [
-  "Accès à la bibliothèque de ressources pédagogiques de l'Amicale",
-  'Tarifs préférentiels sur les congrès et journées scientifiques',
-  'Bulletin trimestriel et actualités réservées aux membres',
-  'Formations continues à tarif adhérent',
-  'Réseau des enseignants en pharmacie',
-];
 
 function formatAdherentBadge(adherentExpiresAt: string | null | undefined): string {
   if (!adherentExpiresAt) return `Adhérent ${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
@@ -39,15 +30,15 @@ function formatAdherentBadge(adherentExpiresAt: string | null | undefined): stri
 }
 
 export default function DashboardMembrePage() {
-  const { user: contextUser, refreshUser } = useAuth();
+  const { user: contextUser } = useAuth();
   const [profile, setProfile] = useState<ApiUser | null>(null);
   const [events, setEvents] = useState<ApiRegistration[]>([]);
+  const [avantages, setAvantages] = useState<{ id: number; libelle: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [profileError, setProfileError] = useState(false);
   const [activeTab, setActiveTab] = useState<'profil' | 'evenements' | 'avantages' | 'certificats'>('profil');
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<ApiRegistration | null>(null);
-  const [cotisationModalOpen, setCotisationModalOpen] = useState(false);
 
   // Utiliser l'utilisateur du contexte dès l'arrivée (évite "impossible de charger" après login)
   const displayProfile = profile ?? contextUser ?? null;
@@ -57,11 +48,12 @@ export default function DashboardMembrePage() {
     if (contextUser) setProfile(contextUser);
     setLoading(true);
     setProfileError(false);
-    Promise.all([getMyProfile(), getMyEvents()])
-      .then(([p, e]) => {
+    Promise.all([getMyProfile(), getMyEvents(), getAvantages()])
+      .then(([p, e, a]) => {
         if (!cancelled) {
           setProfile(p);
           setEvents(e);
+          setAvantages(a.map((x) => ({ id: x.id, libelle: x.libelle })));
         }
       })
       .catch(() => {
@@ -90,10 +82,6 @@ export default function DashboardMembrePage() {
   const handleShowTicket = (event: ApiRegistration) => {
     setSelectedEvent(event);
     setQrModalOpen(true);
-  };
-
-  const handleCotisationSuccess = () => {
-    refreshUser();
   };
 
   if (loading) {
@@ -139,20 +127,9 @@ export default function DashboardMembrePage() {
                 </h1>
               </div>
             </div>
-            {isAdherent ? (
+            {isAdherent && (
               <div className="flex items-center gap-2 px-4 py-2 bg-gold-500 text-white rounded-full font-semibold">
                 {formatAdherentBadge(displayProfile.adherent_expires_at)}
-              </div>
-            ) : (
-              <div className="flex flex-wrap items-center gap-3 px-4 py-3 bg-gold-500/20 text-gold-700 rounded-2xl">
-                <span className="font-medium">Devenez adhérent pour débloquer tous les avantages</span>
-                <button
-                  type="button"
-                  onClick={() => setCotisationModalOpen(true)}
-                  className="px-4 py-2 bg-gold-500 text-white rounded-xl font-semibold hover:bg-gold-600 transition-colors"
-                >
-                  Devenir adhérent
-                </button>
               </div>
             )}
           </div>
@@ -383,43 +360,27 @@ export default function DashboardMembrePage() {
         )}
 
         {activeTab === 'avantages' && (
-          <div className="relative">
+          <div>
             <h2 className="text-2xl font-display font-bold text-neutral-900 mb-6">
               Mes Avantages
             </h2>
-            <AdherentGate
-              fallback={
-                <div className="absolute inset-0 flex flex-col items-center justify-center py-16">
-                  <p className="text-2xl font-display font-bold text-neutral-800 mb-4">
-                    Réservé aux adhérents
-                  </p>
-                  <p className="text-neutral-600 mb-6 text-center max-w-md">
-                    Payez votre cotisation annuelle pour accéder aux avantages réservés aux enseignants membres.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setCotisationModalOpen(true)}
-                    className="px-8 py-4 bg-primary-500 text-white rounded-xl font-bold text-lg hover:bg-primary-600 shadow-glow transition-all"
-                  >
-                    Devenir adhérent — 25 DT/an
-                  </button>
-                </div>
-              }
-            >
+            {avantages.length === 0 ? (
+              <p className="text-neutral-500">Aucun avantage configuré pour le moment.</p>
+            ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {advantages.map((advantage, index) => (
+                {avantages.map((advantage) => (
                   <div
-                    key={index}
+                    key={advantage.id}
                     className="bg-white rounded-2xl shadow-card border border-neutral-100 p-6 flex items-start gap-4"
                   >
                     <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
                       <CheckCircle className="w-6 h-6 text-primary-600" />
                     </div>
-                    <p className="text-neutral-900 font-medium pt-2">{advantage}</p>
+                    <p className="text-neutral-900 font-medium pt-2">{advantage.libelle}</p>
                   </div>
                 ))}
               </div>
-            </AdherentGate>
+            )}
           </div>
         )}
 
@@ -479,11 +440,6 @@ export default function DashboardMembrePage() {
         </div>
       )}
 
-      <CotisationModal
-        isOpen={cotisationModalOpen}
-        onClose={() => setCotisationModalOpen(false)}
-        onSuccess={handleCotisationSuccess}
-      />
-    </div>
+      </div>
   );
 }

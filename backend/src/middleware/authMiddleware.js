@@ -12,7 +12,7 @@ async function authMiddleware(req, res, next) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const result = await query(
-      'SELECT id, nom, prenom, email, role, annee, telephone, numero_membre, is_adherent, adherent_expires_at, created_at FROM users WHERE id = $1',
+      'SELECT id, nom, prenom, email, role, annee, telephone, numero_membre, is_adherent, adherent_expires_at, created_at, admin_identifier FROM users WHERE id = $1',
       [decoded.userId]
     );
     if (result.rows.length === 0) {
@@ -34,7 +34,7 @@ async function optionalAuthMiddleware(req, res, next) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const result = await query(
-      'SELECT id, nom, prenom, email, role, annee, telephone, numero_membre, is_adherent, adherent_expires_at, created_at FROM users WHERE id = $1',
+      'SELECT id, nom, prenom, email, role, annee, telephone, numero_membre, is_adherent, adherent_expires_at, created_at, admin_identifier FROM users WHERE id = $1',
       [decoded.userId]
     );
     if (result.rows.length > 0) req.user = result.rows[0];

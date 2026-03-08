@@ -18,6 +18,10 @@ export async function getEvents(params?: EventsQuery): Promise<ApiEvent[]> {
   return api.get<ApiEvent[]>(`/api/events${q ? `?${q}` : ''}`);
 }
 
+export async function getFeaturedEvents(): Promise<ApiEvent[]> {
+  return api.get<ApiEvent[]>('/api/events/featured');
+}
+
 export async function getEvent(id: number | string): Promise<ApiEvent> {
   return api.get<ApiEvent>(`/api/events/${id}`);
 }
@@ -50,10 +54,39 @@ export async function getRegistrations(eventId: number | string): Promise<ApiReg
   return api.get<ApiRegistration[]>(`/api/events/${eventId}/registrations`);
 }
 
+/** Infos carte (paiement simulé) : nom sur carte, référence ****derniers4, date expiration. CVV et numéro complet ne sont jamais envoyés. */
+export interface RegistrationPaymentDetails {
+  titulaire_compte?: string;
+  reference_paiement?: string;
+  carte_expiry?: string;
+}
+
 export async function registerToEvent(
-  eventId: number | string
+  eventId: number | string,
+  body?: {
+    coupon_code?: string;
+    methode_paiement?: string;
+    reference_paiement?: string;
+  } & RegistrationPaymentDetails
 ): Promise<ApiRegistration> {
-  return api.post<ApiRegistration>(`/api/events/${eventId}/register`, {});
+  return api.post<ApiRegistration>(`/api/events/${eventId}/register`, body ?? {});
+}
+
+export interface RegisterEventGuestPayload extends RegistrationPaymentDetails {
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone?: string;
+  methode_paiement?: string;
+  reference_paiement?: string;
+  coupon_code?: string;
+}
+
+export async function registerToEventGuest(
+  eventId: number | string,
+  payload: RegisterEventGuestPayload
+): Promise<ApiRegistration> {
+  return api.post<ApiRegistration>(`/api/events/${eventId}/register-guest`, payload);
 }
 
 export async function confirmRegistration(

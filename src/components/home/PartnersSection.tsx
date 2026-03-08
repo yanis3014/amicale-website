@@ -1,13 +1,16 @@
+'use client';
+
 import React from 'react';
+import { getImageUrl } from '@/lib/api/utils/imageUrl';
+import type { ApiPartenaire } from '@/lib/api/types';
 
-const partners = [
-  { name: 'MEDILABSANTE', logo: 'MEDILABS' },
-  { name: 'PHARMACORPS', logo: 'PHARMACORPS' },
-  { name: 'BioChem+', logo: 'BioChem+' },
-  { name: 'UNIVERSITÉ', logo: 'UNIVERSITÉ' },
-];
+interface PartnersSectionProps {
+  partenaires: ApiPartenaire[];
+}
 
-export const PartnersSection: React.FC = () => {
+export const PartnersSection: React.FC<PartnersSectionProps> = ({ partenaires }) => {
+  if (partenaires.length === 0) return null;
+
   return (
     <section className="py-16 bg-neutral-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -16,16 +19,41 @@ export const PartnersSection: React.FC = () => {
         </h3>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center">
-          {partners.map((partner, index) => (
+          {partenaires.map((p) => (
             <div
-              key={index}
-              className="flex items-center justify-center h-16 px-8 text-neutral-400 hover:text-primary-600 transition-colors duration-300 grayscale hover:grayscale-0"
+              key={p.id}
+              className="flex items-center justify-center h-20 px-6 text-neutral-500 hover:text-primary-600 transition-colors duration-300 grayscale hover:grayscale-0"
             >
-              <div className="px-6 py-3 rounded-xl border border-neutral-200 hover:border-primary-200 transition-all duration-300">
-                <span className="text-base font-bold text-current">
-                  {partner.logo}
-                </span>
-              </div>
+              {p.url ? (
+                <a
+                  href={p.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center justify-center gap-2 no-underline text-inherit hover:opacity-90"
+                >
+                  {p.logo_url ? (
+                    <img
+                      src={getImageUrl(p.logo_url)}
+                      alt={p.nom}
+                      className="max-h-14 w-auto object-contain"
+                    />
+                  ) : (
+                    <span className="text-base font-bold text-current">{p.nom}</span>
+                  )}
+                </a>
+              ) : (
+                <>
+                  {p.logo_url ? (
+                    <img
+                      src={getImageUrl(p.logo_url)}
+                      alt={p.nom}
+                      className="max-h-14 w-auto object-contain"
+                    />
+                  ) : (
+                    <span className="text-base font-bold text-current">{p.nom}</span>
+                  )}
+                </>
+              )}
             </div>
           ))}
         </div>

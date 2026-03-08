@@ -43,14 +43,14 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-3xl shadow-card-lg p-8 w-full ${sizeClasses[size]} animate-fade-up`}
+        className={`bg-white rounded-3xl shadow-card-lg w-full ${sizeClasses[size]} animate-fade-up my-auto max-h-[90vh] flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0 border-b border-neutral-100">
           {title && (
             <h2 className="text-xl font-display font-bold text-neutral-900">
               {title}
@@ -64,7 +64,9 @@ export const Modal: React.FC<ModalProps> = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-        {children}
+        <div className="p-6 pt-4 overflow-y-auto min-h-0">
+          {children}
+        </div>
       </div>
     </div>
   );

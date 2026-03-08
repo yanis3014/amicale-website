@@ -45,6 +45,7 @@ CREATE TABLE events (
   prix DECIMAL(10, 2) NOT NULL DEFAULT 0,
   prix_adherent DECIMAL(10, 2),
   image_url VARCHAR(500),
+  gallery_images JSONB NOT NULL DEFAULT '[]',
   capacite INT NOT NULL DEFAULT 0,
   places_restantes INT NOT NULL DEFAULT 0,
   lieu VARCHAR(500),

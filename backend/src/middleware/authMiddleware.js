@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const { query } = require('../config/db');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+
 async function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -8,7 +10,7 @@ async function authMiddleware(req, res, next) {
   }
   const token = authHeader.slice(7);
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     const result = await query(
       'SELECT id, nom, prenom, email, role, annee, telephone, numero_membre, is_adherent, adherent_expires_at, created_at FROM users WHERE id = $1',
       [decoded.userId]
@@ -30,7 +32,7 @@ async function optionalAuthMiddleware(req, res, next) {
   }
   const token = authHeader.slice(7);
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     const result = await query(
       'SELECT id, nom, prenom, email, role, annee, telephone, numero_membre, is_adherent, adherent_expires_at, created_at FROM users WHERE id = $1',
       [decoded.userId]

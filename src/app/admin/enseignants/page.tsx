@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { Plus, Edit, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { getAdminEnseignants } from '@/lib/api/admin';
+import { getToken } from '@/lib/api/client';
 import {
   createEnseignant,
   updateEnseignant,
@@ -42,6 +43,10 @@ export default function AdminEnseignantsPage() {
   const toast = useToast();
 
   const load = useCallback(() => {
+    if (!getToken()) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     getAdminEnseignants()
       .then(setEnseignants)
@@ -50,7 +55,8 @@ export default function AdminEnseignantsPage() {
         setEnseignants([]);
       })
       .finally(() => setLoading(false));
-  }, [toast]);
+    // toast volontairement exclu des deps pour éviter une boucle de re-renders
+  }, []);
 
   useEffect(() => {
     load();

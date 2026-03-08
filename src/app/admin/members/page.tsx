@@ -13,6 +13,7 @@ import {
   rejectCotisation,
 } from '@/lib/api/cotisations';
 import { getAdminStats } from '@/lib/api/admin';
+import { getToken } from '@/lib/api/client';
 import type { ApiUser } from '@/lib/api/types';
 import type { ApiCotisation } from '@/lib/api/types';
 import { Button } from '@/components/ui/Button';
@@ -81,12 +82,17 @@ export default function AdminMembersPage() {
   const toast = useToast();
 
   useEffect(() => {
+    if (!getToken()) return;
     getAdminStats()
       .then((s) => setPendingCotisationsCount(s.cotisations_en_attente))
       .catch(() => setPendingCotisationsCount(0));
   }, []);
 
   const loadMembers = useCallback(() => {
+    if (!getToken()) {
+      setLoadingMembers(false);
+      return;
+    }
     setLoadingMembers(true);
     getAllMembers({ search: search || undefined, is_adherent: filterAdherent })
       .then(setMembers)
@@ -95,9 +101,14 @@ export default function AdminMembersPage() {
         setMembers([]);
       })
       .finally(() => setLoadingMembers(false));
-  }, [search, filterAdherent, toast]);
+    // toast exclu des deps pour éviter boucle de re-renders
+  }, [search, filterAdherent]);
 
   const loadCotisations = useCallback(() => {
+    if (!getToken()) {
+      setLoadingCotisations(false);
+      return;
+    }
     setLoadingCotisations(true);
     const statut =
       cotisationStatut === ''
@@ -110,7 +121,8 @@ export default function AdminMembersPage() {
         setCotisations([]);
       })
       .finally(() => setLoadingCotisations(false));
-  }, [cotisationStatut, toast]);
+    // toast exclu des deps pour éviter boucle de re-renders
+  }, [cotisationStatut]);
 
   useEffect(() => {
     if (tab === 'membres') loadMembers();

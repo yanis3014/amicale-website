@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { getAdminStats } from '@/lib/api/admin';
 import type { AdminStats } from '@/lib/api/admin';
+import { getToken } from '@/lib/api/client';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function AdminDashboardPage() {
@@ -20,6 +21,10 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!getToken()) {
+      setLoading(false);
+      return;
+    }
     getAdminStats()
       .then(setStats)
       .catch(() => setStats(null))

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { ApiUser } from '@/lib/api/types';
-import { getToken, setToken } from '@/lib/api/client';
+import { getToken, setToken, setTokenGetter } from '@/lib/api/client';
 import { getMe, login as apiLogin, logout as apiLogout, register as apiRegister } from '@/lib/api/auth';
 import type { LoginPayload, RegisterPayload } from '@/lib/api/types';
 
@@ -15,7 +15,7 @@ interface AuthState {
 }
 
 interface AuthContextValue extends AuthState {
-  login: (payload: LoginPayload) => Promise<void>;
+  login: (payload: LoginPayload) => Promise<ApiUser | undefined>;
   logout: () => void;
   register: (payload: RegisterPayload) => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -32,19 +32,23 @@ function isAdherent(user: ApiUser | null): boolean {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<ApiUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const tokenRef = useRef<string | null>(null);
 
   const refreshUser = useCallback(async () => {
-    const token = getToken();
-    if (!token) {
+    const t = getToken();
+    if (!t) {
+      tokenRef.current = null;
       setUser(null);
       setIsLoading(false);
       return;
     }
+    tokenRef.current = t;
     try {
       const u = await getMe();
       setUser(u);
     } catch {
       setToken(null);
+      tokenRef.current = null;
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -55,10 +59,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser();
   }, [refreshUser]);
 
+  useEffect(() => {
+    setTokenGetter(() => tokenRef.current);
+    return () => setTokenGetter(null);
+  }, []);
+
   const login = useCallback(
     async (payload: LoginPayload) => {
       const res = await apiLogin(payload);
+      if (res.token) {
+        tokenRef.current = res.token;
+        setToken(res.token);
+      }
       setUser(res.user);
+      return res.user;
     },
     []
   );
@@ -71,6 +85,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = useCallback(
     async (payload: RegisterPayload) => {
       const res = await apiRegister(payload);
+      if (res.token) {
+        tokenRef.current = res.token;
+        setToken(res.token);
+      }
       setUser(res.user);
     },
     []

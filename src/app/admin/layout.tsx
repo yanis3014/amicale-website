@@ -15,6 +15,7 @@ import {
 import { AdminGuard } from '@/components/auth/AdminGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAdminStats } from '@/lib/api/admin';
+import { getToken } from '@/lib/api/client';
 
 const navItems: { href: string; label: string; icon: typeof Users; badgeKey?: 'cotisations' }[] = [
   { href: '/admin/dashboard', label: 'Vue d\'ensemble', icon: LayoutDashboard },
@@ -36,6 +37,7 @@ function AdminLayoutInner({
   const [cotisationsPending, setCotisationsPending] = useState<number>(0);
 
   useEffect(() => {
+    if (!getToken()) return;
     getAdminStats()
       .then((stats) => setCotisationsPending(stats.cotisations_en_attente))
       .catch(() => setCotisationsPending(0));

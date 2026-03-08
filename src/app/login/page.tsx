@@ -12,7 +12,7 @@ import { ApiError } from '@/lib/api/client';
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,16 +21,21 @@ export default function LoginPage() {
   const redirectTo = searchParams.get('redirect') || '/membres';
 
   React.useEffect(() => {
-    if (isAuthenticated) router.replace(redirectTo);
-  }, [isAuthenticated, redirectTo, router]);
+    if (isAuthenticated && user) {
+      const destination = user.role === 'admin' ? '/admin/dashboard' : redirectTo;
+      router.replace(destination);
+    }
+  }, [isAuthenticated, user, redirectTo, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSubmitting(true);
     try {
-      await login({ email, password });
-      router.push(redirectTo);
+      const user = await login({ email, password });
+      // Admin → espace admin, membre → espace membre (ou redirect demandé)
+      const destination = user?.role === 'admin' ? '/admin/dashboard' : redirectTo;
+      router.push(destination);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Connexion impossible');
     } finally {

@@ -4,9 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, LayoutDashboard, LogOut } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/contexts/AuthContext';
-import EspaceMemberModal from './EspaceMemberModal';
 
 const PharmaCrossIcon = () => (
   <svg
@@ -36,7 +34,6 @@ export const Header: React.FC = () => {
   const pathname = usePathname();
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const isLoggedIn = isAuthenticated;
@@ -112,12 +109,12 @@ export const Header: React.FC = () => {
           {/* Right: CTA or User dropdown */}
           <div className="hidden md:flex items-center gap-4">
             {!isLoggedIn ? (
-              <Button
-                variant="outline"
-                onClick={() => setModalOpen(true)}
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center gap-2 rounded-xl font-body font-semibold px-5 py-2.5 text-base border-2 border-primary-500 text-primary-600 hover:bg-primary-50 transition-all duration-200"
               >
-                Espace Membre
-              </Button>
+                Login
+              </Link>
             ) : (
               <div className="relative">
                 <button
@@ -206,24 +203,19 @@ export const Header: React.FC = () => {
               ))}
               {!isLoggedIn && (
                 <div className="pt-2 px-2">
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => {
-                      setModalOpen(true);
-                      setMobileMenuOpen(false);
-                    }}
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="inline-flex items-center justify-center w-full gap-2 rounded-xl font-body font-semibold px-5 py-2.5 text-base border-2 border-primary-500 text-primary-600 hover:bg-primary-50 transition-all duration-200"
                   >
-                    Espace Membre
-                  </Button>
+                    Login
+                  </Link>
                 </div>
               )}
             </div>
           </div>
         </div>
       </nav>
-
-      <EspaceMemberModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
     </header>
   );
 };

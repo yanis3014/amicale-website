@@ -12,6 +12,7 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/\s/g, '-')}`),
 });
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+const uploadGallery = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 // Public
 router.get('/', eventController.list);
@@ -23,6 +24,8 @@ router.put('/:id', authMiddleware, adminMiddleware, eventController.update);
 router.delete('/:id', authMiddleware, adminMiddleware, eventController.remove);
 router.patch('/:id/publish', authMiddleware, adminMiddleware, eventController.publish);
 router.post('/:id/upload-image', authMiddleware, adminMiddleware, upload.single('image'), eventController.uploadImage);
+router.post('/:id/upload-gallery', authMiddleware, adminMiddleware, uploadGallery.array('images', 20), eventController.uploadEventGallery);
+router.delete('/:id/gallery/:index', authMiddleware, adminMiddleware, eventController.deleteEventGalleryImage);
 
 // Registrations
 router.get('/:id/registrations', authMiddleware, adminMiddleware, eventController.getRegistrations);

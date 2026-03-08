@@ -25,6 +25,16 @@ psql $env:DATABASE_URL -f src/config/schema.sql
 
 Sous Linux/Mac : `psql $DATABASE_URL -f src/config/schema.sql`
 
+### Migrations (base existante)
+
+Si la base a déjà été créée avec une ancienne version du schéma, exécuter les migrations dans l’ordre :
+
+```bash
+psql $env:DATABASE_URL -f migrations/001_add_events_gallery.sql
+```
+
+(Sous Linux/Mac : `psql $DATABASE_URL -f migrations/001_add_events_gallery.sql`)
+
 ## Créer le compte admin
 
 **Méthode recommandée — script :**

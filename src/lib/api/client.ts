@@ -2,9 +2,24 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 let token: string | null = null;
 
+/** Getter injecté par AuthProvider pour garantir le token côté client (évite les 401 avec chunks Next.js). */
+let tokenGetter: (() => string | null) | null = null;
+
+export function setTokenGetter(getter: (() => string | null) | null): void {
+  tokenGetter = getter;
+}
+
 export function getToken(): string | null {
+  if (tokenGetter) {
+    const fromGetter = tokenGetter();
+    if (fromGetter) return fromGetter;
+  }
   if (typeof window !== 'undefined') {
-    return localStorage.getItem('auth_token') || token;
+    try {
+      return localStorage.getItem('auth_token') || token;
+    } catch {
+      return token;
+    }
   }
   return token;
 }
@@ -12,8 +27,12 @@ export function getToken(): string | null {
 export function setToken(newToken: string | null): void {
   token = newToken ?? null;
   if (typeof window !== 'undefined') {
-    if (newToken) localStorage.setItem('auth_token', newToken);
-    else localStorage.removeItem('auth_token');
+    try {
+      if (newToken) localStorage.setItem('auth_token', newToken);
+      else localStorage.removeItem('auth_token');
+    } catch {
+      // localStorage indisponible (SSR, privé, etc.)
+    }
   }
 }
 
@@ -45,6 +64,7 @@ async function request<T>(
     ...rest,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
+    credentials: 'include',
   });
 
   const data =

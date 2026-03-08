@@ -5,6 +5,7 @@ export interface EventsQuery {
   categorie?: string;
   search?: string;
   upcoming?: boolean;
+  past?: boolean;
 }
 
 export async function getEvents(params?: EventsQuery): Promise<ApiEvent[]> {
@@ -12,6 +13,7 @@ export async function getEvents(params?: EventsQuery): Promise<ApiEvent[]> {
   if (params?.categorie) search.set('categorie', params.categorie);
   if (params?.search) search.set('search', params.search);
   if (params?.upcoming === true) search.set('upcoming', 'true');
+  if (params?.past === true) search.set('past', 'true');
   const q = search.toString();
   return api.get<ApiEvent[]>(`/api/events${q ? `?${q}` : ''}`);
 }
@@ -93,4 +95,33 @@ export async function uploadEventImage(
     throw new ApiError(data?.error || res.statusText, res.status, data);
   }
   return data;
+}
+
+/** Upload gallery images for an event (past event = annonce). */
+export async function uploadEventGallery(
+  eventId: number | string,
+  files: File[]
+): Promise<{ gallery_images: string[] }> {
+  const formData = new FormData();
+  files.forEach((f) => formData.append('images', f));
+  const token = getToken();
+  const url = `${getBaseUrl()}/api/events/${eventId}/upload-gallery`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new ApiError(data?.error || res.statusText, res.status, data);
+  }
+  return data;
+}
+
+/** Delete one image from event gallery by index. */
+export async function deleteEventGalleryImage(
+  eventId: number | string,
+  index: number
+): Promise<{ gallery_images: string[] }> {
+  return api.delete<{ gallery_images: string[] }>(`/api/events/${eventId}/gallery/${index}`);
 }

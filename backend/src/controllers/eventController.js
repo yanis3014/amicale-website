@@ -6,6 +6,7 @@ exports.listAdmin = async (req, res) => {
   try {
     let sql = `
       SELECT id, titre, description, long_description, date, prix, prix_adherent, image_url,
+             COALESCE(gallery_images, '[]'::jsonb) AS gallery_images,
              capacite, places_restantes, lieu, categorie, is_published, created_at
       FROM events
       ORDER BY date DESC
@@ -20,9 +21,10 @@ exports.listAdmin = async (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const { categorie, search, upcoming } = req.query;
+    const { categorie, search, upcoming, past } = req.query;
     let sql = `
       SELECT id, titre, description, long_description, date, prix, prix_adherent, image_url,
+             COALESCE(gallery_images, '[]'::jsonb) AS gallery_images,
              capacite, places_restantes, lieu, categorie, is_published, created_at
       FROM events WHERE 1=1
     `;
@@ -43,7 +45,10 @@ exports.list = async (req, res) => {
     if (upcoming === 'true') {
       sql += ` AND date >= NOW()`;
     }
-    sql += ` ORDER BY date ASC`;
+    if (past === 'true') {
+      sql += ` AND date < NOW()`;
+    }
+    sql += ` ORDER BY date ${past === 'true' ? 'DESC' : 'ASC'}`;
     const result = await query(sql, params);
     return res.json(result.rows);
   } catch (err) {
@@ -56,6 +61,7 @@ exports.getById = async (req, res) => {
   try {
     const result = await query(
       `SELECT id, titre, description, long_description, date, prix, prix_adherent, image_url,
+              COALESCE(gallery_images, '[]'::jsonb) AS gallery_images,
               capacite, places_restantes, lieu, categorie, is_published, created_at
        FROM events WHERE id = $1`,
       [req.params.id]
@@ -190,6 +196,49 @@ exports.uploadImage = async (req, res) => {
     await query('UPDATE events SET image_url = $1 WHERE id = $2', [url, req.params.id]);
     const result = await query('SELECT id, image_url FROM events WHERE id = $1', [req.params.id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Événement introuvable' });
+    return res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
+
+// Galerie : événements passés (annonces)
+exports.uploadEventGallery = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const current = await query('SELECT COALESCE(gallery_images, \'[]\'::jsonb) AS gallery_images FROM events WHERE id = $1', [id]);
+    if (current.rows.length === 0) return res.status(404).json({ error: 'Événement introuvable' });
+    let gallery = current.rows[0].gallery_images || [];
+    if (!Array.isArray(gallery)) gallery = [];
+    const files = req.files || [];
+    const maxImages = 20;
+    if (gallery.length + files.length > maxImages) return res.status(400).json({ error: `Maximum ${maxImages} images en galerie` });
+    for (const f of files) {
+      gallery.push(`/uploads/events/${f.filename}`);
+    }
+    await query('UPDATE events SET gallery_images = $1 WHERE id = $2', [JSON.stringify(gallery), id]);
+    const result = await query('SELECT id, gallery_images FROM events WHERE id = $1', [id]);
+    return res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
+
+exports.deleteEventGalleryImage = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const index = parseInt(req.params.index, 10);
+    if (isNaN(index) || index < 0) return res.status(400).json({ error: 'Index invalide' });
+    const current = await query('SELECT COALESCE(gallery_images, \'[]\'::jsonb) AS gallery_images FROM events WHERE id = $1', [id]);
+    if (current.rows.length === 0) return res.status(404).json({ error: 'Événement introuvable' });
+    let gallery = current.rows[0].gallery_images || [];
+    if (!Array.isArray(gallery)) gallery = [];
+    if (index >= gallery.length) return res.status(404).json({ error: 'Image introuvable' });
+    gallery.splice(index, 1);
+    await query('UPDATE events SET gallery_images = $1 WHERE id = $2', [JSON.stringify(gallery), id]);
+    const result = await query('SELECT id, gallery_images FROM events WHERE id = $1', [id]);
     return res.json(result.rows[0]);
   } catch (err) {
     console.error(err);

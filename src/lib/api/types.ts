@@ -24,6 +24,7 @@ export interface ApiEvent {
   prix: number;
   prix_adherent?: number | null;
   image_url?: string | null;
+  gallery_images?: string[];
   capacite: number;
   places_restantes: number;
   lieu?: string | null;

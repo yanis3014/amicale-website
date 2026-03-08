@@ -39,18 +39,24 @@ function formatAdherentBadge(adherentExpiresAt: string | null | undefined): stri
 }
 
 export default function DashboardMembrePage() {
-  const { refreshUser } = useAuth();
+  const { user: contextUser, refreshUser } = useAuth();
   const [profile, setProfile] = useState<ApiUser | null>(null);
   const [events, setEvents] = useState<ApiRegistration[]>([]);
   const [loading, setLoading] = useState(true);
+  const [profileError, setProfileError] = useState(false);
   const [activeTab, setActiveTab] = useState<'profil' | 'evenements' | 'avantages' | 'certificats'>('profil');
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<ApiRegistration | null>(null);
   const [cotisationModalOpen, setCotisationModalOpen] = useState(false);
 
+  // Utiliser l'utilisateur du contexte dès l'arrivée (évite "impossible de charger" après login)
+  const displayProfile = profile ?? contextUser ?? null;
+
   useEffect(() => {
     let cancelled = false;
+    if (contextUser) setProfile(contextUser);
     setLoading(true);
+    setProfileError(false);
     Promise.all([getMyProfile(), getMyEvents()])
       .then(([p, e]) => {
         if (!cancelled) {
@@ -59,13 +65,16 @@ export default function DashboardMembrePage() {
         }
       })
       .catch(() => {
-        if (!cancelled) setProfile(null);
+        if (!cancelled) {
+          setProfileError(true);
+          if (!contextUser) setProfile(null);
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
     return () => { cancelled = true; };
-  }, []);
+  }, [contextUser?.id]);
 
   const now = new Date();
   const upcomingEvents = events.filter((e) => e.date && new Date(e.date) >= now);
@@ -95,15 +104,24 @@ export default function DashboardMembrePage() {
     );
   }
 
-  if (!profile) {
+  if (!displayProfile) {
     return (
       <div className="min-h-[40vh] flex flex-col items-center justify-center gap-4">
         <p className="text-neutral-600">Impossible de charger votre profil.</p>
+        {profileError && (
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="text-primary-600 font-medium hover:underline"
+          >
+            Réessayer
+          </button>
+        )}
       </div>
     );
   }
 
-  const isAdherent = profile.is_adherent && (profile.adherent_expires_at ? new Date(profile.adherent_expires_at) > now : true);
+  const isAdherent = displayProfile.is_adherent && (displayProfile.adherent_expires_at ? new Date(displayProfile.adherent_expires_at) > now : true);
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -112,18 +130,18 @@ export default function DashboardMembrePage() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center font-display font-bold text-xl">
-                {profile.prenom?.[0]}
-                {profile.nom?.[0]}
+                {displayProfile.prenom?.[0]}
+                {displayProfile.nom?.[0]}
               </div>
               <div>
                 <h1 className="font-display text-2xl md:text-3xl font-bold">
-                  {profile.prenom} {profile.nom}
+                  {displayProfile.prenom} {displayProfile.nom}
                 </h1>
               </div>
             </div>
             {isAdherent ? (
               <div className="flex items-center gap-2 px-4 py-2 bg-gold-500 text-white rounded-full font-semibold">
-                {formatAdherentBadge(profile.adherent_expires_at)}
+                {formatAdherentBadge(displayProfile.adherent_expires_at)}
               </div>
             ) : (
               <div className="flex flex-wrap items-center gap-3 px-4 py-3 bg-gold-500/20 text-gold-700 rounded-2xl">
@@ -199,21 +217,21 @@ export default function DashboardMembrePage() {
                 <div className="mb-6">
                   <p className="text-sm opacity-90 mb-1">Numéro de membre</p>
                   <p className="text-xl font-mono font-bold tracking-widest">
-                    {profile.numero_membre ?? '—'}
+                    {displayProfile.numero_membre ?? '—'}
                   </p>
                 </div>
                 <div className="flex items-end justify-between">
                   <div>
                     <p className="text-sm opacity-90 mb-1">Titulaire</p>
                     <p className="text-2xl font-bold">
-                      {profile.prenom} {profile.nom}
+                      {displayProfile.prenom} {displayProfile.nom}
                     </p>
                   </div>
-                  {profile.adherent_expires_at && (
+                  {displayProfile.adherent_expires_at && (
                     <div className="text-right">
                       <p className="text-xs opacity-75">Valide jusqu&apos;au</p>
                       <p className="text-lg font-bold">
-                        {new Date(profile.adherent_expires_at).toLocaleDateString('fr-FR', {
+                        {new Date(displayProfile.adherent_expires_at).toLocaleDateString('fr-FR', {
                           month: '2-digit',
                           year: 'numeric',
                         })}
@@ -231,12 +249,12 @@ export default function DashboardMembrePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-neutral-600 mb-2">Email</label>
-                  <p className="text-neutral-900">{profile.email}</p>
+                  <p className="text-neutral-900">{displayProfile.email}</p>
                 </div>
-                {profile.telephone && (
+                {displayProfile.telephone && (
                   <div>
                     <label className="block text-sm font-semibold text-neutral-600 mb-2">Téléphone</label>
-                    <p className="text-neutral-900">{profile.telephone}</p>
+                    <p className="text-neutral-900">{displayProfile.telephone}</p>
                   </div>
                 )}
                 <div>
@@ -246,7 +264,7 @@ export default function DashboardMembrePage() {
                       isAdherent ? 'bg-primary-100 text-primary-700' : 'bg-neutral-100 text-neutral-600'
                     }`}
                   >
-                    {isAdherent ? formatAdherentBadge(profile.adherent_expires_at) : 'Non adhérent'}
+                    {isAdherent ? formatAdherentBadge(displayProfile.adherent_expires_at) : 'Non adhérent'}
                   </span>
                 </div>
               </div>
@@ -450,9 +468,9 @@ export default function DashboardMembrePage() {
                     <strong>Lieu :</strong> {selectedEvent.lieu}
                   </p>
                 )}
-                {profile?.numero_membre && (
+                {displayProfile?.numero_membre && (
                   <p>
-                    <strong>Code :</strong> TICKET-{selectedEvent.id}-{profile.numero_membre}
+                    <strong>Code :</strong> TICKET-{selectedEvent.id}-{displayProfile.numero_membre}
                   </p>
                 )}
               </div>

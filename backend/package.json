@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "build": "echo 'No build step for Node backend'",
     "dev": "node server.js",
     "reminders": "node scripts/send-event-reminders.js",
     "migrate:avantages": "node scripts/run-migration-avantages.js",

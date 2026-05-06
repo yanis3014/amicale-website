@@ -2,6 +2,25 @@ const { body, validationResult } = require('express-validator');
 const { query } = require('../config/db');
 const { generateCotisationCertificate } = require('../services/certificateService');
 
+exports.listAdmin = async (_req, res) => {
+  try {
+    const result = await query(
+      `SELECT
+         c.*,
+         u.nom,
+         u.prenom,
+         u.email
+       FROM cotisations c
+       LEFT JOIN users u ON u.id = c.user_id
+       ORDER BY c.created_at DESC`
+    );
+    return res.json(result.rows);
+  } catch (err) {
+    console.error('[cotisationController.listAdmin]', err);
+    return res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
+
 exports.submit = [
   body('montant').isFloat({ min: 0 }).withMessage('Montant invalide'),
   body('annee_universitaire').trim().notEmpty().withMessage('Année universitaire requise'),

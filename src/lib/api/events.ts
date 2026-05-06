@@ -64,7 +64,6 @@ export interface RegistrationPaymentDetails {
 export async function registerToEvent(
   eventId: number | string,
   body?: {
-    coupon_code?: string;
     methode_paiement?: string;
     reference_paiement?: string;
   } & RegistrationPaymentDetails
@@ -79,7 +78,6 @@ export interface RegisterEventGuestPayload extends RegistrationPaymentDetails {
   telephone?: string;
   methode_paiement?: string;
   reference_paiement?: string;
-  coupon_code?: string;
 }
 
 export async function registerToEventGuest(

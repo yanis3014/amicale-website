@@ -183,7 +183,7 @@ export default function AdminDashboardPage() {
                 Vue d&apos;ensemble
               </h1>
               <p className="text-neutral-600 mt-1">
-                Tableau de bord de l&apos;administration de l&apicale
+                Tableau de bord de l&apos;administration de l&apos;amicale
               </p>
             </div>
           </div>
@@ -265,7 +265,7 @@ export default function AdminDashboardPage() {
             </div>
             <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Link
-                href="/admin/evenements"
+                href="/admin/annonces"
                 className="flex items-center gap-4 p-4 rounded-xl border-2 border-neutral-100 hover:border-primary-200 hover:bg-primary-50/50 transition-all group"
               >
                 <span className="w-12 h-12 rounded-xl bg-[var(--accent)]/10 flex items-center justify-center group-hover:bg-[var(--accent)]/20 transition-colors">
@@ -303,7 +303,7 @@ export default function AdminDashboardPage() {
                   <Ticket className="w-6 h-6 text-blue-600" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-neutral-900 group-hover:text-blue-700">Annonces & tarifs</p>
+                  <p className="font-semibold text-neutral-900 group-hover:text-blue-700">Événements & tarifs</p>
                   <p className="text-sm text-neutral-500">Publications et prix adhérents</p>
                 </div>
                 <ArrowRight className="w-5 h-5 text-neutral-300 group-hover:text-blue-500 flex-shrink-0" />
@@ -355,7 +355,7 @@ export default function AdminDashboardPage() {
           </div>
           <div className="p-6">
             {upcomingEvents.length === 0 ? (
-              <p className="text-neutral-500 text-sm py-4">Aucun événement à venir. Créez-en dans Annonces.</p>
+              <p className="text-neutral-500 text-sm py-4">Aucun événement à venir. Créez-en dans Événements.</p>
             ) : (
               <ul className="space-y-0 divide-y divide-neutral-100">
                 {upcomingEvents.map((ev) => (
@@ -489,7 +489,7 @@ export default function AdminDashboardPage() {
               )}
               <div className="mt-4 pt-4 border-t border-neutral-100">
                 <Link href="/admin/annonces" className="text-[var(--accent)] font-semibold hover:text-primary-700 text-sm inline-flex items-center gap-1">
-                  Gérer les annonces et tarifs
+                  Gérer les événements et tarifs
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>

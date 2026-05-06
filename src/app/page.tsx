@@ -20,11 +20,9 @@ async function getPageSettingSafe(key: string): Promise<{ value: string | null }
 
 /** Récupère les données de la page d'accueil ; en cas d'erreur (ex. build sans API), retourne des valeurs par défaut. */
 async function getHomeData() {
-  const currentYear = new Date().getFullYear();
   const defaults = {
     banderole: '',
     videoUrl: '',
-    anneeUniversitaire: `${currentYear}-${currentYear + 1}`,
     heroImage: null as string | null,
     heroText: null as string | null,
     heroTitle: null as string | null,
@@ -33,10 +31,9 @@ async function getHomeData() {
     partenaires: [] as ApiPartenaire[],
   };
   try {
-    const [banderoleRes, videoUrlRes, anneeRes, heroImageRes, events, partenaires, heroTextRes, heroTitleRes, membersCountTextRes] = await Promise.all([
+    const [banderoleRes, videoUrlRes, heroImageRes, events, partenaires, heroTextRes, heroTitleRes, membersCountTextRes] = await Promise.all([
       getPageSetting('home_banderole'),
       getPageSetting('home_video_url'),
-      getPageSetting('home_annee_universitaire'),
       getPageSetting('home_hero_image'),
       getEvents({ upcoming: true }),
       getPartenaires(),
@@ -47,7 +44,6 @@ async function getHomeData() {
     return {
       banderole: banderoleRes?.value?.trim() ?? '',
       videoUrl: videoUrlRes?.value?.trim() ?? '',
-      anneeUniversitaire: anneeRes?.value?.trim() || defaults.anneeUniversitaire,
       heroImage: heroImageRes?.value?.trim() || null,
       heroText: heroTextRes?.value?.trim() || null,
       heroTitle: heroTitleRes?.value?.trim() || null,
@@ -62,14 +58,13 @@ async function getHomeData() {
 
 export default async function HomePage() {
   const data = await getHomeData();
-  const { banderole, videoUrl, anneeUniversitaire, heroImage, heroText, heroTitle, membersCountText, events, partenaires } = data;
+  const { banderole, videoUrl, heroImage, heroText, heroTitle, membersCountText, events, partenaires } = data;
   const nextEvent = events.length > 0 ? events[0] : null;
 
   return (
     <div className="min-h-screen">
       <PulseBar banderole={banderole} />
       <HeroSection
-        anneeUniversitaire={anneeUniversitaire}
         nextEvent={nextEvent}
         heroImageUrl={heroImage}
         heroTitle={heroTitle}

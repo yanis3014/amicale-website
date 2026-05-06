@@ -48,9 +48,9 @@ export default function EventDetailPage() {
   if (!event) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4">
-        <p className="text-neutral-600">Événement introuvable</p>
+        <p className="text-neutral-600">Archive introuvable</p>
         <Link href="/evenements" className="text-[var(--accent)] font-semibold hover:underline">
-          Retour aux événements
+          Retour aux archives
         </Link>
       </div>
     );
@@ -115,7 +115,7 @@ export default function EventDetailPage() {
           className="inline-flex items-center gap-2 text-[var(--accent)] hover:text-primary-700 font-medium mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Retour aux événements
+          Retour aux archives
         </Link>
       </div>
 

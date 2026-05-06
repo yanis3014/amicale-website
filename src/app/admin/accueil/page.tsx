@@ -13,7 +13,6 @@ type HomeKey = (typeof HOME_SETTING_KEYS)[number];
 const LABELS: Record<HomeKey, string> = {
   home_banderole: 'Banderole défilante (haut de page)',
   home_video_url: 'URL de la vidéo (YouTube, Vimeo ou lien direct)',
-  home_annee_universitaire: 'Année universitaire (ex. 2025-2026)',
   home_hero_image: 'Image de la hero (carte à droite)',
   home_hero_text: 'Texte de présentation (hero)',
   home_hero_title: 'Titre de la hero',
@@ -104,7 +103,7 @@ export default function AdminAccueilPage() {
         Page d&apos;accueil
       </h1>
       <p className="text-neutral-600 mb-8">
-        Banderole en haut, année universitaire, vidéo, image de la hero, texte de présentation et texte du nombre de membres. L&apos;événement le plus proche et les partenaires sont gérés ailleurs (Événements, Partenaires).
+        Banderole en haut, vidéo, image de la hero, texte de présentation et texte du nombre de membres. L&apos;événement le plus proche et les partenaires sont gérés ailleurs (Événements, Partenaires).
       </p>
 
       <div className="space-y-8 max-w-2xl">
@@ -192,28 +191,6 @@ export default function AdminAccueilPage() {
               leftIcon={saving === 'home_members_count_text' ? <LoadingSpinner /> : undefined}
             >
               {saving === 'home_members_count_text' ? 'Enregistrement…' : 'Enregistrer'}
-            </Button>
-          </div>
-        </section>
-
-        {/* Année universitaire */}
-        <section className="bg-white rounded-xl border border-[var(--line)] shadow-sm p-6">
-          <h2 className="font-display font-semibold text-neutral-900 mb-2">{LABELS.home_annee_universitaire}</h2>
-          <p className="text-sm text-neutral-500 mb-3">Affichée dans la hero. Si vide, l&apos;année courante sera utilisée (ex. 2025-2026).</p>
-          <input
-            type="text"
-            value={edits.home_annee_universitaire ?? ''}
-            onChange={(e) => setEdits((prev) => ({ ...prev, home_annee_universitaire: e.target.value }))}
-            className="w-full px-4 py-3 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
-            placeholder="2025-2026"
-          />
-          <div className="mt-3 flex justify-end">
-            <Button
-              onClick={() => handleSave('home_annee_universitaire')}
-              disabled={saving === 'home_annee_universitaire' || (edits.home_annee_universitaire ?? '') === (values.home_annee_universitaire ?? '')}
-              leftIcon={saving === 'home_annee_universitaire' ? <LoadingSpinner /> : undefined}
-            >
-              {saving === 'home_annee_universitaire' ? 'Enregistrement…' : 'Enregistrer'}
             </Button>
           </div>
         </section>

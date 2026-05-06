@@ -32,7 +32,8 @@ export const metadata: Metadata = {
   title: "Amicale de la Faculté de Pharmacie",
   description: "L'Amicale des Enseignants de la Faculté de Pharmacie de Monastir - Association des enseignants, congrès, journées scientifiques et vie associative",
   icons: {
-    icon: "/amicale-logo.svg",
+    icon: "/images/logo-v3.png",
+    apple: "/images/logo-v3.png",
   },
 };
 

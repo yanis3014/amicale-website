@@ -90,40 +90,6 @@ function formatDetails(action: string, details: Record<string, unknown> | null):
   if (body.montant != null && body.annee_universitaire != null) {
     return `Cotisation ${Number(body.montant)} DT, année ${String(body.annee_universitaire)}`;
   }
-  // Coupon (création) : code, type, réduction (sans is_active, max_uses, etc.)
-  if (action.toLowerCase().includes('coupon') && body.code != null) {
-    const type =
-      body.type === 'Événement' || body.type === 'Adhésion'
-        ? String(body.type)
-        : body.type_coupon === 'event'
-          ? 'Événement'
-          : 'Adhésion';
-    const reduction =
-      body.reduction != null
-        ? String(body.reduction)
-        : body.discount_type === 'percent'
-          ? `${Number(body.discount_value) || 0} %`
-          : `${Number(body.discount_value) || 0} DT`;
-    const parts = [`Code : ${String(body.code)}`, `Type : ${type}`, `Réduction : ${reduction}`];
-    const maxUses = body.utilisations_max ?? body.max_uses;
-    parts.push(maxUses != null ? `Nombre d'utilisations possibles : ${Number(maxUses)}` : `Nombre d'utilisations possibles : Illimité`);
-    if (body.valide_jusqu_au != null) parts.push(`Valide jusqu'au : ${String(body.valide_jusqu_au)}`);
-    else if (body.valid_until != null) {
-      try {
-        parts.push(`Valide jusqu'au : ${new Date(String(body.valid_until)).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`);
-      } catch {
-        parts.push(`Valide jusqu'au : ${String(body.valid_until)}`);
-      }
-    }
-    return parts.join(' — ');
-  }
-  // Utilisation coupon (par un membre ou invité)
-  if (action.includes('Utilisation coupon') && body.code != null) {
-    const parts = [`Code : ${String(body.code)}`, `Contexte : ${body.type || String(body.contexte || '—')}`];
-    if (body.event_id != null) parts.push(`Événement #${body.event_id}`);
-    if (body.invite === true) parts.push('Inscription invité');
-    return parts.join(' — ');
-  }
   // Fallback : résumé des champs principaux
   const parts: string[] = [];
   if (body.montant != null) parts.push(`${Number(body.montant).toLocaleString('fr-FR')} DT`);

@@ -102,7 +102,7 @@ export default function AdminAnnoncesPage() {
     getAdminEvents()
       .then(setEvents)
       .catch(() => {
-        toast.error('Erreur lors du chargement des annonces');
+        toast.error('Erreur lors du chargement des événements');
         setEvents([]);
       })
       .finally(() => setLoading(false));
@@ -118,7 +118,7 @@ export default function AdminAnnoncesPage() {
     setSavingFeatured(event.id);
     try {
       await updateEvent(event.id, { featured_on_home: featured, home_order: homeOrder });
-      toast.success(featured ? 'Mis à la une (accueil et page Annonces)' : 'Retiré de la une');
+      toast.success(featured ? 'Mis à la une (accueil et page Événements)' : 'Retiré de la une');
       loadEvents();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Erreur');
@@ -185,7 +185,7 @@ export default function AdminAnnoncesPage() {
           await uploadEventImage(editingEvent.id, imageFile);
           setUploadingImage(false);
         }
-        toast.success('Annonce mise à jour');
+        toast.success('Événement mis à jour');
       } else {
         const created = await createEvent(payload);
         if (imageFile) {
@@ -193,7 +193,7 @@ export default function AdminAnnoncesPage() {
           await uploadEventImage(created.id, imageFile);
           setUploadingImage(false);
         }
-        toast.success('Annonce créée');
+        toast.success('Événement créé');
       }
       closeForm();
       loadEvents();
@@ -207,7 +207,7 @@ export default function AdminAnnoncesPage() {
     if (!deleteTarget) return;
     try {
       await deleteEvent(deleteTarget.id);
-      toast.success('Annonce supprimée');
+      toast.success('Événement supprimé');
       setDeleteTarget(null);
       loadEvents();
     } catch (err: unknown) {
@@ -219,7 +219,7 @@ export default function AdminAnnoncesPage() {
   const handlePublish = async (event: ApiEvent) => {
     try {
       await publishEvent(event.id);
-      toast.success(event.is_published ? 'Annonce dépubliée' : 'Annonce publiée');
+      toast.success(event.is_published ? 'Événement dépublié' : 'Événement publié');
       loadEvents();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Erreur');
@@ -277,22 +277,22 @@ export default function AdminAnnoncesPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-            Annonces (prochains événements)
+            Événements (prochains événements)
           </h1>
           <p className="text-neutral-600">
-            Créez et gérez les annonces — événements à venir. Une fois la date passée, ils apparaissent dans Événements pour y ajouter les photos.
+            Créez et gérez les événements à venir. Une fois la date passée, ils apparaissent dans Archives pour y ajouter les photos.
           </p>
         </div>
         <Button onClick={openCreate} leftIcon={<Plus className="w-5 h-5" />}>
-          Nouvelle annonce
+          Nouvel événement
         </Button>
       </div>
 
       {upcomingEvents.length === 0 ? (
         <EmptyState
-          title="Aucune annonce"
-          description="Créez votre première annonce (événement à venir) pour commencer."
-          action={{ label: 'Nouvelle annonce', onClick: openCreate }}
+          title="Aucun événement"
+          description="Créez votre premier événement à venir pour commencer."
+          action={{ label: 'Nouvel événement', onClick: openCreate }}
         />
       ) : (
         <div className="grid grid-cols-1 gap-6">
@@ -404,7 +404,7 @@ export default function AdminAnnoncesPage() {
       <Modal
         isOpen={showForm}
         onClose={closeForm}
-        title={editingEvent ? "Modifier l'annonce" : 'Nouvelle annonce'}
+        title={editingEvent ? "Modifier l'événement" : 'Nouvel événement'}
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -442,10 +442,10 @@ export default function AdminAnnoncesPage() {
                 value={formData.date_fin}
                 onChange={(e) => setFormData({ ...formData, date_fin: e.target.value })}
                 className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                title="L'annonce reste affichée sur la page Annonces jusqu'à cette date, puis passe dans les événements passés."
+                title="L'événement reste affiché sur la page Événements jusqu'à cette date, puis passe dans les archives."
               />
               <p className="text-xs text-neutral-500 mt-1">
-                Jusqu&apos;à cette date l&apos;annonce reste en « Annonces » ; après, elle passe en « Événements passés ».
+                Jusqu&apos;à cette date l&apos;événement reste en « Événements » ; après, il passe en « Archives ».
               </p>
             </div>
             <div>
@@ -675,7 +675,7 @@ export default function AdminAnnoncesPage() {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Supprimer l'annonce"
+        title="Supprimer l'événement"
         message={
           deleteTarget
             ? `Êtes-vous sûr de vouloir supprimer « ${deleteTarget.titre} » ? Cette action est irréversible.`

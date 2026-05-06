@@ -35,10 +35,10 @@ export const Footer: React.FC = () => {
                 <Link href="/a-propos" className={linkClass}>À propos</Link>
               </li>
               <li>
-                <Link href="/evenements" className={linkClass}>Événements</Link>
+                <Link href="/annonces" className={linkClass}>Événements</Link>
               </li>
               <li>
-                <Link href="/annonces" className={linkClass}>Annonces</Link>
+                <Link href="/evenements" className={linkClass}>Archives</Link>
               </li>
             </ul>
           </div>

@@ -20,7 +20,6 @@ DROP TABLE IF EXISTS public.audit_log CASCADE;
 DROP TABLE IF EXISTS public.finance_entries CASCADE;
 DROP TABLE IF EXISTS public.registrations CASCADE;
 DROP TABLE IF EXISTS public.cotisations CASCADE;
-DROP TABLE IF EXISTS public.coupons CASCADE;
 DROP TABLE IF EXISTS public.activities CASCADE;
 DROP TABLE IF EXISTS public.events CASCADE;
 DROP TABLE IF EXISTS public.enseignants CASCADE;
@@ -123,40 +122,7 @@ CREATE TRIGGER events_updated_at
   EXECUTE FUNCTION public.set_updated_at();
 
 -- -----------------------------------------------------------------------------
--- 4. coupons — couponController (+ validateAndApplyCoupon : tous les champs lus)
--- -----------------------------------------------------------------------------
-CREATE TABLE public.coupons (
-  id SERIAL PRIMARY KEY,
-  code VARCHAR(50) NOT NULL,
-  CONSTRAINT coupons_code_upper_unique UNIQUE (code),
-  type_coupon VARCHAR(20) NOT NULL,
-  CONSTRAINT coupons_type_chk CHECK (type_coupon IN ('adhesion', 'event')),
-  discount_type VARCHAR(10) NOT NULL,
-  CONSTRAINT coupons_discount_type_chk CHECK (discount_type IN ('percent', 'fixed')),
-  discount_value DECIMAL(10, 2) NOT NULL,
-  CONSTRAINT coupons_discount_value_chk CHECK (discount_value > 0),
-  event_id INT,
-  CONSTRAINT coupons_event_fk FOREIGN KEY (event_id)
-    REFERENCES public.events (id) ON DELETE CASCADE,
-  created_by_admin_id INT NOT NULL,
-  CONSTRAINT coupons_created_by_fk FOREIGN KEY (created_by_admin_id)
-    REFERENCES public.users (id) ON DELETE RESTRICT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  valid_until TIMESTAMPTZ,
-  max_uses INT,
-  use_count INT NOT NULL DEFAULT 0,
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  CONSTRAINT coupons_event_type_chk CHECK (
-    (type_coupon = 'event' AND event_id IS NOT NULL)
-    OR (type_coupon = 'adhesion' AND event_id IS NULL)
-  )
-);
-
-CREATE INDEX idx_coupons_type ON public.coupons (type_coupon);
-CREATE INDEX idx_coupons_created_by ON public.coupons (created_by_admin_id);
-
--- -----------------------------------------------------------------------------
--- 5. registrations — eventController INSERT/UPDATE/SELECT + jointures cotisations/events
+-- 4. registrations — eventController INSERT/UPDATE/SELECT + jointures cotisations/events
 -- -----------------------------------------------------------------------------
 CREATE TABLE public.registrations (
   id SERIAL PRIMARY KEY,
@@ -177,9 +143,6 @@ CREATE TABLE public.registrations (
   guest_prenom VARCHAR(255),
   guest_email VARCHAR(255),
   guest_telephone VARCHAR(50),
-  coupon_id INT,
-  CONSTRAINT registrations_coupon_fk FOREIGN KEY (coupon_id)
-    REFERENCES public.coupons (id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT registrations_owner_chk CHECK (
     user_id IS NOT NULL
@@ -194,7 +157,6 @@ CREATE TABLE public.registrations (
 CREATE INDEX idx_registrations_event_id ON public.registrations (event_id);
 CREATE INDEX idx_registrations_user_id ON public.registrations (user_id);
 CREATE INDEX idx_registrations_statut ON public.registrations (statut);
-CREATE INDEX idx_registrations_coupon ON public.registrations (coupon_id);
 CREATE UNIQUE INDEX idx_registrations_event_user
   ON public.registrations (event_id, user_id)
   WHERE user_id IS NOT NULL;
@@ -203,7 +165,7 @@ CREATE UNIQUE INDEX idx_registrations_event_guest_email
   WHERE user_id IS NULL AND guest_email IS NOT NULL;
 
 -- -----------------------------------------------------------------------------
--- 6. activities — activityController (liste, CRUD, publish, galerie)
+-- 5. activities — activityController (liste, CRUD, publish, galerie)
 -- -----------------------------------------------------------------------------
 CREATE TABLE public.activities (
   id SERIAL PRIMARY KEY,
@@ -234,7 +196,7 @@ CREATE TRIGGER activities_updated_at
   EXECUTE FUNCTION public.set_updated_at();
 
 -- -----------------------------------------------------------------------------
--- 7. enseignants — enseignantController (SELECT *, CRUD, ordre, photo)
+-- 6. enseignants — enseignantController (SELECT *, CRUD, ordre, photo)
 -- -----------------------------------------------------------------------------
 CREATE TABLE public.enseignants (
   id SERIAL PRIMARY KEY,
@@ -259,7 +221,7 @@ CREATE TRIGGER enseignants_updated_at
   EXECUTE FUNCTION public.set_updated_at();
 
 -- -----------------------------------------------------------------------------
--- 8. cotisations — cotisationController (submit, liste admin avec c.*, confirm/reject)
+-- 7. cotisations — cotisationController (submit, liste admin avec c.*, confirm/reject)
 -- -----------------------------------------------------------------------------
 CREATE TABLE public.cotisations (
   id SERIAL PRIMARY KEY,
@@ -276,18 +238,14 @@ CREATE TABLE public.cotisations (
   CONSTRAINT cotisations_confirmed_by_fk FOREIGN KEY (confirmed_by)
     REFERENCES public.users (id) ON DELETE SET NULL,
   confirmed_at TIMESTAMPTZ,
-  coupon_id INT,
-  CONSTRAINT cotisations_coupon_fk FOREIGN KEY (coupon_id)
-    REFERENCES public.coupons (id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_cotisations_user_id ON public.cotisations (user_id);
 CREATE INDEX idx_cotisations_statut ON public.cotisations (statut);
-CREATE INDEX idx_cotisations_coupon ON public.cotisations (coupon_id);
 
 -- -----------------------------------------------------------------------------
--- 9. page_settings — pageSettingsController (get value, UPSERT key/value)
+-- 8. page_settings — pageSettingsController (get value, UPSERT key/value)
 -- -----------------------------------------------------------------------------
 CREATE TABLE public.page_settings (
   key VARCHAR(100) PRIMARY KEY,
@@ -301,7 +259,7 @@ CREATE TRIGGER page_settings_updated_at
   EXECUTE FUNCTION public.set_updated_at();
 
 -- -----------------------------------------------------------------------------
--- 10. partenaires — partenaireController
+-- 9. partenaires — partenaireController
 -- -----------------------------------------------------------------------------
 CREATE TABLE public.partenaires (
   id SERIAL PRIMARY KEY,
@@ -323,7 +281,7 @@ CREATE TRIGGER partenaires_updated_at
   EXECUTE FUNCTION public.set_updated_at();
 
 -- -----------------------------------------------------------------------------
--- 11. avantages — avantageController
+-- 10. avantages — avantageController
 -- -----------------------------------------------------------------------------
 CREATE TABLE public.avantages (
   id SERIAL PRIMARY KEY,
@@ -347,8 +305,8 @@ CREATE TRIGGER avantages_updated_at
   EXECUTE FUNCTION public.set_updated_at();
 
 -- -----------------------------------------------------------------------------
--- 12. audit_log — auditController SELECT + auditService INSERT
---             user_id NULLABLE : log invité/coupon (eventController register-guest)
+-- 11. audit_log — auditController SELECT + auditService INSERT
+--             user_id NULLABLE : log invité (eventController register-guest)
 -- -----------------------------------------------------------------------------
 CREATE TABLE public.audit_log (
   id SERIAL PRIMARY KEY,
@@ -373,7 +331,7 @@ CREATE INDEX idx_audit_log_created_at ON public.audit_log (created_at DESC);
 CREATE INDEX idx_audit_log_action ON public.audit_log (action);
 
 -- -----------------------------------------------------------------------------
--- 13. finance_entries — financeController (overview, list, CRUD)
+-- 12. finance_entries — financeController (overview, list, CRUD)
 -- -----------------------------------------------------------------------------
 CREATE TABLE public.finance_entries (
   id SERIAL PRIMARY KEY,

@@ -58,9 +58,9 @@ export default function AnnonceDetailPage() {
   if (!event) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4">
-        <p className="text-neutral-600">Annonce introuvable</p>
+        <p className="text-neutral-600">Événement introuvable</p>
         <Link href="/annonces" className="text-[var(--accent)] font-semibold hover:underline">
-          Retour aux annonces
+          Retour aux événements
         </Link>
       </div>
     );
@@ -112,11 +112,11 @@ export default function AnnonceDetailPage() {
             className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-xl bg-white/20 backdrop-blur-md text-white font-medium hover:bg-white/30 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Retour aux annonces
+            Retour aux événements
           </Link>
           <nav className="text-white/80 text-sm mb-2">
             <Link href="/annonces" className="hover:underline">
-              Annonces
+              Événements
             </Link>
             <span className="mx-2">/</span>
             <span className="text-white">{event.titre}</span>

@@ -410,9 +410,6 @@ export default function AdminMembersPage() {
                         Montant
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
-                        Coupon
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
                         Année univ.
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
@@ -429,7 +426,7 @@ export default function AdminMembersPage() {
                   <tbody className="divide-y divide-neutral-100">
                     {cotisations.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="px-6 py-12 text-center text-neutral-500">
+                        <td colSpan={6} className="px-6 py-12 text-center text-neutral-500">
                           Aucune cotisation trouvée
                         </td>
                       </tr>
@@ -444,18 +441,6 @@ export default function AdminMembersPage() {
                           </td>
                           <td className="px-6 py-4 font-semibold text-neutral-900">
                             {c.montant} DT
-                          </td>
-                          <td className="px-6 py-4 text-sm">
-                            {c.coupon_code ? (
-                              <span title={c.coupon_created_by_admin ? `Créé par admin ${c.coupon_created_by_admin}` : ''}>
-                                {c.coupon_code}
-                                {c.coupon_created_by_admin && (
-                                  <span className="text-neutral-500 block text-xs">par admin {c.coupon_created_by_admin}</span>
-                                )}
-                              </span>
-                            ) : (
-                              '—'
-                            )}
                           </td>
                           <td className="px-6 py-4 text-sm text-neutral-600">
                             {c.annee_universitaire}

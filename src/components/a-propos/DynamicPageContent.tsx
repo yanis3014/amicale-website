@@ -94,19 +94,17 @@ export function DynamicPageContent({
     <div className="min-h-screen bg-[var(--bg)]">
       {/* Bannière */}
       {bannerUrl && (
-        <div className="relative w-full h-[40vh] min-h-[260px] overflow-hidden">
+        <div className="relative min-h-screen flex flex-col justify-end overflow-hidden text-white">
           <img
             src={bannerUrl}
             alt=""
             className="absolute inset-0 w-full h-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-              <h1 className="font-display text-3xl md:text-5xl font-bold text-white drop-shadow-lg max-w-4xl">
-                {pageTitle}
-              </h1>
-            </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" aria-hidden />
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pb-20 md:pb-28 pt-24">
+            <h1 className="font-display text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg max-w-4xl">
+              {pageTitle}
+            </h1>
           </div>
         </div>
       )}

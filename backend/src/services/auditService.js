@@ -91,7 +91,6 @@ function getActionLabel(method, path) {
     if (path.includes('upload-image') || path.includes('upload-gallery') || path.includes('upload-photo') || path.includes('upload-logo')) return `Upload ${resource}`;
     if (path.includes('register')) return null;
     if (segment === 'members') return 'Création membre';
-    if (segment === 'coupons') return 'Création coupon';
     return `Création ${resource}`;
   }
   if (method === 'DELETE') return id ? `Suppression ${resource}` : null;

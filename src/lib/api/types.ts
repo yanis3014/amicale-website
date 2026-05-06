@@ -119,8 +119,6 @@ export interface ApiCotisation {
   prenom?: string;
   email?: string;
   numero_membre?: string | null;
-  coupon_code?: string | null;
-  coupon_created_by_admin?: string | null;
 }
 
 export interface LoginPayload {

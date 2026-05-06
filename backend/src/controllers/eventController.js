@@ -1,8 +1,6 @@
 const { body, validationResult } = require('express-validator');
 const { query } = require('../config/db');
 const { sendConfirmationEventRegistration } = require('../services/emailService');
-const { validateAndApplyCoupon, incrementCouponUse } = require('./couponController');
-const { logAction } = require('../services/auditService');
 
 // Admin: liste tous les événements (publiés + brouillons)
 exports.listAdmin = async (req, res) => {
@@ -282,12 +280,9 @@ exports.getRegistrations = async (req, res) => {
     const result = await query(
       `SELECT r.*,
               u.nom, u.prenom, u.email, u.numero_membre,
-              r.guest_nom, r.guest_prenom, r.guest_email, r.guest_telephone,
-              cp.code AS coupon_code, u_admin.admin_identifier AS coupon_created_by_admin
+              r.guest_nom, r.guest_prenom, r.guest_email, r.guest_telephone
        FROM registrations r
        LEFT JOIN users u ON u.id = r.user_id
-       LEFT JOIN coupons cp ON cp.id = r.coupon_id
-       LEFT JOIN users u_admin ON u_admin.id = cp.created_by_admin_id
        WHERE r.event_id = $1 ORDER BY r.created_at DESC`,
       [req.params.id]
     );
@@ -307,7 +302,6 @@ exports.getRegistrations = async (req, res) => {
 exports.registerToEvent = [
   body('methode_paiement').optional().trim(),
   body('reference_paiement').optional().trim(),
-  body('coupon_code').optional().trim(),
   body('titulaire_compte').optional().trim(),
   body('carte_expiry').optional().trim(),
   async (req, res) => {
@@ -331,40 +325,17 @@ exports.registerToEvent = [
       }
       const userResult = await query('SELECT is_adherent, adherent_expires_at FROM users WHERE id = $1', [userId]);
       const isAdherent = userResult.rows[0]?.is_adherent && userResult.rows[0]?.adherent_expires_at && new Date(userResult.rows[0].adherent_expires_at) > new Date();
-      let montant = isAdherent && event.prix_adherent != null ? Number(event.prix_adherent) : Number(event.prix);
-      let coupon_id = null;
-      if (req.body.coupon_code) {
-        const applied = await validateAndApplyCoupon(req.body.coupon_code.trim(), 'event', eventId, montant);
-        if (applied.error) return res.status(400).json({ error: applied.error });
-        montant = applied.montantFinal;
-        coupon_id = applied.coupon_id;
-      }
+      const montant = isAdherent && event.prix_adherent != null ? Number(event.prix_adherent) : Number(event.prix);
       // Paiement simulé par carte : on stocke uniquement nom sur carte, ****derniers4, date expiration (jamais numéro complet ni CVV)
       const methodePaiement = req.body.reference_paiement ? 'carte' : 'Simulation';
       const referencePaiement = req.body.reference_paiement || `SIM-${Date.now()}`;
       const titulaireCompte = (req.body.titulaire_compte || '').trim() || null;
       const carteExpiry = (req.body.carte_expiry || '').trim() || null;
       await query(
-        `INSERT INTO registrations (user_id, event_id, statut, montant_paye, methode_paiement, reference_paiement, coupon_id, titulaire_compte, carte_expiry)
-         VALUES ($1, $2, 'confirmed', $3, $4, $5, $6, $7, $8)`,
-        [userId, eventId, montant, methodePaiement, referencePaiement, coupon_id, titulaireCompte, carteExpiry]
+        `INSERT INTO registrations (user_id, event_id, statut, montant_paye, methode_paiement, reference_paiement, titulaire_compte, carte_expiry)
+         VALUES ($1, $2, 'confirmed', $3, $4, $5, $6, $7)`,
+        [userId, eventId, montant, methodePaiement, referencePaiement, titulaireCompte, carteExpiry]
       );
-      if (coupon_id) {
-        await incrementCouponUse(coupon_id);
-        const ip = req.ip || req.connection?.remoteAddress || req.headers?.['x-forwarded-for']?.split(',')[0]?.trim();
-        logAction({
-          user_id: req.user.id,
-          user_email: req.user.email || null,
-          admin_identifier: null,
-          action: 'Utilisation coupon (événement)',
-          method: 'POST',
-          path: `/api/events/${eventId}/register`,
-          resource_type: 'coupons',
-          resource_id: coupon_id,
-          details: { body: { code: (req.body.coupon_code || '').trim().toUpperCase(), type: 'Événement', event_id: Number(eventId) } },
-          ip_address: ip || null,
-        }).catch(() => {});
-      }
       await query('UPDATE events SET places_restantes = places_restantes - 1 WHERE id = $1', [eventId]);
       const reg = await query(
         'SELECT * FROM registrations WHERE user_id = $1 AND event_id = $2',
@@ -401,7 +372,6 @@ exports.registerToEventGuest = [
   body('telephone').optional().trim(),
   body('methode_paiement').optional().trim(),
   body('reference_paiement').optional().trim(),
-  body('coupon_code').optional().trim(),
   body('titulaire_compte').optional().trim(),
   body('carte_expiry').optional().trim(),
   async (req, res) => {
@@ -430,22 +400,15 @@ exports.registerToEventGuest = [
       if (existing.rows.length > 0) {
         return res.status(400).json({ error: 'Cet email est déjà inscrit à cet événement' });
       }
-      let montant = Number(event.prix) || 0;
-      let coupon_id = null;
-      if (req.body.coupon_code) {
-        const applied = await validateAndApplyCoupon(req.body.coupon_code.trim(), 'event', eventId, montant);
-        if (applied.error) return res.status(400).json({ error: applied.error });
-        montant = applied.montantFinal;
-        coupon_id = applied.coupon_id;
-      }
+      const montant = Number(event.prix) || 0;
       // Paiement simulé par carte : on stocke uniquement nom sur carte, ****derniers4, date expiration (jamais numéro complet ni CVV)
       const methodePaiement = req.body.reference_paiement ? 'carte' : 'Simulation';
       const referencePaiement = req.body.reference_paiement || `SIM-${Date.now()}`;
       const titulaireCompte = (req.body.titulaire_compte || '').trim() || null;
       const carteExpiry = (req.body.carte_expiry || '').trim() || null;
       await query(
-        `INSERT INTO registrations (user_id, event_id, statut, montant_paye, methode_paiement, reference_paiement, guest_nom, guest_prenom, guest_email, guest_telephone, coupon_id, titulaire_compte, carte_expiry)
-         VALUES (NULL, $1, 'confirmed', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        `INSERT INTO registrations (user_id, event_id, statut, montant_paye, methode_paiement, reference_paiement, guest_nom, guest_prenom, guest_email, guest_telephone, titulaire_compte, carte_expiry)
+         VALUES (NULL, $1, 'confirmed', $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
         [
           eventId,
           montant,
@@ -455,27 +418,10 @@ exports.registerToEventGuest = [
           prenom,
           email,
           telephone || null,
-          coupon_id,
           titulaireCompte,
           carteExpiry,
         ]
       );
-      if (coupon_id) {
-        await incrementCouponUse(coupon_id);
-        const ip = req.ip || req.connection?.remoteAddress || req.headers?.['x-forwarded-for']?.split(',')[0]?.trim();
-        logAction({
-          user_id: null,
-          user_email: email || null,
-          admin_identifier: null,
-          action: 'Utilisation coupon (événement)',
-          method: 'POST',
-          path: `/api/events/${eventId}/register-guest`,
-          resource_type: 'coupons',
-          resource_id: coupon_id,
-          details: { body: { code: (req.body.coupon_code || '').trim().toUpperCase(), type: 'Événement', event_id: Number(eventId), invite: true } },
-          ip_address: ip || null,
-        }).catch(() => {});
-      }
       await query('UPDATE events SET places_restantes = places_restantes - 1 WHERE id = $1', [eventId]);
       const reg = await query(
         'SELECT * FROM registrations WHERE event_id = $1 AND guest_email = $2 AND user_id IS NULL ORDER BY created_at DESC LIMIT 1',

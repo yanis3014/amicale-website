@@ -11,7 +11,6 @@ const partenaireController = require('../controllers/partenaireController');
 const avantageController = require('../controllers/avantageController');
 const auditController = require('../controllers/auditController');
 const financeController = require('../controllers/financeController');
-const couponController = require('../controllers/couponController');
 const emailController = require('../controllers/emailController');
 const { authMiddleware } = require('../middleware/authMiddleware');
 const { adminMiddleware } = require('../middleware/adminMiddleware');
@@ -56,10 +55,6 @@ router.get('/avantages', avantageController.listAll);
 router.post('/avantages', avantageController.create);
 router.put('/avantages/:id', avantageController.update);
 router.delete('/avantages/:id', avantageController.remove);
-router.get('/coupons', couponController.listAdmin);
-router.post('/coupons', couponController.create);
-router.put('/coupons/:id', couponController.update);
-router.delete('/coupons/:id', couponController.remove);
 router.post('/emails/send', emailController.send);
 
 module.exports = router;

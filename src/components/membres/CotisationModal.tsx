@@ -28,7 +28,6 @@ export function CotisationModal({ isOpen, onClose, onSuccess }: CotisationModalP
   );
   const [methodePaiement, setMethodePaiement] = useState('');
   const [reference, setReference] = useState('');
-  const [couponCode, setCouponCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,7 +44,6 @@ export function CotisationModal({ isOpen, onClose, onSuccess }: CotisationModalP
         annee_universitaire: anneeUniversitaire,
         methode_paiement: methodePaiement || undefined,
         reference: reference || undefined,
-        coupon_code: couponCode.trim() || undefined,
       });
       toast.success('Demande de cotisation enregistrée. Elle sera traitée par l\'équipe.');
       onClose();
@@ -95,12 +93,6 @@ export function CotisationModal({ isOpen, onClose, onSuccess }: CotisationModalP
           label="Référence / N° reçu (optionnel)"
           value={reference}
           onChange={(e) => setReference(e.target.value)}
-        />
-        <Input
-          label="Code promo (optionnel)"
-          placeholder="Ex. BIENVENUE2025"
-          value={couponCode}
-          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
         />
         <div className="flex gap-3 justify-end pt-4">
           <Button type="button" variant="outline" onClick={onClose} disabled={submitting}>

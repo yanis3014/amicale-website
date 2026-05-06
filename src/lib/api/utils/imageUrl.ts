@@ -5,6 +5,8 @@
  */
 export function getImageUrl(path: string | null | undefined): string {
   if (!path) return '';
+  // Les URLs Supabase/externes sont déjà absolues.
+  if (/^https?:\/\//i.test(path)) return path;
   const base = process.env.NEXT_PUBLIC_API_URL || '';
   const baseUrl = base.replace(/\/$/, '');
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;

@@ -48,7 +48,7 @@ export default function AnnoncesPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <p className="font-mono text-[12px] tracking-[0.1em] text-[var(--accent)]">— PROGRAMME 2025-2026</p>
           <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(48px,6vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
-            Les <span className="italic text-[var(--accent)]">annonces</span> et inscriptions
+            Les <span className="italic text-[var(--accent)]">événements</span> et inscriptions
           </h1>
           <div className="mt-8 border-b border-[var(--line)] pb-6">
             <div className="flex flex-wrap gap-2">
@@ -129,7 +129,7 @@ export default function AnnoncesPage() {
           </div>
         ) : gridEvents.length === 0 && !featuredEvent ? (
           <div className="border-y border-[var(--line)] py-16 text-center text-[var(--ink-3)]">
-            Aucune annonce en cours.
+            Aucun événement en cours.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -150,7 +150,7 @@ export default function AnnoncesPage() {
                   {event.titre}
                 </h3>
                 <p className="mt-4 text-[15px] text-[var(--ink-2)] line-clamp-3">
-                  {event.description || "Consultez l'annonce complète et les modalités de participation."}
+                  {event.description || "Consultez l'événement complet et les modalités de participation."}
                 </p>
                 <div className="mt-6 text-[18px] text-[var(--ink-2)] transition-transform duration-200 group-hover:translate-x-[3px]">
                   →

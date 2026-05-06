@@ -101,16 +101,16 @@ export default function AdminEvenementsPage() {
     <div className="p-6 lg:p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-          Événements (passés et galeries)
+          Archives (événements passés)
         </h1>
         <p className="text-neutral-600">
-          Les événements dont la date est passée apparaissent ici. Vous ne pouvez pas en créer : ajoutez uniquement les photos de la galerie pour chaque événement passé (visible sur la page Événements du site).
+          Les événements dont la date est passée apparaissent ici. Vous ne pouvez pas en créer : ajoutez uniquement les photos de la galerie pour chaque événement passé (visible sur la page Archives du site).
         </p>
       </div>
 
       {pastEvents.length === 0 ? (
         <EmptyState
-          title="Aucun événement passé"
+          title="Aucune archive"
           description="Les événements passés s'affichent ici automatiquement. Vous pourrez alors ajouter les photos de chaque événement."
         />
       ) : (
@@ -184,7 +184,7 @@ export default function AdminEvenementsPage() {
         {galleryEvent && (
           <div className="space-y-4">
             <p className="text-sm text-neutral-600">
-              Ajoutez jusqu'à {MAX_GALLERY} photos pour cet événement passé. Elles seront visibles sur la page Événements du site.
+              Ajoutez jusqu'à {MAX_GALLERY} photos pour cet événement passé. Elles seront visibles sur la page Archives du site.
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {(galleryEvent.gallery_images ?? []).map((url, idx) => (

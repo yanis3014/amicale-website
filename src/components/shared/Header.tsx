@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Menu, X, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,8 +43,8 @@ export const Header: React.FC = () => {
   const navLinks = [
     { href: '/', label: 'Accueil' },
     { href: '/a-propos', label: 'À propos' },
-    { href: '/evenements', label: 'Événements' },
-    { href: '/annonces', label: 'Annonces' },
+    { href: '/annonces', label: 'Événements' },
+    { href: '/evenements', label: 'Archives' },
     { href: '/partenaires', label: 'Partenaires' },
   ];
 
@@ -63,8 +64,15 @@ export const Header: React.FC = () => {
             href="/"
             className="flex items-center gap-3"
           >
-            <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-[var(--accent)] text-white text-[21px] italic leading-none [font-family:'Newsreader',serif]">
-              A
+            <span className="relative flex h-[38px] w-[38px] items-center justify-center rounded-full bg-white/80 p-1">
+              <Image
+                src="/images/logo-v3.png"
+                alt="Logo de l'Amicale FPHM"
+                fill
+                sizes="38px"
+                className="object-contain"
+                priority
+              />
             </span>
             <span className="flex flex-col leading-none">
               <span className="[font-family:'Newsreader',serif] text-[17px] text-[var(--ink)]">

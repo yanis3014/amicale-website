@@ -15,7 +15,6 @@ import {
   ClipboardList,
   Wallet,
   FileText,
-  Tag,
   Mail,
   Home,
 } from 'lucide-react';
@@ -26,14 +25,13 @@ import { getToken } from '@/lib/api/client';
 
 const navItems: { href: string; label: string; icon: typeof Users; badgeKey?: 'cotisations' }[] = [
   { href: '/admin/dashboard', label: 'Vue d\'ensemble', icon: LayoutDashboard },
-  { href: '/admin/evenements', label: 'Événements', icon: Calendar },
-  { href: '/admin/annonces', label: 'Annonces', icon: Newspaper },
+  { href: '/admin/annonces', label: 'Événements', icon: Newspaper },
+  { href: '/admin/evenements', label: 'Archives', icon: Calendar },
   { href: '/admin/enseignants', label: 'Enseignants', icon: Users },
   { href: '/admin/a-propos', label: 'Contenus À propos', icon: FileText },
   { href: '/admin/accueil', label: 'Page d\'accueil', icon: Home },
   { href: '/admin/members', label: 'Membres & Cotisations', icon: Users, badgeKey: 'cotisations' },
   { href: '/admin/emails', label: 'Envoi d\'emails', icon: Mail },
-  { href: '/admin/coupons', label: 'Coupons', icon: Tag },
   { href: '/admin/finances', label: 'Finances', icon: Wallet },
   { href: '/admin/partenaires', label: 'Partenaires', icon: Handshake },
   { href: '/admin/suivi', label: 'Suivi des actions', icon: ClipboardList },

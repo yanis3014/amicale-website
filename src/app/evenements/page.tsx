@@ -48,7 +48,7 @@ export default function EventsPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <p className="font-mono text-[12px] tracking-[0.1em] text-[var(--accent)]">— PROGRAMME 2025-2026</p>
           <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(48px,6vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
-            Les <span className="italic text-[var(--accent)]">événements</span> de l&apos;amicale
+            Les <span className="italic text-[var(--accent)]">archives</span> de l&apos;amicale
           </h1>
           <div className="mt-8 border-b border-[var(--line)] pb-6">
             <div className="flex flex-wrap gap-2">
@@ -79,7 +79,7 @@ export default function EventsPage() {
           </div>
         ) : rowEvents.length === 0 ? (
           <div className="border-y border-[var(--line)] py-16 text-center text-[var(--ink-3)]">
-            Aucun événement passé pour le moment.
+            Aucune archive pour le moment.
           </div>
         ) : (
           <div className="border-t border-[var(--line)]">

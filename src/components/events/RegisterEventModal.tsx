@@ -32,12 +32,10 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
     prenom: '',
     email: '',
     telephone: '',
-    coupon_code: '',
     titulaire_compte: '',
     reference_paiement: '',
     carte_expiry: '',
   });
-  const [couponCode, setCouponCode] = useState('');
   const [cardMember, setCardMember] = useState({ name: '', number: '', expiry: '', cvv: '' });
   const [cardGuest, setCardGuest] = useState({ name: '', number: '', expiry: '', cvv: '' });
 
@@ -92,7 +90,6 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
     try {
       const last4 = isPaidEvent ? cardMember.number.replace(/\s/g, '').slice(-4) : '';
       await registerToEvent(event.id, {
-        coupon_code: couponCode.trim() || undefined,
         titulaire_compte: isPaidEvent ? cardMember.name.trim() : undefined,
         reference_paiement: last4 ? `****${last4}` : undefined,
         carte_expiry: isPaidEvent ? cardMember.expiry : undefined,
@@ -123,7 +120,6 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
         prenom: guest.prenom.trim(),
         email: guest.email.trim().toLowerCase(),
         telephone: guest.telephone?.trim() || undefined,
-        coupon_code: guest.coupon_code?.trim() || undefined,
         titulaire_compte: isPaidEvent ? cardGuest.name.trim() : undefined,
         reference_paiement: last4 ? `****${last4}` : undefined,
         carte_expiry: isPaidEvent ? cardGuest.expiry : undefined,
@@ -145,14 +141,12 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
       prenom: '',
       email: '',
       telephone: '',
-      coupon_code: '',
       titulaire_compte: '',
       reference_paiement: '',
       carte_expiry: '',
     });
     setCardMember({ name: '', number: '', expiry: '', cvv: '' });
     setCardGuest({ name: '', number: '', expiry: '', cvv: '' });
-    setCouponCode('');
   };
 
   const handleClose = () => {
@@ -237,12 +231,6 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
               onChange={(e) => setGuest((g) => ({ ...g, telephone: e.target.value }))}
               placeholder="+216 00 000 000"
             />
-            <Input
-              label="Code promo (optionnel)"
-              placeholder="Ex. EVENTE2025"
-              value={guest.coupon_code || ''}
-              onChange={(e) => setGuest((g) => ({ ...g, coupon_code: e.target.value.toUpperCase() }))}
-            />
             {isPaidEvent && (
               <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-4 space-y-3">
                 <div className="flex items-center gap-2">
@@ -316,12 +304,6 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
               {eventDateStr}
               {event.lieu && ` — ${event.lieu}`}
             </p>
-            <Input
-              label="Code promo (optionnel)"
-              placeholder="Ex. EVENTE2025"
-              value={couponCode}
-              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-            />
             {isPaidEvent && (
               <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-4 space-y-3">
                 <div className="flex items-center gap-2">

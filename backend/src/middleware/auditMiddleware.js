@@ -35,9 +35,6 @@ function isImportantAction(method, path) {
   // Avantages
   if (norm === '/api/admin/avantages' && method === 'POST') return true;
   if (/^\/api\/admin\/avantages\/:id$/.test(norm) && (method === 'PUT' || method === 'DELETE')) return true;
-  // Coupons
-  if (norm === '/api/admin/coupons' && method === 'POST') return true;
-  if (/^\/api\/admin\/coupons\/:id$/.test(norm) && (method === 'PUT' || method === 'DELETE')) return true;
   // Finances (entrées manuelles / sponsors)
   if (norm === '/api/admin/finances/entries' && method === 'POST') return true;
   if (/^\/api\/admin\/finances\/entries\/:id$/.test(norm) && (method === 'PUT' || method === 'DELETE')) return true;
@@ -58,33 +55,10 @@ function auditMiddleware(req, res, next) {
 
   const details = {};
   if (req.body && typeof req.body === 'object' && method !== 'GET') {
-    // Coupon : détails lisibles (code, type, réduction) sans termes techniques (is_active, max_uses)
-    if (path.includes('/api/admin/coupons') && method === 'POST') {
-      const b = req.body;
-      const reduction = b.discount_type === 'percent'
-        ? `${Number(b.discount_value) || 0} %`
-        : `${Number(b.discount_value) || 0} DT`;
-      const body = {
-        code: b.code || '',
-        type: b.type_coupon === 'event' ? 'Événement' : 'Adhésion',
-        reduction,
-        utilisations_max: b.max_uses != null ? Number(b.max_uses) : null,
-      };
-      if (b.valid_until) {
-        try {
-          const d = new Date(b.valid_until);
-          body.valide_jusqu_au = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-        } catch {
-          body.valide_jusqu_au = b.valid_until;
-        }
-      }
-      details.body = body;
-    } else {
-      const sanitized = { ...req.body };
-      if (sanitized.password !== undefined) sanitized.password = '[REDACTED]';
-      if (sanitized.password_hash !== undefined) sanitized.password_hash = '[REDACTED]';
-      if (Object.keys(sanitized).length) details.body = sanitized;
-    }
+    const sanitized = { ...req.body };
+    if (sanitized.password !== undefined) sanitized.password = '[REDACTED]';
+    if (sanitized.password_hash !== undefined) sanitized.password_hash = '[REDACTED]';
+    if (Object.keys(sanitized).length) details.body = sanitized;
   }
 
   const ip = req.ip || req.connection?.remoteAddress || req.headers?.['x-forwarded-for']?.split(',')[0]?.trim();

@@ -88,7 +88,6 @@ export async function uploadHomeHeroImage(file: File): Promise<{ key: string; va
 export const HOME_SETTING_KEYS = [
   'home_banderole',
   'home_video_url',
-  'home_annee_universitaire',
   'home_hero_image',
   'home_hero_text',
   'home_hero_title',

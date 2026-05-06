@@ -41,7 +41,6 @@ function extractMembersValue(text: string): string {
 }
 
 interface HeroSectionProps {
-  anneeUniversitaire: string;
   nextEvent: ApiEvent | null;
   heroImageUrl: string | null;
   /** Titre principal de la hero (soutien *mot* pour le surligner). Si null, utilise le texte par défaut. */
@@ -53,7 +52,6 @@ interface HeroSectionProps {
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
-  anneeUniversitaire,
   nextEvent,
   heroImageUrl,
   heroTitle: heroTitleProp,
@@ -71,20 +69,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   return (
     <section className="bg-[var(--bg)] pt-16 pb-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-6 pb-6 border-b border-[var(--line)]">
-          <div className="inline-flex items-center gap-2 text-[13px] text-[var(--ink-2)] font-medium">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--accent-soft)] animate-ping" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[var(--accent)]" />
-            </span>
-            Année universitaire {anneeUniversitaire}
-          </div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--ink-3)]">
-            N° 01 — Programme
-          </div>
-        </div>
-
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-10 lg:gap-14 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-10 lg:gap-14 items-start">
           <div>
             <h1 className="[font-family:'Newsreader',serif] text-[clamp(56px,7.5vw,104px)] leading-[0.98] font-normal text-[var(--ink)]">
               {titleLines.map((line, index) => (
@@ -103,21 +88,47 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </Link>
               <Link href="/evenements">
                 <span className="inline-flex items-center justify-center rounded-full px-6 py-3 text-[14px] font-medium border border-[var(--line-strong)] text-[var(--ink-2)] hover:bg-[var(--surface)] transition-all duration-200">
-                  Voir les événements
+                  Voir les archives
                 </span>
               </Link>
             </div>
           </div>
 
           <div>
-            <p className="text-[19px] leading-relaxed text-[var(--ink-2)] max-w-[42ch]">
+            <div
+              className="h-[280px] border border-[var(--line)] overflow-hidden bg-[var(--surface)]"
+              style={{ borderRadius: 'var(--radius-lg, 28px)' }}
+            >
+              {heroSrc ? (
+                <div className="relative h-full w-full">
+                  <Image
+                    src={heroSrc}
+                    alt="Communauté Amicale FPHM"
+                    fill
+                    className="object-cover"
+                    sizes="(min-width: 1024px) 40vw, 100vw"
+                    priority
+                  />
+                </div>
+              ) : (
+                <div
+                  className="h-full w-full"
+                  style={{
+                    background:
+                      'repeating-linear-gradient(135deg, var(--accent-tint) 0 8px, var(--surface-2) 8px 16px)',
+                  }}
+                />
+              )}
+            </div>
+
+            <p className="mt-8 text-[19px] leading-relaxed text-[var(--ink-2)] max-w-[42ch]">
               {heroText}
             </p>
             <div className="mt-10 grid grid-cols-2 border border-[var(--line)] rounded-xl overflow-hidden">
               {[
                 { label: 'Membres', value: membersValue },
                 { label: 'Événements/an', value: eventsPerYearValue },
-                { label: 'Fondée en', value: '1974' },
+                { label: 'Fondée en', value: '1975' },
                 { label: 'Départements', value: '05' },
               ].map((item, index) => (
                 <div
@@ -134,32 +145,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               ))}
             </div>
           </div>
-        </div>
-
-        <div
-          className="mt-14 h-[380px] border border-[var(--line)] overflow-hidden bg-[var(--surface)]"
-          style={{ borderRadius: 'var(--radius-lg, 28px)' }}
-        >
-          {heroSrc ? (
-            <div className="relative h-full w-full">
-              <Image
-                src={heroSrc}
-                alt="Communauté Amicale FPHM"
-                fill
-                className="object-cover"
-                sizes="100vw"
-                priority
-              />
-            </div>
-          ) : (
-            <div
-              className="h-full w-full"
-              style={{
-                background:
-                  'repeating-linear-gradient(135deg, var(--accent-tint) 0 8px, var(--surface-2) 8px 16px)',
-              }}
-            />
-          )}
         </div>
       </div>
     </section>

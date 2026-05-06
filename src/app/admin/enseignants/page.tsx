@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { Plus, Edit, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { getAdminEnseignants } from '@/lib/api/admin';
-import { getToken } from '@/lib/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   createEnseignant,
   updateEnseignant,
@@ -33,6 +33,7 @@ const defaultForm = {
 };
 
 export default function AdminEnseignantsPage() {
+  const { user, isAdmin, isLoading: authLoading } = useAuth();
   const [enseignants, setEnseignants] = useState<ApiEnseignant[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -52,7 +53,7 @@ export default function AdminEnseignantsPage() {
   }, []);
 
   const load = useCallback(() => {
-    if (!getToken()) {
+    if (!user || !isAdmin) {
       setLoading(false);
       return;
     }
@@ -65,12 +66,13 @@ export default function AdminEnseignantsPage() {
       })
       .finally(() => setLoading(false));
     // toast volontairement exclu des deps pour éviter une boucle de re-renders
-  }, []);
+  }, [user, isAdmin]);
 
   useEffect(() => {
-    load();
+    if (authLoading) return;
     loadHeader();
-  }, [load, loadHeader]);
+    load();
+  }, [authLoading, load, loadHeader]);
 
   const handleHeaderImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

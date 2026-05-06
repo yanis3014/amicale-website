@@ -3,8 +3,10 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 const path = require('path');
 const fs = require('fs');
+const { csrfMiddleware } = require('./src/middleware/csrfMiddleware');
 
 const authRoutes = require('./src/routes/authRoutes');
 const eventRoutes = require('./src/routes/eventRoutes');
@@ -19,7 +21,18 @@ const avantageRoutes = require('./src/routes/avantageRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+/** Derriere nginx / load balancer OVH : activer TRUST_PROXY=1 pour X-Forwarded-* et IPs client fiables. */
+if (process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true') {
+  app.set('trust proxy', 1);
+}
+
+const FRONTEND_URL_SINGLE = process.env.FRONTEND_URL || 'http://localhost:3000';
+/** Plusieurs origines autorisees pour CORS (ex. https://www.site.fr,https://site.fr). */
+const ALLOWED_ORIGINS = (process.env.FRONTEND_ORIGINS || FRONTEND_URL_SINGLE)
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 // Create upload directories on startup
 const uploadDirs = ['./uploads', './uploads/events', './uploads/activities', './uploads/enseignants', './uploads/pages', './uploads/pages/documents', './uploads/partenaires', './uploads/certificates', './uploads/certificates/templates'];
@@ -30,11 +43,17 @@ uploadDirs.forEach((dir) => {
 // Middlewares
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin(origin, cb) {
+    if (!origin) return cb(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    return cb(null, false);
+  },
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
 }));
+app.use(cookieParser());
 app.use(express.json());
+app.use(csrfMiddleware);
 app.use(morgan('dev'));
 
 // Static uploads
@@ -64,6 +83,12 @@ app.use((req, res) => {
 
 // Error handler global
 app.use((err, req, res, next) => {
+  if (err && err.name === 'MulterError') {
+    return res.status(400).json({ error: `Erreur upload: ${err.message}` });
+  }
+  if (err && /fichier|upload|pdf|image/i.test(err.message || '')) {
+    return res.status(400).json({ error: err.message });
+  }
   console.error(err.stack);
   res.status(err.status || 500).json({
     error: err.message || 'Internal server error',

@@ -1,5 +1,4 @@
-import { api } from './client';
-import { getToken } from './client';
+import { api, buildAuthenticatedFetchHeaders } from './client';
 import type { ApiAdministrativeDocument } from './types';
 
 export async function getPageSetting(key: string): Promise<{ key: string; value: string | null }> {
@@ -15,10 +14,9 @@ export async function uploadEnseignantsHeaderImage(file: File): Promise<{ key: s
   formData.append('image', file);
   const base = process.env.NEXT_PUBLIC_API_URL || '';
   const url = `${base.replace(/\/$/, '')}/api/admin/pages/enseignants/header`;
-  const token = getToken();
   const res = await fetch(url, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: buildAuthenticatedFetchHeaders(),
     body: formData,
     credentials: 'include',
   });
@@ -52,10 +50,9 @@ export async function uploadAProposPageImage(
   formData.append('image', file);
   const base = process.env.NEXT_PUBLIC_API_URL || '';
   const url = `${base.replace(/\/$/, '')}/api/admin/pages/a-propos/${pageKey}/image`;
-  const token = getToken();
   const res = await fetch(url, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: buildAuthenticatedFetchHeaders(),
     body: formData,
     credentials: 'include',
   });
@@ -71,10 +68,9 @@ export async function uploadHomeHeroImage(file: File): Promise<{ key: string; va
   formData.append('image', file);
   const base = process.env.NEXT_PUBLIC_API_URL || '';
   const url = `${base.replace(/\/$/, '')}/api/admin/pages/home/hero-image`;
-  const token = getToken();
   const res = await fetch(url, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: buildAuthenticatedFetchHeaders(),
     body: formData,
     credentials: 'include',
   });
@@ -90,10 +86,9 @@ export async function uploadCertificateTemplatePdf(file: File): Promise<{ key: s
   formData.append('template', file);
   const base = process.env.NEXT_PUBLIC_API_URL || '';
   const url = `${base.replace(/\/$/, '')}/api/admin/pages/certificates/template`;
-  const token = getToken();
   const res = await fetch(url, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: buildAuthenticatedFetchHeaders(),
     body: formData,
     credentials: 'include',
   });
@@ -113,10 +108,9 @@ export async function uploadAdministrativeDocument(
   formData.append('title', title.trim());
   const base = process.env.NEXT_PUBLIC_API_URL || '';
   const url = `${base.replace(/\/$/, '')}/api/admin/pages/documents/upload`;
-  const token = getToken();
   const res = await fetch(url, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: buildAuthenticatedFetchHeaders(),
     body: formData,
     credentials: 'include',
   });

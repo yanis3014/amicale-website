@@ -1,4 +1,4 @@
-import { api, getToken, getBaseUrl, ApiError } from './client';
+import { api, buildAuthenticatedFetchHeaders, getBaseUrl, ApiError } from './client';
 import type { ApiActivity } from './types';
 
 export type ActivityCategory = ApiActivity['category'];
@@ -56,11 +56,11 @@ export async function uploadActivityImage(
 ): Promise<ApiActivity> {
   const formData = new FormData();
   formData.append('image', file);
-  const token = getToken();
   const res = await fetch(`${getBaseUrl()}/api/activities/${id}/upload-image`, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: buildAuthenticatedFetchHeaders(),
     body: formData,
+    credentials: 'include',
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new ApiError(data?.error || res.statusText, res.status, data);
@@ -73,11 +73,11 @@ export async function uploadActivityGallery(
 ): Promise<ApiActivity> {
   const formData = new FormData();
   files.forEach((f) => formData.append('images', f));
-  const token = getToken();
   const res = await fetch(`${getBaseUrl()}/api/activities/${id}/upload-gallery`, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: buildAuthenticatedFetchHeaders(),
     body: formData,
+    credentials: 'include',
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new ApiError(data?.error || res.statusText, res.status, data);

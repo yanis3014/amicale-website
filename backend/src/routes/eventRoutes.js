@@ -5,15 +5,17 @@ const eventController = require('../controllers/eventController');
 const { authMiddleware } = require('../middleware/authMiddleware');
 const { adminMiddleware } = require('../middleware/adminMiddleware');
 const { auditMiddleware } = require('../middleware/auditMiddleware');
+const { guestRegistrationLimiter } = require('../middleware/rateLimiters');
+const { createSafeFilename, buildImageFilter } = require('../utils/upload');
 
 const router = express.Router();
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '../../uploads/events')),
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/\s/g, '-')}`),
+  filename: (req, file, cb) => cb(null, createSafeFilename(file)),
 });
-const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
-const uploadGallery = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+const upload = multer({ storage, fileFilter: buildImageFilter(), limits: { fileSize: 5 * 1024 * 1024 } });
+const uploadGallery = multer({ storage, fileFilter: buildImageFilter(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 // Public
 router.get('/', eventController.list);
@@ -32,7 +34,7 @@ router.delete('/:id/gallery/:index', authMiddleware, adminMiddleware, auditMiddl
 // Registrations
 router.get('/:id/registrations', authMiddleware, adminMiddleware, eventController.getRegistrations);
 router.post('/:id/register', authMiddleware, eventController.registerToEvent);
-router.post('/:id/register-guest', eventController.registerToEventGuest);
+router.post('/:id/register-guest', guestRegistrationLimiter, eventController.registerToEventGuest);
 router.patch('/:id/registrations/:regId/cancel', authMiddleware, adminMiddleware, auditMiddleware, eventController.cancelRegistration);
 
 module.exports = router;

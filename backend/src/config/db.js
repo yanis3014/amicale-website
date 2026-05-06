@@ -6,7 +6,11 @@ function sslForDatabaseUrl(url) {
   if (!url) return false;
   const u = url.toLowerCase();
   if (u.includes('localhost') || u.includes('127.0.0.1')) return false;
-  return { rejectUnauthorized: false };
+  const ca = process.env.DB_SSL_CA;
+  if (ca) {
+    return { rejectUnauthorized: true, ca: ca.replace(/\\n/g, '\n') };
+  }
+  return { rejectUnauthorized: true };
 }
 
 const poolConfig = process.env.DATABASE_URL

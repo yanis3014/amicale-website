@@ -1,12 +1,14 @@
 const express = require('express');
 const authController = require('../controllers/authController');
 const { authMiddleware } = require('../middleware/authMiddleware');
+const { authLimiter } = require('../middleware/rateLimiters');
 
 const router = express.Router();
 
-router.post('/register', authController.register);
-router.post('/login', authController.login);
+router.post('/register', authLimiter, authController.register);
+router.post('/login', authLimiter, authController.login);
 router.get('/me', authMiddleware, authController.me);
 router.post('/change-password', authMiddleware, authController.changePassword);
+router.post('/logout', authController.logout);
 
 module.exports = router;

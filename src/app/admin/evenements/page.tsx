@@ -7,7 +7,7 @@ import { getAdminEvents } from '@/lib/api/admin';
 import { uploadEventGallery, deleteEventGalleryImage } from '@/lib/api/events';
 import type { ApiEvent } from '@/lib/api/types';
 import { getImageUrl } from '@/lib/api/utils/imageUrl';
-import { getToken } from '@/lib/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
@@ -17,6 +17,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 const MAX_GALLERY = 20;
 
 export default function AdminEvenementsPage() {
+  const { user, isAdmin, isLoading: authLoading } = useAuth();
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [galleryEvent, setGalleryEvent] = useState<ApiEvent | null>(null);
@@ -25,7 +26,7 @@ export default function AdminEvenementsPage() {
   const toast = useToast();
 
   const loadEvents = useCallback(() => {
-    if (!getToken()) {
+    if (!user || !isAdmin) {
       setLoading(false);
       return;
     }
@@ -37,11 +38,12 @@ export default function AdminEvenementsPage() {
         setEvents([]);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [user, isAdmin]);
 
   useEffect(() => {
+    if (authLoading) return;
     loadEvents();
-  }, [loadEvents]);
+  }, [authLoading, loadEvents]);
 
   const now = new Date();
   const pastEvents = events.filter((e) => new Date(e.date) < now);

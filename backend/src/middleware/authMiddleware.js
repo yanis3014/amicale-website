@@ -1,14 +1,21 @@
 const jwt = require('jsonwebtoken');
 const { query } = require('../config/db');
+const { getJwtSecret } = require('../config/security');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+const JWT_SECRET = getJwtSecret();
+
+function extractToken(req) {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) return authHeader.slice(7);
+  if (req.cookies && typeof req.cookies.auth_token === 'string') return req.cookies.auth_token;
+  return null;
+}
 
 async function authMiddleware(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const token = extractToken(req);
+  if (!token) {
     return res.status(401).json({ error: 'Token manquant ou invalide' });
   }
-  const token = authHeader.slice(7);
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const result = await query(
@@ -26,11 +33,10 @@ async function authMiddleware(req, res, next) {
 }
 
 async function optionalAuthMiddleware(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const token = extractToken(req);
+  if (!token) {
     return next();
   }
-  const token = authHeader.slice(7);
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const result = await query(

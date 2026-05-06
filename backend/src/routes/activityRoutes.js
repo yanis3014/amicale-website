@@ -5,15 +5,16 @@ const activityController = require('../controllers/activityController');
 const { authMiddleware, optionalAuthMiddleware } = require('../middleware/authMiddleware');
 const { adminMiddleware } = require('../middleware/adminMiddleware');
 const { auditMiddleware } = require('../middleware/auditMiddleware');
+const { createSafeFilename, buildImageFilter } = require('../utils/upload');
 
 const router = express.Router();
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '../../uploads/activities')),
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/\s/g, '-')}`),
+  filename: (req, file, cb) => cb(null, createSafeFilename(file)),
 });
-const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
-const uploadGallery = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+const upload = multer({ storage, fileFilter: buildImageFilter(), limits: { fileSize: 5 * 1024 * 1024 } });
+const uploadGallery = multer({ storage, fileFilter: buildImageFilter(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 router.get('/', optionalAuthMiddleware, activityController.list);
 router.get('/:id', optionalAuthMiddleware, activityController.getById);

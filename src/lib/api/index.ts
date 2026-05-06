@@ -1,4 +1,4 @@
-export { api, getToken, setToken, getBaseUrl, ApiError } from './client';
+export { api, getToken, setToken, getBaseUrl, buildAuthenticatedFetchHeaders, ApiError } from './client';
 export { login, register, getMe, changePassword, logout } from './auth';
 export {
   getEvents,

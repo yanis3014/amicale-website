@@ -16,7 +16,7 @@ interface AuthState {
 
 interface AuthContextValue extends AuthState {
   login: (payload: LoginPayload) => Promise<ApiUser | undefined>;
-  logout: () => void;
+  logout: () => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -35,16 +35,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const tokenRef = useRef<string | null>(null);
 
   const refreshUser = useCallback(async () => {
-    const t = getToken();
-    if (!t) {
-      tokenRef.current = null;
-      setUser(null);
-      setIsLoading(false);
-      return;
-    }
-    tokenRef.current = t;
     try {
       const u = await getMe();
+      tokenRef.current = getToken();
       setUser(u);
     } catch {
       setToken(null);
@@ -77,8 +70,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
-  const logout = useCallback(() => {
-    apiLogout();
+  const logout = useCallback(async () => {
+    await apiLogout();
+    tokenRef.current = null;
     setUser(null);
   }, []);
 

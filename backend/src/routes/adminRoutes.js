@@ -16,24 +16,25 @@ const adminCertificateController = require('../controllers/adminCertificateContr
 const { authMiddleware } = require('../middleware/authMiddleware');
 const { adminMiddleware } = require('../middleware/adminMiddleware');
 const { auditMiddleware } = require('../middleware/auditMiddleware');
+const { createSafeFilename, buildImageFilter, buildPdfFilter, buildDocumentsFilter } = require('../utils/upload');
 
 const router = express.Router();
 
 const pagesStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '../../uploads/pages')),
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/\s/g, '-')}`),
+  filename: (req, file, cb) => cb(null, createSafeFilename(file)),
 });
-const uploadPage = multer({ storage: pagesStorage, limits: { fileSize: 5 * 1024 * 1024 } });
+const uploadPage = multer({ storage: pagesStorage, fileFilter: buildImageFilter(), limits: { fileSize: 5 * 1024 * 1024 } });
 const documentsStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '../../uploads/pages/documents')),
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/\s/g, '-')}`),
+  filename: (req, file, cb) => cb(null, createSafeFilename(file)),
 });
-const uploadDocument = multer({ storage: documentsStorage, limits: { fileSize: 15 * 1024 * 1024 } });
+const uploadDocument = multer({ storage: documentsStorage, fileFilter: buildDocumentsFilter(), limits: { fileSize: 15 * 1024 * 1024 } });
 const certificateTemplateStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '../../uploads/certificates/templates')),
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/\s/g, '-')}`),
+  filename: (req, file, cb) => cb(null, createSafeFilename(file)),
 });
-const uploadCertificateTemplate = multer({ storage: certificateTemplateStorage, limits: { fileSize: 10 * 1024 * 1024 } });
+const uploadCertificateTemplate = multer({ storage: certificateTemplateStorage, fileFilter: buildPdfFilter(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 router.use(authMiddleware);
 router.use(adminMiddleware);

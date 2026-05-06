@@ -1,4 +1,4 @@
-import { api, getToken, getBaseUrl, ApiError } from './client';
+import { api, buildAuthenticatedFetchHeaders, getBaseUrl, ApiError } from './client';
 import type { ApiEnseignant } from './types';
 
 export async function getEnseignants(): Promise<ApiEnseignant[]> {
@@ -39,11 +39,11 @@ export async function reorderEnseignant(id: number | string, ordre: number): Pro
 export async function uploadEnseignantPhoto(id: number | string, file: File): Promise<ApiEnseignant> {
   const formData = new FormData();
   formData.append('photo', file);
-  const token = getToken();
   const res = await fetch(`${getBaseUrl()}/api/enseignants/${id}/upload-photo`, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: buildAuthenticatedFetchHeaders(),
     body: formData,
+    credentials: 'include',
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new ApiError(data?.error || res.statusText, res.status, data);

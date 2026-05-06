@@ -5,7 +5,7 @@ import { Download, Eye } from 'lucide-react';
 import { getAuditLogs, getAuditAdmins } from '@/lib/api/admin';
 import { Modal } from '@/components/ui/Modal';
 import type { AuditLogEntry, AuditAdmin, AuditLogResponse } from '@/lib/api/admin';
-import { getToken } from '@/lib/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const PAGE_SIZE = 25;
@@ -103,6 +103,7 @@ function formatDetails(action: string, details: Record<string, unknown> | null):
 }
 
 export default function AdminSuiviPage() {
+  const { user, isAdmin, isLoading: authLoading } = useAuth();
   const [data, setData] = useState<AuditLogResponse | null>(null);
   const [admins, setAdmins] = useState<AuditAdmin[]>([]);
   const [loading, setLoading] = useState(true);
@@ -112,14 +113,14 @@ export default function AdminSuiviPage() {
   const [detailEntry, setDetailEntry] = useState<AuditLogEntry | null>(null);
 
   const loadAdmins = useCallback(() => {
-    if (!getToken()) return;
+    if (!user || !isAdmin) return;
     getAuditAdmins()
       .then(setAdmins)
       .catch(() => setAdmins([]));
-  }, []);
+  }, [user, isAdmin]);
 
   const loadLogs = useCallback(() => {
-    if (!getToken()) {
+    if (!user || !isAdmin) {
       setLoading(false);
       return;
     }
@@ -133,15 +134,17 @@ export default function AdminSuiviPage() {
       .then(setData)
       .catch(() => setData(null))
       .finally(() => setLoading(false));
-  }, [filterUserId, filterAction, offset]);
+  }, [filterUserId, filterAction, offset, user, isAdmin]);
 
   useEffect(() => {
+    if (authLoading) return;
     loadAdmins();
-  }, [loadAdmins]);
+  }, [authLoading, loadAdmins]);
 
   useEffect(() => {
+    if (authLoading) return;
     loadLogs();
-  }, [loadLogs]);
+  }, [authLoading, loadLogs]);
 
   const total = data?.total ?? 0;
   const items = data?.items ?? [];

@@ -1,5 +1,5 @@
 const { body, validationResult } = require('express-validator');
-const { query } = require('../config/db');
+const { query, pool } = require('../config/db');
 const { sendConfirmationEventRegistration } = require('../services/emailService');
 const { generateEventCertificate } = require('../services/certificateService');
 
@@ -306,11 +306,13 @@ exports.registerToEvent = [
   body('titulaire_compte').optional().trim(),
   body('carte_expiry').optional().trim(),
   async (req, res) => {
+    const client = await pool.connect();
     try {
       const eventId = req.params.id;
       const userId = req.user.id;
-      const eventResult = await query(
-        'SELECT id, places_restantes, prix, prix_adherent FROM events WHERE id = $1',
+      await client.query('BEGIN');
+      const eventResult = await client.query(
+        'SELECT id, places_restantes, prix, prix_adherent FROM events WHERE id = $1 FOR UPDATE',
         [eventId]
       );
       if (eventResult.rows.length === 0) {
@@ -327,26 +329,27 @@ exports.registerToEvent = [
       if (event.places_restantes <= 0) {
         return res.status(400).json({ error: 'Plus de places disponibles' });
       }
-      const existing = await query('SELECT id FROM registrations WHERE user_id = $1 AND event_id = $2', [userId, eventId]);
+      const existing = await client.query('SELECT id FROM registrations WHERE user_id = $1 AND event_id = $2', [userId, eventId]);
       if (existing.rows.length > 0) {
         return res.status(400).json({ error: 'Vous êtes déjà inscrit à cet événement' });
       }
-      const userResult = await query('SELECT is_adherent, adherent_expires_at FROM users WHERE id = $1', [userId]);
+      const userResult = await client.query('SELECT is_adherent, adherent_expires_at FROM users WHERE id = $1', [userId]);
       const isAdherent = userResult.rows[0]?.is_adherent && userResult.rows[0]?.adherent_expires_at && new Date(userResult.rows[0].adherent_expires_at) > new Date();
       const montant = isAdherent && event.prix_adherent != null ? Number(event.prix_adherent) : Number(event.prix);
       // Paiement simulé par carte : on stocke uniquement nom sur carte, ****derniers4, date expiration (jamais numéro complet ni CVV)
       const methodePaiement = isPaidEvent ? 'carte' : 'Simulation';
       const referencePaiement = isPaidEvent ? referencePaiementInput : `SIM-${Date.now()}`;
-      await query(
+      await client.query(
         `INSERT INTO registrations (user_id, event_id, statut, montant_paye, methode_paiement, reference_paiement, titulaire_compte, carte_expiry)
          VALUES ($1, $2, 'confirmed', $3, $4, $5, $6, $7)`,
         [userId, eventId, montant, methodePaiement, referencePaiement, titulaireCompte || null, carteExpiry || null]
       );
-      await query('UPDATE events SET places_restantes = places_restantes - 1 WHERE id = $1', [eventId]);
-      const reg = await query(
+      await client.query('UPDATE events SET places_restantes = places_restantes - 1 WHERE id = $1', [eventId]);
+      const reg = await client.query(
         'SELECT * FROM registrations WHERE user_id = $1 AND event_id = $2',
         [userId, eventId]
       );
+      await client.query('COMMIT');
       const eventFull = await query(
         'SELECT id, titre, date, lieu FROM events WHERE id = $1',
         [eventId]
@@ -368,8 +371,11 @@ exports.registerToEvent = [
       }
       return res.status(201).json(reg.rows[0]);
     } catch (err) {
+      await client.query('ROLLBACK');
       console.error(err);
       return res.status(500).json({ error: 'Erreur serveur' });
+    } finally {
+      client.release();
     }
   },
 ];
@@ -385,14 +391,16 @@ exports.registerToEventGuest = [
   body('titulaire_compte').optional().trim(),
   body('carte_expiry').optional().trim(),
   async (req, res) => {
+    const client = await pool.connect();
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ error: errors.array()[0]?.msg || 'Données invalides' });
       }
       const eventId = req.params.id;
-      const eventResult = await query(
-        'SELECT id, titre, date, lieu, places_restantes, prix, prix_adherent FROM events WHERE id = $1',
+      await client.query('BEGIN');
+      const eventResult = await client.query(
+        'SELECT id, titre, date, lieu, places_restantes, prix, prix_adherent FROM events WHERE id = $1 FOR UPDATE',
         [eventId]
       );
       if (eventResult.rows.length === 0) {
@@ -410,7 +418,7 @@ exports.registerToEventGuest = [
         return res.status(400).json({ error: 'Plus de places disponibles' });
       }
       const { nom, prenom, email, telephone } = req.body;
-      const existing = await query(
+      const existing = await client.query(
         'SELECT id FROM registrations WHERE event_id = $1 AND user_id IS NULL AND guest_email = $2',
         [eventId, email]
       );
@@ -421,7 +429,7 @@ exports.registerToEventGuest = [
       // Paiement simulé par carte : on stocke uniquement nom sur carte, ****derniers4, date expiration (jamais numéro complet ni CVV)
       const methodePaiement = isPaidEvent ? 'carte' : 'Simulation';
       const referencePaiement = isPaidEvent ? referencePaiementInput : `SIM-${Date.now()}`;
-      await query(
+      await client.query(
         `INSERT INTO registrations (user_id, event_id, statut, montant_paye, methode_paiement, reference_paiement, guest_nom, guest_prenom, guest_email, guest_telephone, titulaire_compte, carte_expiry)
          VALUES (NULL, $1, 'confirmed', $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
         [
@@ -437,11 +445,12 @@ exports.registerToEventGuest = [
           carteExpiry || null,
         ]
       );
-      await query('UPDATE events SET places_restantes = places_restantes - 1 WHERE id = $1', [eventId]);
-      const reg = await query(
+      await client.query('UPDATE events SET places_restantes = places_restantes - 1 WHERE id = $1', [eventId]);
+      const reg = await client.query(
         'SELECT * FROM registrations WHERE event_id = $1 AND guest_email = $2 AND user_id IS NULL ORDER BY created_at DESC LIMIT 1',
         [eventId, email]
       );
+      await client.query('COMMIT');
       sendConfirmationEventRegistration({
         toEmail: email,
         toName: `${prenom} ${nom}`.trim(),
@@ -450,8 +459,11 @@ exports.registerToEventGuest = [
       }).catch((e) => console.error('Envoi email confirmation invité:', e));
       return res.status(201).json(reg.rows[0]);
     } catch (err) {
+      await client.query('ROLLBACK');
       console.error(err);
       return res.status(500).json({ error: 'Erreur serveur' });
+    } finally {
+      client.release();
     }
   },
 ];

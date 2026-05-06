@@ -20,7 +20,7 @@ import {
   deleteFinanceEntry,
 } from '@/lib/api/finances';
 import type { FinanceOverview as FinanceOverviewType, FinanceEntry } from '@/lib/api/finances';
-import { getToken } from '@/lib/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/Toast';
 import { Modal } from '@/components/ui/Modal';
@@ -41,6 +41,7 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export default function AdminFinancesPage() {
+  const { user, isAdmin, isLoading: authLoading } = useAuth();
   const [overview, setOverview] = useState<FinanceOverviewType | null>(null);
   const [entries, setEntries] = useState<FinanceEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +53,7 @@ export default function AdminFinancesPage() {
   const toast = useToast();
 
   const load = useCallback(() => {
-    if (!getToken()) {
+    if (!user || !isAdmin) {
       setLoading(false);
       return;
     }
@@ -63,11 +64,12 @@ export default function AdminFinancesPage() {
       })
       .catch(() => setOverview(null))
       .finally(() => setLoading(false));
-  }, []);
+  }, [user, isAdmin]);
 
   useEffect(() => {
+    if (authLoading) return;
     load();
-  }, [load]);
+  }, [authLoading, load]);
 
   const openAdd = () => {
     setEditingEntry(null);

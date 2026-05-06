@@ -1,4 +1,4 @@
-import { api, getToken, getBaseUrl, ApiError } from './client';
+import { api, buildAuthenticatedFetchHeaders, getBaseUrl, ApiError } from './client';
 import type { ApiEvent, ApiRegistration } from './types';
 
 export interface EventsQuery {
@@ -104,12 +104,12 @@ export async function uploadEventImage(
 ): Promise<{ image_url: string }> {
   const formData = new FormData();
   formData.append('image', file);
-  const token = getToken();
   const url = `${getBaseUrl()}/api/events/${eventId}/upload-image`;
   const res = await fetch(url, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: buildAuthenticatedFetchHeaders(),
     body: formData,
+    credentials: 'include',
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -125,12 +125,12 @@ export async function uploadEventGallery(
 ): Promise<{ gallery_images: string[] }> {
   const formData = new FormData();
   files.forEach((f) => formData.append('images', f));
-  const token = getToken();
   const url = `${getBaseUrl()}/api/events/${eventId}/upload-gallery`;
   const res = await fetch(url, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: buildAuthenticatedFetchHeaders(),
     body: formData,
+    credentials: 'include',
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {

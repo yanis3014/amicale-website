@@ -15,7 +15,7 @@ import {
   deleteAvantage,
 } from '@/lib/api/avantages';
 import { getPageSetting, setPageSetting } from '@/lib/api/settings';
-import { getToken } from '@/lib/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 import type { ApiUser } from '@/lib/api/types';
 import type { ApiAvantage } from '@/lib/api/types';
 import { Button } from '@/components/ui/Button';
@@ -54,6 +54,7 @@ function exportMembersToCsv(members: ApiUser[]) {
 }
 
 export default function AdminMembersPage() {
+  const { user, isAdmin, isLoading: authLoading } = useAuth();
   const [tab, setTab] = useState<Tab>('membres');
   const [members, setMembers] = useState<ApiUser[]>([]);
   const [avantages, setAvantages] = useState<ApiAvantage[]>([]);
@@ -94,17 +95,17 @@ export default function AdminMembersPage() {
   const toast = useToast();
 
   useEffect(() => {
-    if (!getToken()) return;
+    if (authLoading || !user || !isAdmin) return;
     getPageSetting('adhesion_fee_amount')
       .then((res) => {
         const v = Number(res.value);
         setAdhesionFee(Number.isFinite(v) && v > 0 ? String(v) : '30');
       })
       .catch(() => setAdhesionFee('30'));
-  }, []);
+  }, [authLoading, user, isAdmin]);
 
   const loadMembers = useCallback(() => {
-    if (!getToken()) {
+    if (!user || !isAdmin) {
       setLoadingMembers(false);
       return;
     }
@@ -117,10 +118,10 @@ export default function AdminMembersPage() {
       })
       .finally(() => setLoadingMembers(false));
     // toast exclu des deps pour éviter boucle de re-renders
-  }, [search]);
+  }, [search, user, isAdmin]);
 
   const loadAvantages = useCallback(() => {
-    if (!getToken()) {
+    if (!user || !isAdmin) {
       setLoadingAvantages(false);
       return;
     }
@@ -132,15 +133,17 @@ export default function AdminMembersPage() {
         setAvantages([]);
       })
       .finally(() => setLoadingAvantages(false));
-  }, []);
+  }, [user, isAdmin]);
 
   useEffect(() => {
+    if (authLoading) return;
     if (tab === 'membres') loadMembers();
-  }, [tab, loadMembers]);
+  }, [authLoading, tab, loadMembers]);
 
   useEffect(() => {
+    if (authLoading) return;
     if (tab === 'avantages') loadAvantages();
-  }, [tab, loadAvantages]);
+  }, [authLoading, tab, loadAvantages]);
 
   const openEdit = (m: ApiUser) => {
     setEditMember(m);

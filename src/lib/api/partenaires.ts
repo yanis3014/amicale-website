@@ -1,6 +1,5 @@
-import { api } from './client';
+import { api, buildAuthenticatedFetchHeaders } from './client';
 import type { ApiPartenaire } from './types';
-import { getToken } from './client';
 
 export async function getPartenaires(): Promise<ApiPartenaire[]> {
   return api.get<ApiPartenaire[]>('/api/partenaires');
@@ -39,10 +38,9 @@ export async function uploadPartenaireLogo(id: number | string, file: File): Pro
   formData.append('logo', file);
   const base = process.env.NEXT_PUBLIC_API_URL || '';
   const url = `${base.replace(/\/$/, '')}/api/partenaires/${id}/upload-logo`;
-  const token = getToken();
   const res = await fetch(url, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: buildAuthenticatedFetchHeaders(),
     body: formData,
     credentials: 'include',
   });

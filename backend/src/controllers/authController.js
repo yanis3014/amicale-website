@@ -2,10 +2,27 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const { query } = require('../config/db');
+const {
+  getJwtSecret,
+  getCookieOptions,
+  getCsrfCookieOptions,
+  jwtExpiresInToMs,
+  getSessionCookieClearOptions,
+} = require('../config/security');
+const crypto = require('crypto');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+const JWT_SECRET = getJwtSecret();
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 const SALT_ROUNDS = 12;
+const AUTH_COOKIE_NAME = 'auth_token';
+const CSRF_COOKIE_NAME = 'csrf_token';
+
+function issueAuthCookies(res, token) {
+  const maxAgeMs = jwtExpiresInToMs(JWT_EXPIRES_IN);
+  res.cookie(AUTH_COOKIE_NAME, token, getCookieOptions(maxAgeMs));
+  const csrfToken = crypto.randomBytes(24).toString('hex');
+  res.cookie(CSRF_COOKIE_NAME, csrfToken, getCsrfCookieOptions(maxAgeMs));
+}
 
 function sanitizeUser(row) {
   const u = { ...row };
@@ -51,6 +68,7 @@ exports.register = [
       user.numero_membre = numero_membre;
 
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+      issueAuthCookies(res, token);
       return res.status(201).json({ token, user: sanitizeUser(user) });
     } catch (err) {
       console.error(err);
@@ -85,6 +103,7 @@ exports.login = [
       }
 
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+      issueAuthCookies(res, token);
       return res.json({
         token,
         user: {
@@ -119,6 +138,13 @@ exports.me = async (req, res) => {
     console.error(err);
     return res.status(500).json({ error: 'Erreur serveur' });
   }
+};
+
+exports.logout = async (_req, res) => {
+  const clr = getSessionCookieClearOptions();
+  res.clearCookie(AUTH_COOKIE_NAME, clr);
+  res.clearCookie(CSRF_COOKIE_NAME, clr);
+  return res.status(204).send();
 };
 
 exports.changePassword = [

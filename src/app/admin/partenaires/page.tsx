@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
-import { getToken } from '@/lib/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   getAdminPartenaires,
   createPartenaire,
@@ -27,6 +27,7 @@ const defaultForm = {
 };
 
 export default function AdminPartenairesPage() {
+  const { user, isAdmin, isLoading: authLoading } = useAuth();
   const [partenaires, setPartenaires] = useState<ApiPartenaire[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -38,7 +39,7 @@ export default function AdminPartenairesPage() {
   const toast = useToast();
 
   const load = useCallback(() => {
-    if (!getToken()) {
+    if (!user || !isAdmin) {
       setLoading(false);
       return;
     }
@@ -50,11 +51,12 @@ export default function AdminPartenairesPage() {
         setPartenaires([]);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [user, isAdmin]);
 
   useEffect(() => {
+    if (authLoading) return;
     load();
-  }, [load]);
+  }, [authLoading, load]);
 
   const openCreate = () => {
     setEditing(null);

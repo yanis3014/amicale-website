@@ -27,6 +27,12 @@ export async function changePassword(
   });
 }
 
-export function logout(): void {
-  setToken(null);
+export async function logout(): Promise<void> {
+  try {
+    await api.post('/api/auth/logout');
+  } catch {
+    /* on tente quand meme d effacer le navigateur - le client devra rafraichir */
+  } finally {
+    setToken(null);
+  }
 }

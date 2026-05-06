@@ -14,26 +14,44 @@ export function getToken(): string | null {
     const fromGetter = tokenGetter();
     if (fromGetter) return fromGetter;
   }
-  if (typeof window !== 'undefined') {
-    try {
-      return localStorage.getItem('auth_token') || token;
-    } catch {
-      return token;
-    }
-  }
   return token;
 }
 
 export function setToken(newToken: string | null): void {
   token = newToken ?? null;
-  if (typeof window !== 'undefined') {
-    try {
-      if (newToken) localStorage.setItem('auth_token', newToken);
-      else localStorage.removeItem('auth_token');
-    } catch {
-      // localStorage indisponible (SSR, privé, etc.)
-    }
-  }
+}
+
+function getCsrfToken(): string | null {
+  if (typeof document === 'undefined') return null;
+  const chunk = document.cookie
+    .split('; ')
+    .find((part) => part.startsWith('csrf_token='));
+  if (!chunk) return null;
+  return decodeURIComponent(chunk.slice('csrf_token='.length));
+}
+
+function isUnsafeMethod(method?: string): boolean {
+  if (!method) return false;
+  return !['GET', 'HEAD', 'OPTIONS'].includes(method.toUpperCase());
+}
+
+function clearInMemoryJwt() {
+  token = null;
+}
+
+/**
+ * Headers pour requetes authentifiees hors `api.post`/`get` (ex. FormData multipart).
+ * Envoie le Bearer si disponible et le jeton CSRF si le cookie existe (sessions cookie).
+ */
+export function buildAuthenticatedFetchHeaders(
+  extra?: Record<string, string>
+): Record<string, string> {
+  const headers: Record<string, string> = { ...(extra || {}) };
+  const t = getToken();
+  if (t) headers.Authorization = `Bearer ${t}`;
+  const csrfToken = getCsrfToken();
+  if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
+  return headers;
 }
 
 export class ApiError extends Error {
@@ -59,6 +77,10 @@ async function request<T>(
   };
   const t = getToken();
   if (t) (headers as Record<string, string>)['Authorization'] = `Bearer ${t}`;
+  if (isUnsafeMethod(rest.method)) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) (headers as Record<string, string>)['X-CSRF-Token'] = csrfToken;
+  }
 
   const res = await fetch(url, {
     ...rest,
@@ -75,6 +97,9 @@ async function request<T>(
       (Array.isArray(data?.errors) ? data.errors.map((e: { msg: string }) => e.msg).join(', ') : null) ||
       res.statusText;
     throw new ApiError(msg || 'Erreur API', res.status, data);
+  }
+  if (path.includes('/auth/logout')) {
+    clearInMemoryJwt();
   }
   return data as T;
 }

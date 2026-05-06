@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { getAdminStats, getAdminEvents } from '@/lib/api/admin';
 import type { AdminStats } from '@/lib/api/admin';
-import { getToken } from '@/lib/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { updateEvent } from '@/lib/api/events';
 import {
   getAdminAvantages,
@@ -37,6 +37,7 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 export default function AdminDashboardPage() {
+  const { user, isAdmin, isLoading: authLoading } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [avantages, setAvantages] = useState<ApiAvantage[]>([]);
@@ -50,7 +51,7 @@ export default function AdminDashboardPage() {
   const toast = useToast();
 
   const load = useCallback(() => {
-    if (!getToken()) {
+    if (!user || !isAdmin) {
       setLoading(false);
       return;
     }
@@ -64,11 +65,12 @@ export default function AdminDashboardPage() {
         setStats(null);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [user, isAdmin]);
 
   useEffect(() => {
+    if (authLoading) return;
     load();
-  }, [load]);
+  }, [authLoading, load]);
 
   const now = new Date();
   const upcomingEvents = events.filter((e) => new Date(e.date) >= now).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());

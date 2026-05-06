@@ -25,7 +25,7 @@ import {
 import type { ApiEvent } from '@/lib/api/types';
 import type { ApiRegistration } from '@/lib/api/types';
 import { getImageUrl } from '@/lib/api/utils/imageUrl';
-import { getToken } from '@/lib/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
@@ -78,6 +78,7 @@ function exportRegistrationsToCsv(regs: RegistrationWithUser[], eventTitre: stri
 }
 
 export default function AdminAnnoncesPage() {
+  const { user, isAdmin, isLoading: authLoading } = useAuth();
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -94,7 +95,7 @@ export default function AdminAnnoncesPage() {
   const toast = useToast();
 
   const loadEvents = useCallback(() => {
-    if (!getToken()) {
+    if (!user || !isAdmin) {
       setLoading(false);
       return;
     }
@@ -106,7 +107,7 @@ export default function AdminAnnoncesPage() {
         setEvents([]);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [user, isAdmin]);
 
   const now = new Date();
   const eventEnd = (e: ApiEvent) => e.date_fin ? new Date(e.date_fin) : new Date(e.date);
@@ -128,8 +129,9 @@ export default function AdminAnnoncesPage() {
   };
 
   useEffect(() => {
+    if (authLoading) return;
     loadEvents();
-  }, [loadEvents]);
+  }, [authLoading, loadEvents]);
 
   useEffect(() => {
     const drafts: Record<number, number> = {};

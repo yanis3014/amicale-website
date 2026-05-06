@@ -224,9 +224,28 @@ export default function AdminCertificatesPage() {
           </p>
         )}
 
+        <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+          <p className="text-xs font-medium text-neutral-700 mb-2">Repère visuel des coordonnées PDF</p>
+          <div className="relative mx-auto h-44 w-36 rounded border-2 border-neutral-400 bg-white">
+            <div className="absolute inset-x-2 bottom-2 border-t border-dashed border-neutral-300" />
+            <div className="absolute inset-y-2 left-2 border-l border-dashed border-neutral-300" />
+            <div className="absolute left-2 right-4 bottom-2 h-0.5 bg-sky-600" />
+            <div className="absolute bottom-[5px] right-3 text-[11px] font-medium text-sky-700">X →</div>
+            <div className="absolute bottom-2 left-[5px] top-4 w-0.5 bg-violet-600" />
+            <div className="absolute left-2 top-3 text-[11px] font-medium text-violet-700">Y ↑</div>
+            <div className="absolute left-1.5 bottom-1.5 h-1.5 w-1.5 rounded-full bg-neutral-700" />
+            <span className="absolute left-[54%] bottom-[58%] -translate-x-1/2 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800 border border-emerald-200">
+              Nom
+            </span>
+          </div>
+          <p className="mt-2 text-xs text-neutral-600">Origine en bas à gauche.</p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">Position X</label>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Position X (plus grand = plus à droite)
+            </label>
             <input
               type="number"
               value={nameX}
@@ -235,7 +254,9 @@ export default function AdminCertificatesPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">Position Y</label>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Position Y (plus grand = plus haut)
+            </label>
             <input
               type="number"
               value={nameY}
@@ -253,6 +274,10 @@ export default function AdminCertificatesPage() {
             />
           </div>
         </div>
+        <p className="text-xs text-neutral-600">
+          Les valeurs X, Y et la taille sont exprimées en points PDF (<span className="font-medium">pt</span>).
+          Référence utile: 72 pt = 1 pouce.
+        </p>
         <div>
           <Button
             onClick={handleSaveTemplateConfig}

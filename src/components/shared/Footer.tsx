@@ -12,7 +12,7 @@ export const Footer: React.FC = () => {
   return (
     <footer className="bg-[var(--accent-deep)] text-[var(--bg)]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-7">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.4fr_1fr_1fr_1fr] gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.2fr_1fr_1fr_1fr_1fr] gap-10">
           <div>
             <Link href="/" className="inline-block [font-family:'Newsreader',serif] italic text-[22px] font-medium leading-tight">
               Amicale
@@ -69,6 +69,21 @@ export const Footer: React.FC = () => {
               <li className={textClass}>5000 Monastir</li>
               <li>
                 <a href="mailto:asso.fphm@gmail.com" className={linkClass}>asso.fphm@gmail.com</a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <p className={eyebrowClass}>Informations légales</p>
+            <ul className="space-y-3">
+              <li>
+                <Link href="/mentions-legales" className={linkClass}>Mentions légales</Link>
+              </li>
+              <li>
+                <Link href="/conditions-utilisation" className={linkClass}>Conditions d&apos;utilisation</Link>
+              </li>
+              <li>
+                <Link href="/rgpd" className={linkClass}>RGPD</Link>
               </li>
             </ul>
           </div>

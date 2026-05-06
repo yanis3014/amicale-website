@@ -142,7 +142,29 @@ CREATE TABLE cotisations (
 CREATE INDEX idx_cotisations_user_id ON cotisations(user_id);
 CREATE INDEX idx_cotisations_statut ON cotisations(statut);
 
--- 7. page_settings (clé-valeur pour options de pages : header enseignants, etc.)
+-- 7. certificates
+CREATE TABLE certificates (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  event_id INT REFERENCES events(id) ON DELETE SET NULL,
+  cotisation_id INT REFERENCES cotisations(id) ON DELETE SET NULL,
+  certificate_type VARCHAR(50) NOT NULL CHECK (certificate_type IN ('event_registration', 'cotisation_confirmation')),
+  title VARCHAR(255) NOT NULL,
+  file_name VARCHAR(255) NOT NULL,
+  file_url VARCHAR(500) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  CONSTRAINT chk_certificate_source CHECK (
+    event_id IS NOT NULL OR cotisation_id IS NOT NULL
+  )
+);
+CREATE INDEX idx_certificates_user_created_at ON certificates(user_id, created_at DESC);
+CREATE INDEX idx_certificates_type ON certificates(certificate_type);
+CREATE UNIQUE INDEX idx_certificates_unique_event
+  ON certificates(user_id, event_id) WHERE event_id IS NOT NULL;
+CREATE UNIQUE INDEX idx_certificates_unique_cotisation
+  ON certificates(user_id, cotisation_id) WHERE cotisation_id IS NOT NULL;
+
+-- 8. page_settings (clé-valeur pour options de pages : header enseignants, etc.)
 CREATE TABLE page_settings (
   key VARCHAR(100) PRIMARY KEY,
   value TEXT,
@@ -151,7 +173,7 @@ CREATE TABLE page_settings (
 CREATE TRIGGER page_settings_updated_at BEFORE UPDATE ON page_settings
   FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 
--- 8. partenaires
+-- 9. partenaires
 CREATE TABLE partenaires (
   id SERIAL PRIMARY KEY,
   nom VARCHAR(255) NOT NULL,
@@ -167,7 +189,7 @@ CREATE INDEX idx_partenaires_is_active ON partenaires(is_active);
 CREATE TRIGGER partenaires_updated_at BEFORE UPDATE ON partenaires
   FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 
--- 9. avantages (avantages adhérent, réductions, etc. — affichés dans l'espace membre)
+-- 10. avantages (avantages adhérent, réductions, etc. — affichés dans l'espace membre)
 CREATE TABLE avantages (
   id SERIAL PRIMARY KEY,
   libelle VARCHAR(500) NOT NULL,

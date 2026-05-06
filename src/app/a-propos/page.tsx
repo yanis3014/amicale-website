@@ -35,23 +35,18 @@ const rubriques = [
 export default function AProposIndexPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)]">
-      <div className="relative h-[40vh] min-h-[280px] w-full overflow-hidden">
-        <img
-          src="/images/enseignants.jpeg"
-          alt="Amicale FPHM"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
-        <div
-          className="absolute inset-0 bg-gradient-to-br from-forest-900/70 via-primary-800/50 to-primary-800/40"
-          aria-hidden
-        />
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <h1 className="font-display text-4xl md:text-6xl font-black text-white mb-3 drop-shadow-lg">
-            À propos
-          </h1>
-          <p className="text-primary-200 italic text-lg max-w-2xl">
-            L&apos;Amicale des Enseignants de la Faculté de Pharmacie de Monastir
+      <div className="pt-16 bg-[var(--bg)]">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="font-mono text-[12px] tracking-[0.1em] text-[var(--accent)]">
+            — AMICALE FPHM
           </p>
+          <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(48px,6vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
+            À <span className="italic text-[var(--accent)]">propos</span>
+          </h1>
+          <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-[var(--ink-2)]">
+            L&apos;Amicale des Enseignants de la Faculté de Pharmacie de Monastir.
+          </p>
+          <div className="mt-8 border-b border-[var(--line)]" />
         </div>
       </div>
 

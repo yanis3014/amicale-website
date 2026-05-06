@@ -9,7 +9,15 @@ export async function getEnseignant(id: number | string): Promise<ApiEnseignant>
   return api.get<ApiEnseignant>(`/api/enseignants/${id}`);
 }
 
-export async function createEnseignant(data: Partial<ApiEnseignant> & { nom: string }): Promise<ApiEnseignant> {
+export async function createEnseignant(data: {
+  nom: string;
+  titre: string;
+  specialite: string;
+  email: string;
+  linkedin: string;
+  ordre: number;
+  is_active: boolean;
+}): Promise<ApiEnseignant> {
   return api.post<ApiEnseignant>('/api/enseignants', data);
 }
 

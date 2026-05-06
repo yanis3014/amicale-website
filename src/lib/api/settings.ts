@@ -1,5 +1,6 @@
 import { api } from './client';
 import { getToken } from './client';
+import type { ApiAdministrativeDocument } from './types';
 
 export async function getPageSetting(key: string): Promise<{ key: string; value: string | null }> {
   return api.get<{ key: string; value: string | null }>(`/api/settings/${key}`);
@@ -82,6 +83,37 @@ export async function uploadHomeHeroImage(file: File): Promise<{ key: string; va
     throw new Error(data?.error || res.statusText || 'Upload échoué');
   }
   return res.json();
+}
+
+export async function uploadAdministrativeDocument(
+  file: File,
+  title: string
+): Promise<ApiAdministrativeDocument> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('title', title.trim());
+  const base = process.env.NEXT_PUBLIC_API_URL || '';
+  const url = `${base.replace(/\/$/, '')}/api/admin/pages/documents/upload`;
+  const token = getToken();
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data?.error || res.statusText || 'Upload échoué');
+  }
+  return res.json();
+}
+
+export async function getAdministrativeDocumentsAdmin(): Promise<ApiAdministrativeDocument[]> {
+  return api.get<ApiAdministrativeDocument[]>('/api/admin/pages/documents');
+}
+
+export async function deleteAdministrativeDocumentAdmin(docId: string): Promise<void> {
+  await api.delete(`/api/admin/pages/documents/${docId}`);
 }
 
 /** Clés des paramètres de la page d'accueil (lecture publique) */

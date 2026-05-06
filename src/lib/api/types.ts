@@ -104,6 +104,16 @@ export interface ApiPartenaire {
   updated_at?: string;
 }
 
+export interface ApiAdministrativeDocument {
+  id: string;
+  title: string;
+  url: string;
+  original_name?: string;
+  mime_type?: string | null;
+  size?: number | null;
+  uploaded_at: string;
+}
+
 export interface ApiCotisation {
   id: number;
   user_id: number;
@@ -119,6 +129,17 @@ export interface ApiCotisation {
   prenom?: string;
   email?: string;
   numero_membre?: string | null;
+}
+
+export interface ApiMemberCertificate {
+  id: number;
+  user_id: number;
+  event_id?: number | null;
+  cotisation_id?: number | null;
+  certificate_type: 'event_registration' | 'cotisation_confirmation';
+  title: string;
+  file_url: string;
+  created_at: string;
 }
 
 export interface LoginPayload {

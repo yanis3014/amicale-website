@@ -9,12 +9,11 @@ export {
   publishEvent,
   getRegistrations,
   registerToEvent,
-  confirmRegistration,
   cancelRegistration,
 } from './events';
 export { getActivities, getActivity } from './activities';
 export { getEnseignants, getEnseignant } from './enseignants';
-export { getMyProfile, getMyEvents } from './members';
+export { getMyProfile, getMyEvents, getMyCertificates } from './members';
 export { submitCotisation } from './cotisations';
 export { getImageUrl } from './utils/imageUrl';
 export * from './types';

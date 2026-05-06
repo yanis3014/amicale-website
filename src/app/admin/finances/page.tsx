@@ -105,7 +105,7 @@ export default function AdminFinancesPage() {
           montant,
           libelle: form.libelle.trim(),
           type_entree: form.type_entree,
-          date_entree: form.date_entree || undefined,
+          date_entree: form.date_entree,
         });
         toast.success('Entrée modifiée.');
       } else {
@@ -113,7 +113,7 @@ export default function AdminFinancesPage() {
           montant,
           libelle: form.libelle.trim(),
           type_entree: form.type_entree,
-          date_entree: form.date_entree || undefined,
+          date_entree: form.date_entree,
         });
         toast.success('Entrée enregistrée. Elle apparaît dans le suivi des actions.');
       }
@@ -358,6 +358,7 @@ export default function AdminFinancesPage() {
             <select
               value={form.type_entree}
               onChange={(e) => setForm((f) => ({ ...f, type_entree: e.target.value as 'sponsor' | 'don' | 'autre' }))}
+              required
               className="w-full rounded-xl border border-[var(--line)] px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
               <option value="sponsor">Sponsor</option>
@@ -369,6 +370,7 @@ export default function AdminFinancesPage() {
             <label className="block text-sm font-medium text-neutral-700 mb-1">Date d&apos;entrée</label>
             <input
               type="date"
+              required
               value={form.date_entree}
               onChange={(e) => setForm((f) => ({ ...f, date_entree: e.target.value }))}
               className="w-full rounded-xl border border-[var(--line)] px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"

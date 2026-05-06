@@ -1,6 +1,7 @@
 const { body, validationResult } = require('express-validator');
 const { query } = require('../config/db');
 const { sendConfirmationEventRegistration } = require('../services/emailService');
+const { generateEventCertificate } = require('../services/certificateService');
 
 // Admin: liste tous les événements (publiés + brouillons)
 exports.listAdmin = async (req, res) => {
@@ -101,28 +102,28 @@ exports.getById = async (req, res) => {
 
 exports.create = [
   body('titre').trim().notEmpty().withMessage('Titre requis'),
-  body('description').optional().trim(),
-  body('long_description').optional().trim(),
+  body('description').trim().notEmpty().withMessage('Description requise'),
+  body('long_description').trim().notEmpty().withMessage('Description longue requise'),
   body('date').notEmpty().withMessage('Date requise'),
-  body('date_fin').optional(),
-  body('prix').optional().isFloat({ min: 0 }).withMessage('Prix invalide'),
-  body('prix_adherent').optional().isFloat({ min: 0 }),
-  body('capacite').optional().isInt({ min: 0 }),
-  body('lieu').optional().trim(),
-  body('categorie').optional().trim(),
+  body('date_fin').notEmpty().withMessage('Date de fin requise'),
+  body('prix').isFloat({ min: 0 }).withMessage('Prix invalide'),
+  body('prix_adherent').isFloat({ min: 0 }).withMessage('Prix adhérent invalide'),
+  body('capacite').isInt({ min: 0 }).withMessage('Capacité invalide'),
+  body('lieu').trim().notEmpty().withMessage('Lieu requis'),
+  body('categorie').trim().notEmpty().withMessage('Catégorie requise'),
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
       const {
-        titre, description, long_description, date, date_fin, prix = 0, prix_adherent,
-        capacite = 0, lieu, categorie
+        titre, description, long_description, date, date_fin, prix, prix_adherent,
+        capacite, lieu, categorie
       } = req.body;
       const result = await query(
         `INSERT INTO events (titre, description, long_description, date, date_fin, prix, prix_adherent, capacite, places_restantes, lieu, categorie)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8, $9, $10)
          RETURNING *`,
-        [titre, description || null, long_description || null, date, date_fin || null, prix, prix_adherent || null, capacite, lieu || null, categorie || null]
+        [titre, description, long_description, date, date_fin, prix, prix_adherent, capacite, lieu, categorie]
       );
       return res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -316,6 +317,13 @@ exports.registerToEvent = [
         return res.status(404).json({ error: 'Événement introuvable' });
       }
       const event = eventResult.rows[0];
+      const isPaidEvent = Number(event.prix) > 0;
+      const titulaireCompte = (req.body.titulaire_compte || '').trim();
+      const referencePaiementInput = (req.body.reference_paiement || '').trim();
+      const carteExpiry = (req.body.carte_expiry || '').trim();
+      if (isPaidEvent && (!titulaireCompte || !referencePaiementInput || !carteExpiry)) {
+        return res.status(400).json({ error: 'Informations de paiement requises pour cet événement payant' });
+      }
       if (event.places_restantes <= 0) {
         return res.status(400).json({ error: 'Plus de places disponibles' });
       }
@@ -327,14 +335,12 @@ exports.registerToEvent = [
       const isAdherent = userResult.rows[0]?.is_adherent && userResult.rows[0]?.adherent_expires_at && new Date(userResult.rows[0].adherent_expires_at) > new Date();
       const montant = isAdherent && event.prix_adherent != null ? Number(event.prix_adherent) : Number(event.prix);
       // Paiement simulé par carte : on stocke uniquement nom sur carte, ****derniers4, date expiration (jamais numéro complet ni CVV)
-      const methodePaiement = req.body.reference_paiement ? 'carte' : 'Simulation';
-      const referencePaiement = req.body.reference_paiement || `SIM-${Date.now()}`;
-      const titulaireCompte = (req.body.titulaire_compte || '').trim() || null;
-      const carteExpiry = (req.body.carte_expiry || '').trim() || null;
+      const methodePaiement = isPaidEvent ? 'carte' : 'Simulation';
+      const referencePaiement = isPaidEvent ? referencePaiementInput : `SIM-${Date.now()}`;
       await query(
         `INSERT INTO registrations (user_id, event_id, statut, montant_paye, methode_paiement, reference_paiement, titulaire_compte, carte_expiry)
          VALUES ($1, $2, 'confirmed', $3, $4, $5, $6, $7)`,
-        [userId, eventId, montant, methodePaiement, referencePaiement, titulaireCompte, carteExpiry]
+        [userId, eventId, montant, methodePaiement, referencePaiement, titulaireCompte || null, carteExpiry || null]
       );
       await query('UPDATE events SET places_restantes = places_restantes - 1 WHERE id = $1', [eventId]);
       const reg = await query(
@@ -355,6 +361,10 @@ exports.registerToEvent = [
           event: ev,
           isGuest: false,
         }).catch((e) => console.error('Envoi email confirmation:', e));
+        generateEventCertificate({
+          user: { id: userId, nom: u.nom, prenom: u.prenom, email: u.email },
+          event: ev,
+        }).catch((e) => console.error('Generation certificat evenement:', e));
       }
       return res.status(201).json(reg.rows[0]);
     } catch (err) {
@@ -369,7 +379,7 @@ exports.registerToEventGuest = [
   body('nom').trim().notEmpty().withMessage('Nom requis'),
   body('prenom').trim().notEmpty().withMessage('Prénom requis'),
   body('email').trim().isEmail().withMessage('Email invalide'),
-  body('telephone').optional().trim(),
+  body('telephone').trim().notEmpty().withMessage('Téléphone requis'),
   body('methode_paiement').optional().trim(),
   body('reference_paiement').optional().trim(),
   body('titulaire_compte').optional().trim(),
@@ -389,6 +399,13 @@ exports.registerToEventGuest = [
         return res.status(404).json({ error: 'Événement introuvable' });
       }
       const event = eventResult.rows[0];
+      const isPaidEvent = Number(event.prix) > 0;
+      const titulaireCompte = (req.body.titulaire_compte || '').trim();
+      const referencePaiementInput = (req.body.reference_paiement || '').trim();
+      const carteExpiry = (req.body.carte_expiry || '').trim();
+      if (isPaidEvent && (!titulaireCompte || !referencePaiementInput || !carteExpiry)) {
+        return res.status(400).json({ error: 'Informations de paiement requises pour cet événement payant' });
+      }
       if (event.places_restantes <= 0) {
         return res.status(400).json({ error: 'Plus de places disponibles' });
       }
@@ -402,10 +419,8 @@ exports.registerToEventGuest = [
       }
       const montant = Number(event.prix) || 0;
       // Paiement simulé par carte : on stocke uniquement nom sur carte, ****derniers4, date expiration (jamais numéro complet ni CVV)
-      const methodePaiement = req.body.reference_paiement ? 'carte' : 'Simulation';
-      const referencePaiement = req.body.reference_paiement || `SIM-${Date.now()}`;
-      const titulaireCompte = (req.body.titulaire_compte || '').trim() || null;
-      const carteExpiry = (req.body.carte_expiry || '').trim() || null;
+      const methodePaiement = isPaidEvent ? 'carte' : 'Simulation';
+      const referencePaiement = isPaidEvent ? referencePaiementInput : `SIM-${Date.now()}`;
       await query(
         `INSERT INTO registrations (user_id, event_id, statut, montant_paye, methode_paiement, reference_paiement, guest_nom, guest_prenom, guest_email, guest_telephone, titulaire_compte, carte_expiry)
          VALUES (NULL, $1, 'confirmed', $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
@@ -417,9 +432,9 @@ exports.registerToEventGuest = [
           nom,
           prenom,
           email,
-          telephone || null,
-          titulaireCompte,
-          carteExpiry,
+          telephone,
+          titulaireCompte || null,
+          carteExpiry || null,
         ]
       );
       await query('UPDATE events SET places_restantes = places_restantes - 1 WHERE id = $1', [eventId]);

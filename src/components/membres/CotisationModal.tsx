@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { submitCotisation } from '@/lib/api/cotisations';
+import { getPageSetting } from '@/lib/api/settings';
 import { useToast } from '@/components/ui/Toast';
 import { ApiError } from '@/lib/api/client';
 
@@ -22,13 +24,34 @@ const ANNEES_UNIVERSITAIRES = [
 
 export function CotisationModal({ isOpen, onClose, onSuccess }: CotisationModalProps) {
   const toast = useToast();
-  const [montant, setMontant] = useState<string>('25');
+  const [montant, setMontant] = useState<string>('30');
   const [anneeUniversitaire, setAnneeUniversitaire] = useState(
     `${ANNEE_COURANTE}-${ANNEE_COURANTE + 1}`
   );
   const [methodePaiement, setMethodePaiement] = useState('');
   const [reference, setReference] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    getPageSetting('adhesion_fee_amount')
+      .then((res) => {
+        if (cancelled) return;
+        const value = Number(res.value);
+        if (Number.isFinite(value) && value > 0) {
+          setMontant(String(value));
+        } else {
+          setMontant('30');
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setMontant('30');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,8 +65,8 @@ export function CotisationModal({ isOpen, onClose, onSuccess }: CotisationModalP
       await submitCotisation({
         montant: amount,
         annee_universitaire: anneeUniversitaire,
-        methode_paiement: methodePaiement || undefined,
-        reference: reference || undefined,
+        methode_paiement,
+        reference,
       });
       toast.success('Demande de cotisation enregistrée. Elle sera traitée par l\'équipe.');
       onClose();
@@ -63,7 +86,7 @@ export function CotisationModal({ isOpen, onClose, onSuccess }: CotisationModalP
           type="text"
           inputMode="decimal"
           value={montant}
-          onChange={(e) => setMontant(e.target.value)}
+          readOnly
           required
         />
         <div>
@@ -84,15 +107,17 @@ export function CotisationModal({ isOpen, onClose, onSuccess }: CotisationModalP
           </select>
         </div>
         <Input
-          label="Méthode de paiement (optionnel)"
+          label="Méthode de paiement"
           placeholder="Virement, espèces..."
           value={methodePaiement}
           onChange={(e) => setMethodePaiement(e.target.value)}
+          required
         />
         <Input
-          label="Référence / N° reçu (optionnel)"
+          label="Référence / N° reçu"
           value={reference}
           onChange={(e) => setReference(e.target.value)}
+          required
         />
         <div className="flex gap-3 justify-end pt-4">
           <Button type="button" variant="outline" onClick={onClose} disabled={submitting}>

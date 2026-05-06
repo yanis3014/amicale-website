@@ -33,7 +33,6 @@ router.delete('/:id/gallery/:index', authMiddleware, adminMiddleware, auditMiddl
 router.get('/:id/registrations', authMiddleware, adminMiddleware, eventController.getRegistrations);
 router.post('/:id/register', authMiddleware, eventController.registerToEvent);
 router.post('/:id/register-guest', eventController.registerToEventGuest);
-router.patch('/:id/registrations/:regId/confirm', authMiddleware, adminMiddleware, auditMiddleware, eventController.confirmRegistration);
 router.patch('/:id/registrations/:regId/cancel', authMiddleware, adminMiddleware, auditMiddleware, eventController.cancelRegistration);
 
 module.exports = router;

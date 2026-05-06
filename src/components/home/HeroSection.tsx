@@ -10,7 +10,6 @@ import type { ApiEvent } from '@/lib/api/types';
 const DEFAULT_HERO_TITLE = "L'amicale qui / *fédère* les / enseignants de la / Faculté de Pharmacie.";
 const DEFAULT_HERO_TEXT =
   "L'association des enseignants de la FPHM : congrès, journées scientifiques, formations continues et réseau professionnel au service de l'excellence de l'enseignement pharmaceutique.";
-const DEFAULT_MEMBERS_COUNT_TEXT = '120+ Enseignants membres';
 
 /** Découpe un titre contenant *mot* pour afficher "mot" en surligné. */
 function parseHeroTitle(title: string): React.ReactNode {
@@ -35,11 +34,6 @@ function splitTitleLines(title: string): string[] {
     .filter(Boolean);
 }
 
-function extractMembersValue(text: string): string {
-  const match = text.trim().match(/^([0-9]+(?:\+)*)/);
-  return match ? match[1] : text.trim();
-}
-
 interface HeroSectionProps {
   nextEvent: ApiEvent | null;
   heroImageUrl: string | null;
@@ -52,19 +46,14 @@ interface HeroSectionProps {
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
-  nextEvent,
   heroImageUrl,
   heroTitle: heroTitleProp,
   heroText: heroTextProp,
-  membersCountText: membersCountTextProp,
 }) => {
   const heroTitle = heroTitleProp?.trim() || DEFAULT_HERO_TITLE;
   const heroText = heroTextProp?.trim() || DEFAULT_HERO_TEXT;
-  const membersCountText = membersCountTextProp?.trim() || DEFAULT_MEMBERS_COUNT_TEXT;
   const heroSrc = heroImageUrl ? getImageUrl(heroImageUrl) : null;
   const titleLines = splitTitleLines(heroTitle);
-  const membersValue = extractMembersValue(membersCountText);
-  const eventsPerYearValue = nextEvent ? '12+' : '10+';
 
   return (
     <section className="bg-[var(--bg)] pt-16 pb-24">
@@ -126,14 +115,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </p>
             <div className="mt-10 grid grid-cols-2 border border-[var(--line)] rounded-xl overflow-hidden">
               {[
-                { label: 'Membres', value: membersValue },
-                { label: 'Événements/an', value: eventsPerYearValue },
                 { label: 'Fondée en', value: '1975' },
-                { label: 'Départements', value: '05' },
+                { label: 'Événements/an', value: '12+' },
               ].map((item, index) => (
                 <div
                   key={item.label}
-                  className={`p-5 ${index % 2 === 1 ? 'border-l border-[var(--line)]' : ''} ${index > 1 ? 'border-t border-[var(--line)]' : ''}`}
+                  className={`p-5 ${index % 2 === 1 ? 'border-l border-[var(--line)]' : ''}`}
                 >
                   <div className="[font-family:'Newsreader',serif] text-[32px] leading-none text-[var(--accent)]">
                     {item.value}

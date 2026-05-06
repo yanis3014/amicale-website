@@ -42,8 +42,8 @@ export async function getFinanceEntries(params?: {
 export async function createFinanceEntry(data: {
   montant: number;
   libelle: string;
-  type_entree?: 'sponsor' | 'don' | 'autre';
-  date_entree?: string;
+  type_entree: 'sponsor' | 'don' | 'autre';
+  date_entree: string;
 }): Promise<FinanceEntry> {
   return api.post<FinanceEntry>('/api/admin/finances/entries', data);
 }

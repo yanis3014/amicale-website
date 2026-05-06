@@ -124,10 +124,10 @@ export default function AdminEnseignantsPage() {
     e.preventDefault();
     const payload = {
       nom: formData.nom,
-      titre: formData.titre || undefined,
-      specialite: formData.specialite || undefined,
-      email: formData.email || undefined,
-      linkedin: formData.linkedin || undefined,
+      titre: formData.titre,
+      specialite: formData.specialite,
+      email: formData.email,
+      linkedin: formData.linkedin,
       ordre: formData.ordre,
       is_active: formData.is_active,
     };
@@ -369,6 +369,7 @@ export default function AdminEnseignantsPage() {
             </label>
             <input
               type="text"
+              required
               value={formData.titre}
               onChange={(e) => setFormData({ ...formData, titre: e.target.value })}
               className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -381,6 +382,7 @@ export default function AdminEnseignantsPage() {
             </label>
             <input
               type="text"
+              required
               value={formData.specialite}
               onChange={(e) => setFormData({ ...formData, specialite: e.target.value })}
               className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -392,6 +394,7 @@ export default function AdminEnseignantsPage() {
             </label>
             <input
               type="email"
+              required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -403,6 +406,7 @@ export default function AdminEnseignantsPage() {
             </label>
             <input
               type="url"
+              required
               value={formData.linkedin}
               onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
               className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -415,6 +419,7 @@ export default function AdminEnseignantsPage() {
             </label>
             <input
               type="number"
+              required
               min={0}
               value={formData.ordre}
               onChange={(e) => setFormData({ ...formData, ordre: Number(e.target.value) || 0 })}

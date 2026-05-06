@@ -16,7 +16,6 @@ import {
   Edit,
   Trash2,
   LayoutDashboard,
-  AlertCircle,
   ClipboardList,
   Ticket,
 } from 'lucide-react';
@@ -153,7 +152,6 @@ export default function AdminDashboardPage() {
 
   const maxBar = Math.max(stats.inscriptions_ce_mois, 10);
   const barWidth = (stats.inscriptions_ce_mois / maxBar) * 100;
-  const hasCotisationsEnAttente = stats.cotisations_en_attente > 0;
 
   const kpis = [
     { label: 'Membres', value: stats.total_members.toLocaleString('fr-FR'), icon: UsersIcon, color: 'primary', href: '/admin/members' },
@@ -191,29 +189,6 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="p-6 lg:p-8 space-y-8">
-        {/* Alerte cotisations en attente */}
-        {hasCotisationsEnAttente && (
-          <Link
-            href="/admin/members"
-            className="block rounded-xl border-2 border-amber-200 bg-amber-50 p-4 md:p-5 hover:bg-amber-100/80 transition-colors"
-          >
-            <div className="flex items-center gap-4">
-              <span className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                <AlertCircle className="w-6 h-6 text-amber-600" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-amber-900">
-                  {stats.cotisations_en_attente} cotisation(s) en attente
-                </p>
-                <p className="text-sm text-amber-800 mt-0.5">
-                  Cliquez pour valider ou rejeter les demandes
-                </p>
-              </div>
-              <ArrowRight className="w-5 h-5 text-amber-600 flex-shrink-0" />
-            </div>
-          </Link>
-        )}
-
         {/* KPI Cards */}
         <section>
           <h2 className="sr-only">Indicateurs clés</h2>
@@ -281,17 +256,12 @@ export default function AdminDashboardPage() {
                 href="/admin/members"
                 className="flex items-center gap-4 p-4 rounded-xl border-2 border-neutral-100 hover:border-primary-200 hover:bg-primary-50/50 transition-all group relative"
               >
-                {stats.cotisations_en_attente > 0 && (
-                  <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center">
-                    {stats.cotisations_en_attente}
-                  </span>
-                )}
                 <span className="w-12 h-12 rounded-xl bg-forest-500/10 flex items-center justify-center group-hover:bg-forest-500/20 transition-colors">
                   <UsersIcon className="w-6 h-6 text-forest-600" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-neutral-900 group-hover:text-forest-700">Membres & cotisations</p>
-                  <p className="text-sm text-neutral-500">Gérer les adhésions</p>
+                  <p className="text-sm text-neutral-500">Gérer les membres et cotisations</p>
                 </div>
                 <ArrowRight className="w-5 h-5 text-neutral-300 group-hover:text-forest-500 flex-shrink-0" />
               </Link>
@@ -565,7 +535,7 @@ export default function AdminDashboardPage() {
                           reg.statut === 'confirmed' ? 'bg-green-100 text-green-700' :
                           reg.statut === 'cancelled' ? 'bg-neutral-100 text-neutral-600' : 'bg-amber-100 text-amber-700'
                         }`}>
-                          {reg.statut === 'confirmed' ? 'Confirmé' : reg.statut === 'cancelled' ? 'Annulé' : 'En attente'}
+                          {reg.statut === 'confirmed' ? 'Confirmé' : reg.statut === 'cancelled' ? 'Annulé' : 'Confirmé'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">

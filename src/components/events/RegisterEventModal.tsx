@@ -119,7 +119,7 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
         nom: guest.nom.trim(),
         prenom: guest.prenom.trim(),
         email: guest.email.trim().toLowerCase(),
-        telephone: guest.telephone?.trim() || undefined,
+        telephone: guest.telephone.trim(),
         titulaire_compte: isPaidEvent ? cardGuest.name.trim() : undefined,
         reference_paiement: last4 ? `****${last4}` : undefined,
         carte_expiry: isPaidEvent ? cardGuest.expiry : undefined,
@@ -225,11 +225,12 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
               placeholder="vous@exemple.com"
             />
             <Input
-              label="Téléphone (optionnel)"
+              label="Téléphone"
               type="tel"
               value={guest.telephone || ''}
               onChange={(e) => setGuest((g) => ({ ...g, telephone: e.target.value }))}
               placeholder="+216 00 000 000"
+              required
             />
             {isPaidEvent && (
               <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-4 space-y-3">

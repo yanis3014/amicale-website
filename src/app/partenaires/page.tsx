@@ -31,15 +31,18 @@ export default function PartenairesPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
-      <div className="relative bg-gradient-to-br from-primary-700 to-forest-800 text-white py-16 md:py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
-            Partenaires
+      <div className="pt-16 bg-[var(--bg)]">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="font-mono text-[12px] tracking-[0.1em] text-[var(--accent)]">
+            — AMICALE FPHM
+          </p>
+          <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(48px,6vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
+            Nos <span className="italic text-[var(--accent)]">partenaires</span>
           </h1>
-          <p className="text-lg text-primary-100 max-w-2xl">
+          <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-[var(--ink-2)]">
             Les partenaires de l&apos;Amicale de la Faculté de Pharmacie de Monastir.
           </p>
+          <div className="mt-8 border-b border-[var(--line)]" />
         </div>
       </div>
 

@@ -13,6 +13,7 @@ import {
   CalendarDays,
 } from 'lucide-react';
 import { getEvent } from '@/lib/api/events';
+import { getMyEvents } from '@/lib/api/members';
 import { getImageUrl } from '@/lib/api/utils/imageUrl';
 import { useAuth } from '@/contexts/AuthContext';
 import type { ApiEvent } from '@/lib/api/types';
@@ -25,10 +26,11 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 export default function AnnonceDetailPage() {
   const params = useParams();
   const id = params?.id as string;
-  const { isAdherent } = useAuth();
+  const { isAdherent, isAuthenticated } = useAuth();
   const [event, setEvent] = useState<ApiEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -46,6 +48,28 @@ export default function AnnonceDetailPage() {
       });
     return () => { cancelled = true; };
   }, [id]);
+
+  useEffect(() => {
+    if (!id || !isAuthenticated) {
+      setAlreadyRegistered(false);
+      return;
+    }
+
+    let cancelled = false;
+    getMyEvents()
+      .then((registrations) => {
+        if (cancelled) return;
+        const currentEventId = Number(id);
+        setAlreadyRegistered(registrations.some((registration) => registration.event_id === currentEventId));
+      })
+      .catch(() => {
+        if (!cancelled) setAlreadyRegistered(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isAuthenticated]);
 
   if (loading) {
     return (
@@ -86,6 +110,19 @@ export default function AnnonceDetailPage() {
     isAdherent && event.prix > 0 && prixAdherent != null && prixAdherent < event.prix;
   const fewPlaces = event.places_restantes > 0 && event.places_restantes < 10;
   const imageUrl = getImageUrl(event.image_url);
+  const isRegisterDisabled = event.places_restantes === 0 || alreadyRegistered;
+
+  const handleRegisterSuccess = () => {
+    setAlreadyRegistered(true);
+    setEvent((prev) =>
+      prev
+        ? {
+            ...prev,
+            places_restantes: Math.max(0, prev.places_restantes - 1),
+          }
+        : prev
+    );
+  };
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
@@ -257,10 +294,12 @@ export default function AnnonceDetailPage() {
                   variant="primary"
                   size="xl"
                   className="w-full"
-                  disabled={event.places_restantes === 0}
+                  disabled={isRegisterDisabled}
                   onClick={() => setRegisterModalOpen(true)}
                 >
-                  {event.places_restantes === 0
+                  {alreadyRegistered
+                    ? 'Déjà inscrit'
+                    : event.places_restantes === 0
                     ? 'Complet'
                     : "S'inscrire"}
                 </Button>
@@ -289,6 +328,7 @@ export default function AnnonceDetailPage() {
         event={event}
         isOpen={registerModalOpen}
         onClose={() => setRegisterModalOpen(false)}
+        onSuccess={handleRegisterSuccess}
       />
     </div>
   );

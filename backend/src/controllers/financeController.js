@@ -85,14 +85,14 @@ exports.listEntries = async (req, res) => {
 exports.createEntry = [
   body('montant').isFloat({ min: 0.01 }).withMessage('Montant invalide'),
   body('libelle').trim().notEmpty().withMessage('Libellé requis'),
-  body('type_entree').optional().isIn(['sponsor', 'don', 'autre']).withMessage('Type invalide'),
-  body('date_entree').optional().isISO8601().withMessage('Date invalide'),
+  body('type_entree').isIn(['sponsor', 'don', 'autre']).withMessage('Type invalide'),
+  body('date_entree').isISO8601().withMessage('Date invalide'),
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-      const { montant, libelle, type_entree = 'sponsor', date_entree } = req.body;
-      const date = date_entree ? new Date(date_entree).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
+      const { montant, libelle, type_entree, date_entree } = req.body;
+      const date = new Date(date_entree).toISOString().slice(0, 10);
       const result = await query(
         `INSERT INTO finance_entries (montant, libelle, type_entree, date_entree, created_by)
          VALUES ($1, $2, $3, $4, $5) RETURNING *`,

@@ -22,8 +22,8 @@ exports.register = [
   body('prenom').trim().notEmpty().withMessage('Prénom requis'),
   body('email').trim().isEmail().withMessage('Email invalide'),
   body('password').isLength({ min: 8 }).withMessage('Mot de passe min 8 caractères'),
-  body('annee').optional().isInt({ min: 1, max: 6 }),
-  body('telephone').optional().trim(),
+  body('annee').isInt({ min: 1, max: 6 }).withMessage('Année requise (1-6)'),
+  body('telephone').trim().notEmpty().withMessage('Téléphone requis'),
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -43,7 +43,7 @@ exports.register = [
         `INSERT INTO users (nom, prenom, email, password_hash, annee, telephone)
          VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING id, nom, prenom, email, role, annee, telephone, numero_membre, is_adherent, adherent_expires_at, created_at`,
-        [nom, prenom, email, password_hash, annee || null, telephone || null]
+        [nom, prenom, email, password_hash, annee, telephone]
       );
       const user = result.rows[0];
       const numero_membre = generateNumeroMembre(year, user.id);

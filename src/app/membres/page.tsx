@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import {
+  ArrowLeft,
   User,
   Calendar,
   Gift,
@@ -13,12 +14,16 @@ import {
   MapPin,
   X,
   CreditCard,
+  FileText,
 } from 'lucide-react';
-import { getMyProfile, getMyEvents } from '@/lib/api/members';
+import Link from 'next/link';
+import { getMyProfile, getMyEvents, getMyCertificates } from '@/lib/api/members';
 import { getAvantages } from '@/lib/api/avantages';
+import { getImageUrl } from '@/lib/api/utils/imageUrl';
 import { useAuth } from '@/contexts/AuthContext';
 import type { ApiUser } from '@/lib/api/types';
 import type { ApiRegistration } from '@/lib/api/types';
+import type { ApiMemberCertificate } from '@/lib/api/types';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 function formatAdherentBadge(adherentExpiresAt: string | null | undefined): string {
@@ -34,6 +39,7 @@ export default function DashboardMembrePage() {
   const [profile, setProfile] = useState<ApiUser | null>(null);
   const [events, setEvents] = useState<ApiRegistration[]>([]);
   const [avantages, setAvantages] = useState<{ id: number; libelle: string }[]>([]);
+  const [certificates, setCertificates] = useState<ApiMemberCertificate[]>([]);
   const [loading, setLoading] = useState(true);
   const [profileError, setProfileError] = useState(false);
   const [activeTab, setActiveTab] = useState<'profil' | 'evenements' | 'avantages' | 'certificats'>('profil');
@@ -48,12 +54,13 @@ export default function DashboardMembrePage() {
     if (contextUser) setProfile(contextUser);
     setLoading(true);
     setProfileError(false);
-    Promise.all([getMyProfile(), getMyEvents(), getAvantages()])
-      .then(([p, e, a]) => {
+    Promise.all([getMyProfile(), getMyEvents(), getAvantages(), getMyCertificates()])
+      .then(([p, e, a, certs]) => {
         if (!cancelled) {
           setProfile(p);
           setEvents(e);
           setAvantages(a.map((x) => ({ id: x.id, libelle: x.libelle })));
+          setCertificates(certs);
         }
       })
       .catch(() => {
@@ -115,6 +122,15 @@ export default function DashboardMembrePage() {
     <div className="min-h-screen bg-[var(--bg)]">
       <div className="bg-[var(--surface-2)] text-[var(--ink)] py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-6">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-white px-4 py-2 text-sm font-medium text-[var(--ink)] transition-colors hover:bg-[var(--bg)]"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Retour au site
+            </Link>
+          </div>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-[var(--accent)] text-[var(--bg)] flex items-center justify-center [font-family:'Newsreader',serif] font-medium text-xl">
@@ -265,7 +281,9 @@ export default function DashboardMembrePage() {
                       className={`flex rounded-xl overflow-hidden bg-white shadow-card border border-neutral-100 ${
                         event.statut === 'confirmed'
                           ? 'border-l-4 border-l-primary-500'
-                          : 'border-l-4 border-l-gold-500'
+                          : event.statut === 'cancelled'
+                            ? 'border-l-4 border-l-neutral-300'
+                            : 'border-l-4 border-l-primary-500'
                       }`}
                     >
                       <div className="flex-1 p-6">
@@ -298,10 +316,12 @@ export default function DashboardMembrePage() {
                           className={`px-3 py-1 rounded-full text-sm font-semibold ${
                             event.statut === 'confirmed'
                               ? 'bg-primary-100 text-primary-700'
-                              : 'bg-gold-500/20 text-gold-700'
+                              : event.statut === 'cancelled'
+                                ? 'bg-neutral-100 text-neutral-600'
+                                : 'bg-primary-100 text-primary-700'
                           }`}
                         >
-                          {event.statut === 'confirmed' ? 'Confirmé' : 'En attente'}
+                          {event.statut === 'cancelled' ? 'Annulé' : 'Confirmé'}
                         </span>
                         <button
                           onClick={() => handleShowTicket(event)}
@@ -387,11 +407,44 @@ export default function DashboardMembrePage() {
         {activeTab === 'certificats' && (
           <div>
             <h2 className="text-2xl font-bold text-neutral-900 mb-6">
-              Mes Certificats
+              Mes certificats
             </h2>
-            <p className="text-neutral-600">
-              Les attestations et certificats seront disponibles prochainement.
-            </p>
+            {certificates.length === 0 ? (
+              <p className="text-neutral-600">
+                Aucun certificat disponible pour le moment.
+              </p>
+            ) : (
+              <div className="bg-white rounded-xl shadow-sm border border-[var(--line)] overflow-hidden">
+                <div className="divide-y divide-neutral-100">
+                  {certificates.map((cert) => (
+                    <a
+                      key={cert.id}
+                      href={getImageUrl(cert.file_url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-[var(--bg)] transition-colors"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <FileText className="w-5 h-5 text-[var(--accent)] flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="font-medium text-neutral-900 truncate">{cert.title}</p>
+                          <p className="text-xs text-neutral-500">
+                            {cert.certificate_type === 'event_registration' ? 'Type: Événement' : 'Type: Cotisation'}
+                          </p>
+                          <p className="text-xs text-neutral-500">
+                            Généré le {new Date(cert.created_at).toLocaleDateString('fr-FR')}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-2 text-[var(--accent)] font-medium flex-shrink-0">
+                        <Download className="w-4 h-4" />
+                        Ouvrir / Télécharger
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

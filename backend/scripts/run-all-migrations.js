@@ -33,6 +33,7 @@ const MIGRATIONS = [
   'src/config/migration-avantages.sql',
   'src/config/migration-finance-entries.sql',
   'src/config/migration-registration-payment-details.sql',
+  'src/config/migration-certificates.sql',
   'src/config/migration-events-date-fin.sql',
   'src/config/migration-events-featured.sql',
   'migrations/001_add_events_gallery.sql',

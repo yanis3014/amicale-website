@@ -39,12 +39,12 @@ exports.getById = async (req, res) => {
 
 exports.create = [
   body('nom').trim().notEmpty().withMessage('Nom requis'),
-  body('titre').optional().trim(),
-  body('specialite').optional().trim(),
-  body('email').optional().trim().isEmail(),
-  body('linkedin').optional().trim(),
-  body('ordre').optional().isInt({ min: 0 }),
-  body('is_active').optional().isBoolean(),
+  body('titre').trim().notEmpty().withMessage('Titre requis'),
+  body('specialite').trim().notEmpty().withMessage('Spécialité requise'),
+  body('email').trim().isEmail().withMessage('Email invalide'),
+  body('linkedin').trim().notEmpty().withMessage('Lien LinkedIn requis'),
+  body('ordre').isInt({ min: 0 }).withMessage('Ordre requis'),
+  body('is_active').isBoolean().withMessage('Statut actif requis'),
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -53,7 +53,7 @@ exports.create = [
       const result = await query(
         `INSERT INTO enseignants (nom, titre, specialite, email, linkedin, ordre, is_active)
          VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-        [nom, titre || null, specialite || null, email || null, linkedin || null, ordre, is_active]
+        [nom, titre, specialite, email, linkedin, ordre, is_active]
       );
       return res.status(201).json(result.rows[0]);
     } catch (err) {

@@ -9,9 +9,10 @@ const FULLPAGE_PATHS = ['/login', '/register'];
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith('/admin') ?? false;
+  const isMembresArea = pathname?.startsWith('/membres') ?? false;
   const isFullPage = pathname ? FULLPAGE_PATHS.includes(pathname) : false;
 
-  if (isAdmin || isFullPage) {
+  if (isAdmin || isMembresArea || isFullPage) {
     return <>{children}</>;
   }
 

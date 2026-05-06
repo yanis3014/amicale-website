@@ -38,9 +38,9 @@ exports.getById = async (req, res) => {
 
 exports.create = [
   body('nom').trim().notEmpty().withMessage('Nom requis'),
-  body('url').optional().trim(),
-  body('ordre').optional().isInt({ min: 0 }),
-  body('is_active').optional().isBoolean(),
+  body('url').trim().notEmpty().withMessage('URL requise'),
+  body('ordre').isInt({ min: 0 }).withMessage('Ordre requis'),
+  body('is_active').isBoolean().withMessage('Statut actif requis'),
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -49,7 +49,7 @@ exports.create = [
       const result = await query(
         `INSERT INTO partenaires (nom, url, ordre, is_active)
          VALUES ($1, $2, $3, $4) RETURNING *`,
-        [nom, url || null, ordre ?? 0, is_active !== false]
+        [nom, url, ordre, is_active]
       );
       return res.status(201).json(result.rows[0]);
     } catch (err) {

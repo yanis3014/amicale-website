@@ -16,9 +16,9 @@ export async function getPartenaireById(id: number | string): Promise<ApiPartena
 
 export async function createPartenaire(data: {
   nom: string;
-  url?: string;
-  ordre?: number;
-  is_active?: boolean;
+  url: string;
+  ordre: number;
+  is_active: boolean;
 }): Promise<ApiPartenaire> {
   return api.post<ApiPartenaire>('/api/partenaires', data);
 }

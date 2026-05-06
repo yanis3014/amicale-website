@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getFeaturedEvents } from '@/lib/api/events';
+import { getEvents, getFeaturedEvents } from '@/lib/api/events';
 import { getImageUrl } from '@/lib/api/utils/imageUrl';
 import type { ApiEvent } from '@/lib/api/types';
 
@@ -42,9 +42,22 @@ export const EventsSection: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
-    getFeaturedEvents()
-      .then((data) => {
-        if (!cancelled) setEvents(data);
+    Promise.all([
+      getFeaturedEvents(),
+      getEvents({ upcoming: true }),
+    ])
+      .then(([featured, upcoming]) => {
+        if (cancelled) return;
+        // Priorité aux événements "à la une", puis fallback sur les prochains événements publiés.
+        const merged: ApiEvent[] = [];
+        const seen = new Set<number>();
+        [...featured, ...upcoming].forEach((e) => {
+          if (!seen.has(e.id)) {
+            seen.add(e.id);
+            merged.push(e);
+          }
+        });
+        setEvents(merged);
       })
       .catch(() => {
         if (!cancelled) setEvents([]);
@@ -71,7 +84,7 @@ export const EventsSection: React.FC = () => {
             </h2>
           </div>
           <Link
-            href="/evenements"
+            href="/annonces"
             className="hidden md:inline-flex items-center justify-center rounded-full border border-[var(--line-strong)] px-5 py-2.5 text-[14px] font-medium text-[var(--ink-2)] hover:bg-[var(--surface)] transition-all duration-200"
           >
             Tout le programme →
@@ -87,7 +100,7 @@ export const EventsSection: React.FC = () => {
         ) : events.length === 0 ? (
           <div className="text-center py-12 text-[var(--ink-3)]">
             <p>Aucun événement à la une pour le moment.</p>
-            <Link href="/evenements" className="mt-2 inline-block text-[var(--accent)] font-medium hover:underline">
+            <Link href="/annonces" className="mt-2 inline-block text-[var(--accent)] font-medium hover:underline">
               Tout le programme →
             </Link>
           </div>
@@ -158,7 +171,7 @@ export const EventsSection: React.FC = () => {
 
         <div className="mt-8 text-center md:hidden">
           <Link
-            href="/evenements"
+            href="/annonces"
             className="inline-flex items-center justify-center rounded-full border border-[var(--line-strong)] px-5 py-2.5 text-[14px] font-medium text-[var(--ink-2)] hover:bg-[var(--surface)] transition-all duration-200"
           >
             Tout le programme →

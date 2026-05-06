@@ -1,12 +1,21 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { FileText, FolderOpen, Heart, History, Target, UserCircle, Upload, ImageIcon } from 'lucide-react';
-import { getPageSetting, setPageSetting, uploadAProposPageImage, type AProposPageKey } from '@/lib/api/settings';
+import { FileText, FolderOpen, Heart, History, Target, UserCircle, Upload, ImageIcon, Trash2 } from 'lucide-react';
+import {
+  getPageSetting,
+  setPageSetting,
+  uploadAProposPageImage,
+  uploadAdministrativeDocument,
+  getAdministrativeDocumentsAdmin,
+  deleteAdministrativeDocumentAdmin,
+  type AProposPageKey,
+} from '@/lib/api/settings';
 import { getImageUrl } from '@/lib/api/utils/imageUrl';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import type { ApiAdministrativeDocument } from '@/lib/api/types';
 
 const SECTIONS: { key: AProposPageKey; label: string; icon: typeof UserCircle }[] = [
   { key: 'mot_du_president', label: 'Mot du président', icon: UserCircle },
@@ -24,6 +33,11 @@ export default function AdminAProposPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
+  const [documentsFiles, setDocumentsFiles] = useState<ApiAdministrativeDocument[]>([]);
+  const [docTitle, setDocTitle] = useState('');
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
+  const documentInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const toast = useToast();
 
@@ -34,6 +48,7 @@ export default function AdminAProposPage() {
     Promise.all([
       ...contentKeys.map((k) => getPageSetting(k)),
       ...imageKeys.map((k) => getPageSetting(k)),
+      getAdministrativeDocumentsAdmin(),
     ])
       .then((results) => {
         const next: Record<string, string> = {};
@@ -48,9 +63,11 @@ export default function AdminAProposPage() {
           const imgVal = results[contentKeys.length + i]?.value ?? '';
           nextImages[s.key] = imgVal;
         });
+        const docs = results[contentKeys.length + imageKeys.length];
         setValues(next);
         setEdits(nextEdits);
         setImages(nextImages);
+        setDocumentsFiles(Array.isArray(docs) ? (docs as ApiAdministrativeDocument[]) : []);
       })
       .catch(() => toast.error('Erreur lors du chargement des contenus'))
       .finally(() => setLoading(false));
@@ -70,6 +87,41 @@ export default function AdminAProposPage() {
       toast.error('Erreur lors de l\'enregistrement');
     } finally {
       setSaving(null);
+    }
+  };
+
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!docTitle.trim()) {
+      toast.error('Le titre du document est obligatoire.');
+      e.target.value = '';
+      return;
+    }
+    setUploadingDoc(true);
+    try {
+      await uploadAdministrativeDocument(file, docTitle.trim());
+      setDocTitle('');
+      await load();
+      toast.success('Document ajouté');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erreur lors de l\'upload');
+    } finally {
+      setUploadingDoc(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeleteDocument = async (docId: string) => {
+    setDeletingDocId(docId);
+    try {
+      await deleteAdministrativeDocumentAdmin(docId);
+      await load();
+      toast.success('Document supprimé');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erreur lors de la suppression');
+    } finally {
+      setDeletingDocId(null);
     }
   };
 
@@ -117,6 +169,81 @@ export default function AdminAProposPage() {
       </p>
 
       <div className="space-y-8">
+        <section className="bg-white rounded-xl border border-[var(--line)] shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-neutral-100 bg-[var(--bg)] flex items-center gap-3">
+            <FolderOpen className="w-5 h-5 text-[var(--accent)]" />
+            <h2 className="font-display font-semibold text-neutral-900">Pièces administratives (dashboard membre)</h2>
+          </div>
+          <div className="p-6 space-y-4">
+            <p className="text-sm text-neutral-600">
+              Déposez ici les statuts, JORT, RNE, RIB, etc. Les membres pourront les consulter depuis leur dashboard.
+            </p>
+            <div className="flex flex-wrap items-end gap-3">
+              <div>
+                <label className="block text-xs text-neutral-600 mb-1">Titre *</label>
+                <input
+                  type="text"
+                  required
+                  value={docTitle}
+                  onChange={(e) => setDocTitle(e.target.value)}
+                  className="w-72 max-w-full px-3 py-2 border border-[var(--line)] rounded-xl text-sm"
+                  placeholder="Ex. Statuts officiels"
+                />
+              </div>
+              <input
+                ref={documentInputRef}
+                type="file"
+                className="hidden"
+                onChange={handleDocumentUpload}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => documentInputRef.current?.click()}
+                disabled={uploadingDoc}
+                leftIcon={uploadingDoc ? <LoadingSpinner /> : <Upload className="w-4 h-4" />}
+              >
+                {uploadingDoc ? 'Envoi…' : 'Déposer un document'}
+              </Button>
+            </div>
+
+            <div className="border border-[var(--line)] rounded-xl overflow-hidden">
+              {documentsFiles.length === 0 ? (
+                <p className="text-sm text-neutral-500 px-4 py-3">Aucun document déposé.</p>
+              ) : (
+                <div className="divide-y divide-neutral-100">
+                  {documentsFiles.map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-neutral-900 truncate">{doc.title || doc.original_name}</p>
+                        <a
+                          href={getImageUrl(doc.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-[var(--accent)] hover:underline"
+                        >
+                          Ouvrir
+                        </a>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-200"
+                        onClick={() => handleDeleteDocument(doc.id)}
+                        loading={deletingDocId === doc.id}
+                        leftIcon={<Trash2 className="w-4 h-4" />}
+                      >
+                        Supprimer
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
         {SECTIONS.map(({ key, label, icon: Icon }) => (
           <section
             key={key}

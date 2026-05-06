@@ -23,6 +23,11 @@ const pagesStorage = multer.diskStorage({
   filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/\s/g, '-')}`),
 });
 const uploadPage = multer({ storage: pagesStorage, limits: { fileSize: 5 * 1024 * 1024 } });
+const documentsStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, '../../uploads/pages/documents')),
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/\s/g, '-')}`),
+});
+const uploadDocument = multer({ storage: documentsStorage, limits: { fileSize: 15 * 1024 * 1024 } });
 
 router.use(authMiddleware);
 router.use(adminMiddleware);
@@ -40,6 +45,9 @@ router.put('/settings/:key', pageSettingsController.set);
 router.post('/pages/enseignants/header', uploadPage.single('image'), pageSettingsController.uploadEnseignantsHeader);
 router.post('/pages/a-propos/:pageKey/image', uploadPage.single('image'), pageSettingsController.uploadAProposImage);
 router.post('/pages/home/hero-image', uploadPage.single('image'), pageSettingsController.uploadHomeHeroImage);
+router.post('/pages/documents/upload', uploadDocument.single('file'), pageSettingsController.uploadAdministrativeDocument);
+router.get('/pages/documents', pageSettingsController.listAdministrativeDocuments);
+router.delete('/pages/documents/:docId', pageSettingsController.deleteAdministrativeDocument);
 router.get('/events', eventController.listAdmin);
 router.get('/enseignants', enseignantController.listAll);
 router.get('/members', memberController.listAdmin);
@@ -48,8 +56,6 @@ router.get('/members/:id', memberController.getByIdAdmin);
 router.put('/members/:id', memberController.updateAdmin);
 router.delete('/members/:id', memberController.removeAdmin);
 router.get('/cotisations', cotisationController.listAdmin);
-router.patch('/cotisations/:id/confirm', cotisationController.confirm);
-router.patch('/cotisations/:id/reject', cotisationController.reject);
 router.get('/partenaires', partenaireController.listAll);
 router.get('/avantages', avantageController.listAll);
 router.post('/avantages', avantageController.create);

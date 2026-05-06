@@ -75,7 +75,7 @@ export interface RegisterEventGuestPayload extends RegistrationPaymentDetails {
   nom: string;
   prenom: string;
   email: string;
-  telephone?: string;
+  telephone: string;
   methode_paiement?: string;
   reference_paiement?: string;
 }
@@ -85,16 +85,6 @@ export async function registerToEventGuest(
   payload: RegisterEventGuestPayload
 ): Promise<ApiRegistration> {
   return api.post<ApiRegistration>(`/api/events/${eventId}/register-guest`, payload);
-}
-
-export async function confirmRegistration(
-  eventId: number | string,
-  regId: number | string
-): Promise<ApiRegistration> {
-  return api.patch<ApiRegistration>(
-    `/api/events/${eventId}/registrations/${regId}/confirm`,
-    {}
-  );
 }
 
 export async function cancelRegistration(

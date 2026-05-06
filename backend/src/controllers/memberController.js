@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const { query } = require('../config/db');
+const { listMemberCertificates } = require('../services/certificateService');
 
 const SALT_ROUNDS = 12;
 
@@ -39,14 +40,24 @@ exports.getMyEvents = async (req, res) => {
   }
 };
 
+exports.getMyCertificates = async (req, res) => {
+  try {
+    const rows = await listMemberCertificates(req.user.id);
+    return res.json(rows);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
+
 // Admin: create a member (traced via created_by_admin_id and audit)
 exports.createMember = [
   body('nom').trim().notEmpty().withMessage('Nom requis'),
   body('prenom').trim().notEmpty().withMessage('Prénom requis'),
   body('email').trim().isEmail().withMessage('Email invalide'),
   body('password').isLength({ min: 8 }).withMessage('Mot de passe min 8 caractères'),
-  body('annee').optional().isInt({ min: 1, max: 6 }),
-  body('telephone').optional().trim(),
+  body('annee').isInt({ min: 1, max: 6 }).withMessage('Année requise (1-6)'),
+  body('telephone').trim().notEmpty().withMessage('Téléphone requis'),
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -67,7 +78,7 @@ exports.createMember = [
         `INSERT INTO users (nom, prenom, email, password_hash, annee, telephone, role, created_by_admin_id)
          VALUES ($1, $2, $3, $4, $5, $6, 'member', $7)
          RETURNING id, nom, prenom, email, role, annee, telephone, numero_membre, is_adherent, adherent_expires_at, created_at, created_by_admin_id`,
-        [nom, prenom, email, password_hash, annee || null, telephone || null, adminId]
+        [nom, prenom, email, password_hash, annee, telephone, adminId]
       );
       const user = result.rows[0];
       const numero_membre = generateNumeroMembre(year, user.id);
@@ -120,11 +131,11 @@ exports.getByIdAdmin = async (req, res) => {
 };
 
 exports.updateAdmin = [
-  body('nom').optional().trim().notEmpty(),
-  body('prenom').optional().trim().notEmpty(),
-  body('email').optional().trim().isEmail(),
-  body('annee').optional().isInt({ min: 1, max: 6 }),
-  body('telephone').optional().trim(),
+  body('nom').trim().notEmpty().withMessage('Nom requis'),
+  body('prenom').trim().notEmpty().withMessage('Prénom requis'),
+  body('email').trim().isEmail().withMessage('Email invalide'),
+  body('annee').isInt({ min: 1, max: 6 }).withMessage('Année requise (1-6)'),
+  body('telephone').trim().notEmpty().withMessage('Téléphone requis'),
   body('is_adherent').optional().isBoolean(),
   body('adherent_expires_at').optional(),
   async (req, res) => {

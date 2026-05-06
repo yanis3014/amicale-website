@@ -20,7 +20,6 @@ import {
   publishEvent,
   uploadEventImage,
   getRegistrations,
-  confirmRegistration,
   cancelRegistration,
 } from '@/lib/api/events';
 import type { ApiEvent } from '@/lib/api/types';
@@ -91,6 +90,7 @@ export default function AdminAnnoncesPage() {
   const [registrations, setRegistrations] = useState<RegistrationWithUser[]>([]);
   const [loadingRegs, setLoadingRegs] = useState(false);
   const [savingFeatured, setSavingFeatured] = useState<number | null>(null);
+  const [featuredOrderDrafts, setFeaturedOrderDrafts] = useState<Record<number, number>>({});
   const toast = useToast();
 
   const loadEvents = useCallback(() => {
@@ -131,6 +131,14 @@ export default function AdminAnnoncesPage() {
     loadEvents();
   }, [loadEvents]);
 
+  useEffect(() => {
+    const drafts: Record<number, number> = {};
+    events.forEach((event) => {
+      drafts[event.id] = event.home_order ?? 0;
+    });
+    setFeaturedOrderDrafts(drafts);
+  }, [events]);
+
   const openCreate = () => {
     setEditingEvent(null);
     setFormData(defaultForm);
@@ -167,15 +175,15 @@ export default function AdminAnnoncesPage() {
     e.preventDefault();
     const payload = {
       titre: formData.titre,
-      description: formData.description || undefined,
-      long_description: formData.long_description || undefined,
+      description: formData.description,
+      long_description: formData.long_description,
       date: new Date(formData.date).toISOString(),
-      date_fin: formData.date_fin ? new Date(formData.date_fin).toISOString() : undefined,
+      date_fin: new Date(formData.date_fin).toISOString(),
       prix: Number(formData.prix) || 0,
-      prix_adherent: formData.prix_adherent === '' ? undefined : Number(formData.prix_adherent),
+      prix_adherent: Number(formData.prix_adherent),
       capacite: Number(formData.capacite) || 0,
-      lieu: formData.lieu || undefined,
-      categorie: formData.categorie || undefined,
+      lieu: formData.lieu,
+      categorie: formData.categorie,
     };
     try {
       if (editingEvent) {
@@ -237,18 +245,6 @@ export default function AdminAnnoncesPage() {
       setRegistrations([]);
     } finally {
       setLoadingRegs(false);
-    }
-  };
-
-  const handleConfirmReg = async (regId: number) => {
-    if (!inscritsEvent) return;
-    try {
-      await confirmRegistration(inscritsEvent.id, regId);
-      toast.success('Inscription confirmée');
-      const regs = await getRegistrations(inscritsEvent.id);
-      setRegistrations(regs as RegistrationWithUser[]);
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Erreur');
     }
   };
 
@@ -363,6 +359,74 @@ export default function AdminAnnoncesPage() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-neutral-100">
+                <div className="w-full rounded-lg border border-neutral-100 bg-neutral-50 p-3 mb-1">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <label className="flex items-center gap-2 text-sm font-medium text-neutral-800 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={event.featured_on_home ?? false}
+                        disabled={savingFeatured === event.id}
+                        onChange={(e) =>
+                          handleFeaturedChange(
+                            event,
+                            e.target.checked,
+                            featuredOrderDrafts[event.id] ?? event.home_order ?? 0
+                          )
+                        }
+                        className="rounded border-neutral-300 text-[var(--accent)] focus:ring-primary-500 w-4 h-4"
+                      />
+                      Mettre à la une (accueil)
+                    </label>
+
+                    <span
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        event.featured_on_home
+                          ? 'bg-primary-100 text-primary-700'
+                          : 'bg-neutral-100 text-neutral-600'
+                      }`}
+                    >
+                      <Star className="w-3.5 h-3.5" />
+                      {event.featured_on_home ? 'À la une' : 'Non mis en avant'}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <label className="text-xs text-neutral-600" htmlFor={`home-order-${event.id}`}>
+                      Ordre d&apos;affichage
+                    </label>
+                    <input
+                      id={`home-order-${event.id}`}
+                      type="number"
+                      min={0}
+                      value={featuredOrderDrafts[event.id] ?? 0}
+                      disabled={savingFeatured === event.id}
+                      onChange={(e) =>
+                        setFeaturedOrderDrafts((prev) => ({
+                          ...prev,
+                          [event.id]: Number.parseInt(e.target.value, 10) || 0,
+                        }))
+                      }
+                      className="w-20 px-2 py-1.5 border border-[var(--line)] rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={savingFeatured === event.id}
+                      onClick={() =>
+                        handleFeaturedChange(
+                          event,
+                          event.featured_on_home ?? false,
+                          featuredOrderDrafts[event.id] ?? 0
+                        )
+                      }
+                    >
+                      Enregistrer ordre
+                    </Button>
+                    {savingFeatured === event.id && (
+                      <span className="text-xs text-neutral-500">Enregistrement…</span>
+                    )}
+                  </div>
+                </div>
                 <Button
                   variant="outline"
                   size="sm"
@@ -435,10 +499,11 @@ export default function AdminAnnoncesPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Date de fin (optionnel)
+                Date de fin
               </label>
               <input
                 type="datetime-local"
+                  required
                 value={formData.date_fin}
                 onChange={(e) => setFormData({ ...formData, date_fin: e.target.value })}
                 className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -454,6 +519,7 @@ export default function AdminAnnoncesPage() {
               </label>
               <input
                 type="text"
+                  required
                 value={formData.lieu}
                 onChange={(e) => setFormData({ ...formData, lieu: e.target.value })}
                 className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -465,6 +531,7 @@ export default function AdminAnnoncesPage() {
               </label>
               <input
                 type="number"
+                  required
                 min="0"
                 step="0.01"
                 value={formData.prix}
@@ -478,6 +545,7 @@ export default function AdminAnnoncesPage() {
               </label>
               <input
                 type="number"
+                  required
                 min="0"
                 step="0.01"
                 value={formData.prix_adherent}
@@ -488,7 +556,6 @@ export default function AdminAnnoncesPage() {
                   })
                 }
                 className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="Optionnel"
               />
             </div>
             <div>
@@ -497,6 +564,7 @@ export default function AdminAnnoncesPage() {
               </label>
               <input
                 type="number"
+                  required
                 min="0"
                 value={formData.capacite}
                 onChange={(e) => setFormData({ ...formData, capacite: Number(e.target.value) || 0 })}
@@ -509,6 +577,7 @@ export default function AdminAnnoncesPage() {
               </label>
               <input
                 type="text"
+                  required
                 value={formData.categorie}
                 onChange={(e) => setFormData({ ...formData, categorie: e.target.value })}
                 className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -521,6 +590,7 @@ export default function AdminAnnoncesPage() {
               </label>
               <textarea
                 rows={2}
+                required
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -532,6 +602,7 @@ export default function AdminAnnoncesPage() {
               </label>
               <textarea
                 rows={3}
+                required
                 value={formData.long_description}
                 onChange={(e) => setFormData({ ...formData, long_description: e.target.value })}
                 className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -632,7 +703,7 @@ export default function AdminAnnoncesPage() {
                               ? 'Confirmé'
                               : reg.statut === 'cancelled'
                                 ? 'Annulé'
-                                : 'En attente'}
+                                : 'Confirmé'}
                           </span>
                         </td>
                         <td className="px-4 py-2">
@@ -641,15 +712,8 @@ export default function AdminAnnoncesPage() {
                             : 'Gratuit'}
                         </td>
                         <td className="px-4 py-2">
-                          {reg.statut === 'pending' && (
+                          {reg.statut !== 'cancelled' && (
                             <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleConfirmReg(reg.id)}
-                              >
-                                Confirmer
-                              </Button>
                               <Button
                                 size="sm"
                                 variant="outline"

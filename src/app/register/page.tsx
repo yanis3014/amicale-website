@@ -25,10 +25,10 @@ function passwordStrength(pwd: string): { score: number; label: string; color: s
 
 const GRADE_TO_ANNEE: Record<string, number> = {
   Professeur: 6,
-  'Maître de Conférences': 5,
-  'Maître Assistant': 4,
-  Assistant: 3,
-  Autre: 1,
+  'Professeur agrégé': 6,
+  'Maître de conférences': 5,
+  'Maître assistant': 4,
+  'Assistant HU': 3,
 };
 
 const ANNEE_UNIVERSITAIRE = `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
@@ -90,8 +90,8 @@ export default function RegisterPage() {
         prenom,
         email,
         password,
-        telephone: telephone || undefined,
-        annee: grade ? GRADE_TO_ANNEE[grade] : undefined,
+        telephone: telephone.trim(),
+        annee: GRADE_TO_ANNEE[grade],
       });
       const last4 = cardData.number.replace(/\s/g, '').slice(-4);
       await submitCotisation({
@@ -245,10 +245,10 @@ export default function RegisterPage() {
                   >
                     <option value="">Sélectionner...</option>
                     <option value="Professeur">Professeur</option>
-                    <option value="Maître de Conférences">Maître de Conférences</option>
-                    <option value="Maître Assistant">Maître Assistant</option>
-                    <option value="Assistant">Assistant</option>
-                    <option value="Autre">Autre</option>
+                    <option value="Professeur agrégé">Professeur agrégé</option>
+                    <option value="Maître de conférences">Maître de conférences</option>
+                    <option value="Maître assistant">Maître assistant</option>
+                    <option value="Assistant HU">Assistant HU</option>
                   </select>
                 </div>
                 <Input
@@ -265,6 +265,7 @@ export default function RegisterPage() {
                 type="tel"
                 value={telephone}
                 onChange={(e) => setTelephone(e.target.value)}
+                required
                 size="sm"
               />
 

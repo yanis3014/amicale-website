@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -20,17 +20,15 @@ import {
 } from 'lucide-react';
 import { AdminGuard } from '@/components/auth/AdminGuard';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAdminStats } from '@/lib/api/admin';
-import { getToken } from '@/lib/api/client';
 
-const navItems: { href: string; label: string; icon: typeof Users; badgeKey?: 'cotisations' }[] = [
+const navItems: { href: string; label: string; icon: typeof Users }[] = [
   { href: '/admin/dashboard', label: 'Vue d\'ensemble', icon: LayoutDashboard },
   { href: '/admin/annonces', label: 'Événements', icon: Newspaper },
   { href: '/admin/evenements', label: 'Archives', icon: Calendar },
   { href: '/admin/enseignants', label: 'Enseignants', icon: Users },
   { href: '/admin/a-propos', label: 'Contenus À propos', icon: FileText },
   { href: '/admin/accueil', label: 'Page d\'accueil', icon: Home },
-  { href: '/admin/members', label: 'Membres & Cotisations', icon: Users, badgeKey: 'cotisations' },
+  { href: '/admin/members', label: 'Membres & Cotisations', icon: Users },
   { href: '/admin/emails', label: 'Envoi d\'emails', icon: Mail },
   { href: '/admin/finances', label: 'Finances', icon: Wallet },
   { href: '/admin/partenaires', label: 'Partenaires', icon: Handshake },
@@ -46,14 +44,6 @@ function AdminLayoutInner({
   const router = useRouter();
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [cotisationsPending, setCotisationsPending] = useState<number>(0);
-
-  useEffect(() => {
-    if (!getToken()) return;
-    getAdminStats()
-      .then((stats) => setCotisationsPending(stats.cotisations_en_attente))
-      .catch(() => setCotisationsPending(0));
-  }, [pathname]);
 
   const handleLogout = () => {
     logout();
@@ -77,7 +67,6 @@ function AdminLayoutInner({
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
-          const badge = item.badgeKey === 'cotisations' ? cotisationsPending : 0;
           return (
             <Link
               key={item.href}
@@ -91,11 +80,6 @@ function AdminLayoutInner({
             >
               <Icon className="w-4 h-4 flex-shrink-0" />
               <span className="flex-1 truncate">{item.label}</span>
-              {badge > 0 && (
-                <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold flex-shrink-0">
-                  {badge}
-                </span>
-              )}
             </Link>
           );
         })}

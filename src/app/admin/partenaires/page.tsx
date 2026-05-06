@@ -89,7 +89,7 @@ export default function AdminPartenairesPage() {
       if (editing) {
         await updatePartenaire(editing.id, {
           nom: formData.nom,
-          url: formData.url || undefined,
+          url: formData.url,
           ordre: formData.ordre,
           is_active: formData.is_active,
         });
@@ -100,7 +100,7 @@ export default function AdminPartenairesPage() {
       } else {
         const created = await createPartenaire({
           nom: formData.nom,
-          url: formData.url || undefined,
+          url: formData.url,
           ordre: formData.ordre,
           is_active: formData.is_active,
         });
@@ -247,6 +247,7 @@ export default function AdminPartenairesPage() {
             <label className="block text-sm font-medium text-neutral-700 mb-1">URL du site</label>
             <input
               type="url"
+              required
               value={formData.url}
               onChange={(e) => setFormData({ ...formData, url: e.target.value })}
               placeholder="https://..."
@@ -257,6 +258,7 @@ export default function AdminPartenairesPage() {
             <label className="block text-sm font-medium text-neutral-700 mb-1">Ordre d&apos;affichage</label>
             <input
               type="number"
+              required
               min={0}
               value={formData.ordre}
               onChange={(e) => setFormData({ ...formData, ordre: Number(e.target.value) || 0 })}

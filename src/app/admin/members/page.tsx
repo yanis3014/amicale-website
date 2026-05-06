@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Edit, Trash2, Download, Check, X, Plus } from 'lucide-react';
+import { Edit, Trash2, Download, Plus, Gift } from 'lucide-react';
 import {
   getAllMembers,
   createMember,
@@ -10,20 +10,25 @@ import {
 } from '@/lib/api/members';
 import {
   getCotisations,
-  confirmCotisation,
-  rejectCotisation,
 } from '@/lib/api/cotisations';
-import { getAdminStats } from '@/lib/api/admin';
+import {
+  getAdminAvantages,
+  createAvantage,
+  updateAvantage,
+  deleteAvantage,
+} from '@/lib/api/avantages';
+import { getPageSetting, setPageSetting } from '@/lib/api/settings';
 import { getToken } from '@/lib/api/client';
 import type { ApiUser } from '@/lib/api/types';
 import type { ApiCotisation } from '@/lib/api/types';
+import type { ApiAvantage } from '@/lib/api/types';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { useToast } from '@/components/ui/Toast';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
-type Tab = 'membres' | 'cotisations';
+type Tab = 'membres' | 'cotisations' | 'avantages';
 
 function exportMembersToCsv(members: ApiUser[]) {
   const headers = [
@@ -56,10 +61,12 @@ export default function AdminMembersPage() {
   const [tab, setTab] = useState<Tab>('membres');
   const [members, setMembers] = useState<ApiUser[]>([]);
   const [cotisations, setCotisations] = useState<ApiCotisation[]>([]);
+  const [avantages, setAvantages] = useState<ApiAvantage[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [loadingCotisations, setLoadingCotisations] = useState(false);
+  const [loadingAvantages, setLoadingAvantages] = useState(false);
   const [search, setSearch] = useState('');
-  const [cotisationStatut, setCotisationStatut] = useState<'pending' | 'confirmed' | 'rejected' | ''>('');
+  const [cotisationStatut, setCotisationStatut] = useState<'confirmed' | 'rejected' | ''>('');
   const [editMember, setEditMember] = useState<ApiUser | null>(null);
   const [editForm, setEditForm] = useState({
     nom: '',
@@ -80,14 +87,27 @@ export default function AdminMembersPage() {
     telephone: '',
   });
   const [savingCreate, setSavingCreate] = useState(false);
-  const [pendingCotisationsCount, setPendingCotisationsCount] = useState(0);
+  const [adhesionFee, setAdhesionFee] = useState<string>('30');
+  const [savingAdhesionFee, setSavingAdhesionFee] = useState(false);
+  const [avantageModalOpen, setAvantageModalOpen] = useState(false);
+  const [editingAvantage, setEditingAvantage] = useState<ApiAvantage | null>(null);
+  const [avantageForm, setAvantageForm] = useState<{
+    libelle: string;
+    type_avantage: 'avantage' | 'reduction' | 'autre';
+    is_active: boolean;
+  }>({ libelle: '', type_avantage: 'avantage', is_active: true });
+  const [savingAvantage, setSavingAvantage] = useState(false);
+  const [deleteAvantageTarget, setDeleteAvantageTarget] = useState<ApiAvantage | null>(null);
   const toast = useToast();
 
   useEffect(() => {
     if (!getToken()) return;
-    getAdminStats()
-      .then((s) => setPendingCotisationsCount(s.cotisations_en_attente))
-      .catch(() => setPendingCotisationsCount(0));
+    getPageSetting('adhesion_fee_amount')
+      .then((res) => {
+        const v = Number(res.value);
+        setAdhesionFee(Number.isFinite(v) && v > 0 ? String(v) : '30');
+      })
+      .catch(() => setAdhesionFee('30'));
   }, []);
 
   const loadMembers = useCallback(() => {
@@ -115,7 +135,7 @@ export default function AdminMembersPage() {
     const statut =
       cotisationStatut === ''
         ? undefined
-        : (cotisationStatut as 'pending' | 'confirmed' | 'rejected');
+        : (cotisationStatut as 'confirmed' | 'rejected');
     getCotisations(statut)
       .then(setCotisations)
       .catch(() => {
@@ -126,6 +146,21 @@ export default function AdminMembersPage() {
     // toast exclu des deps pour éviter boucle de re-renders
   }, [cotisationStatut]);
 
+  const loadAvantages = useCallback(() => {
+    if (!getToken()) {
+      setLoadingAvantages(false);
+      return;
+    }
+    setLoadingAvantages(true);
+    getAdminAvantages()
+      .then(setAvantages)
+      .catch(() => {
+        toast.error('Erreur chargement des avantages');
+        setAvantages([]);
+      })
+      .finally(() => setLoadingAvantages(false));
+  }, []);
+
   useEffect(() => {
     if (tab === 'membres') loadMembers();
   }, [tab, loadMembers]);
@@ -133,6 +168,10 @@ export default function AdminMembersPage() {
   useEffect(() => {
     if (tab === 'cotisations') loadCotisations();
   }, [tab, loadCotisations]);
+
+  useEffect(() => {
+    if (tab === 'avantages') loadAvantages();
+  }, [tab, loadAvantages]);
 
   const openEdit = (m: ApiUser) => {
     setEditMember(m);
@@ -154,8 +193,8 @@ export default function AdminMembersPage() {
         nom: editForm.nom,
         prenom: editForm.prenom,
         email: editForm.email,
-        annee: editForm.annee === '' ? undefined : Number(editForm.annee),
-        telephone: editForm.telephone || undefined,
+        annee: Number(editForm.annee),
+        telephone: editForm.telephone.trim(),
       });
       toast.success('Membre mis à jour');
       setEditMember(null);
@@ -179,31 +218,16 @@ export default function AdminMembersPage() {
     }
   };
 
-  const handleConfirmCotisation = async (id: number) => {
-    try {
-      await confirmCotisation(id);
-      setPendingCotisationsCount((c) => Math.max(0, c - 1));
-      toast.success('Cotisation confirmée');
-      loadCotisations();
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Erreur');
-    }
-  };
-
-  const handleRejectCotisation = async (id: number) => {
-    try {
-      await rejectCotisation(id);
-      setPendingCotisationsCount((c) => Math.max(0, c - 1));
-      toast.success('Cotisation rejetée');
-      loadCotisations();
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Erreur');
-    }
-  };
-
   const handleCreateMember = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!createForm.nom.trim() || !createForm.prenom.trim() || !createForm.email.trim() || createForm.password.length < 8) {
+    if (
+      !createForm.nom.trim() ||
+      !createForm.prenom.trim() ||
+      !createForm.email.trim() ||
+      createForm.password.length < 8 ||
+      createForm.annee === '' ||
+      !createForm.telephone.trim()
+    ) {
       toast.error('Remplissez tous les champs ; le mot de passe doit faire au moins 8 caractères.');
       return;
     }
@@ -214,8 +238,8 @@ export default function AdminMembersPage() {
         prenom: createForm.prenom.trim(),
         email: createForm.email.trim(),
         password: createForm.password,
-        annee: createForm.annee === '' ? undefined : Number(createForm.annee),
-        telephone: createForm.telephone.trim() || undefined,
+        annee: Number(createForm.annee),
+        telephone: createForm.telephone.trim(),
       });
       toast.success('Membre créé. L\'action est enregistrée dans le suivi.');
       setShowCreateMember(false);
@@ -228,6 +252,80 @@ export default function AdminMembersPage() {
     }
   };
 
+  const handleSaveAdhesionFee = async () => {
+    const value = Number(adhesionFee.replace(',', '.'));
+    if (!Number.isFinite(value) || value <= 0) {
+      toast.error('Montant invalide');
+      return;
+    }
+    try {
+      setSavingAdhesionFee(true);
+      await setPageSetting('adhesion_fee_amount', String(value));
+      toast.success('Tarif d’adhésion mis à jour');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
+    } finally {
+      setSavingAdhesionFee(false);
+    }
+  };
+
+  const openAddAvantage = () => {
+    setEditingAvantage(null);
+    setAvantageForm({ libelle: '', type_avantage: 'avantage', is_active: true });
+    setAvantageModalOpen(true);
+  };
+
+  const openEditAvantage = (a: ApiAvantage) => {
+    setEditingAvantage(a);
+    setAvantageForm({
+      libelle: a.libelle,
+      type_avantage: a.type_avantage,
+      is_active: a.is_active ?? true,
+    });
+    setAvantageModalOpen(true);
+  };
+
+  const handleSaveAvantage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!avantageForm.libelle.trim()) return;
+    setSavingAvantage(true);
+    try {
+      if (editingAvantage) {
+        await updateAvantage(editingAvantage.id, {
+          libelle: avantageForm.libelle,
+          type_avantage: avantageForm.type_avantage,
+          is_active: avantageForm.is_active,
+        });
+        toast.success('Avantage modifié');
+      } else {
+        await createAvantage({
+          libelle: avantageForm.libelle,
+          type_avantage: avantageForm.type_avantage,
+          is_active: avantageForm.is_active,
+        });
+        toast.success('Avantage ajouté');
+      }
+      setAvantageModalOpen(false);
+      loadAvantages();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
+    } finally {
+      setSavingAvantage(false);
+    }
+  };
+
+  const handleDeleteAvantage = async () => {
+    if (!deleteAvantageTarget) return;
+    try {
+      await deleteAvantage(deleteAvantageTarget.id);
+      toast.success('Avantage supprimé');
+      setDeleteAvantageTarget(null);
+      loadAvantages();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
+    }
+  };
+
   return (
     <div className="p-6 lg:p-8">
       <div className="mb-8">
@@ -235,7 +333,7 @@ export default function AdminMembersPage() {
           Membres & Cotisations
         </h1>
         <p className="text-neutral-600">
-          Gestion des membres et validation des cotisations
+          Gestion des membres et des cotisations
         </p>
       </div>
 
@@ -262,11 +360,17 @@ export default function AdminMembersPage() {
           }`}
         >
           Cotisations
-          {pendingCotisationsCount > 0 && (
-            <span className="rounded-full bg-red-500 text-white text-xs px-2 py-0.5 font-bold">
-              {pendingCotisationsCount} en attente
-            </span>
-          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('avantages')}
+          className={`px-4 py-2 font-medium border-b-2 -mb-px transition-colors flex items-center gap-2 ${
+            tab === 'avantages'
+              ? 'border-primary-500 text-[var(--accent)]'
+              : 'border-transparent text-neutral-600 hover:text-neutral-900'
+          }`}
+        >
+          Avantages
         </button>
       </div>
 
@@ -376,6 +480,26 @@ export default function AdminMembersPage() {
 
       {tab === 'cotisations' && (
         <>
+          <div className="mb-6 rounded-xl border border-[var(--line)] bg-white p-4">
+            <p className="text-sm font-semibold text-neutral-800 mb-2">Tarif adhésion annuelle</p>
+            <p className="text-xs text-neutral-500 mb-3">
+              Ce montant est appliqué automatiquement aux nouvelles demandes de cotisation.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                type="text"
+                inputMode="decimal"
+                value={adhesionFee}
+                onChange={(e) => setAdhesionFee(e.target.value)}
+                className="w-32 px-3 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
+              />
+              <span className="text-sm text-neutral-600">DT</span>
+              <Button size="sm" onClick={handleSaveAdhesionFee} loading={savingAdhesionFee}>
+                Enregistrer
+              </Button>
+            </div>
+          </div>
+
           <div className="flex flex-wrap items-center gap-4 mb-6">
             <select
               value={cotisationStatut}
@@ -387,7 +511,6 @@ export default function AdminMembersPage() {
               className="px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Tous les statuts</option>
-              <option value="pending">En attente</option>
               <option value="confirmed">Confirmées</option>
               <option value="rejected">Rejetées</option>
             </select>
@@ -418,15 +541,12 @@ export default function AdminMembersPage() {
                       <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
                         Date
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
-                        Actions
-                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-100">
                     {cotisations.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-neutral-500">
+                        <td colSpan={5} className="px-6 py-12 text-center text-neutral-500">
                           Aucune cotisation trouvée
                         </td>
                       </tr>
@@ -459,33 +579,11 @@ export default function AdminMembersPage() {
                                 ? 'Confirmée'
                                 : c.statut === 'rejected'
                                   ? 'Rejetée'
-                                  : 'En attente'}
+                                  : 'Confirmée'}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm text-neutral-600">
                             {new Date(c.created_at).toLocaleDateString('fr-FR')}
-                          </td>
-                          <td className="px-6 py-4">
-                            {c.statut === 'pending' && (
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleConfirmCotisation(c.id)}
-                                  leftIcon={<Check className="w-4 h-4" />}
-                                >
-                                  Confirmer
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-red-600 border-red-200"
-                                  onClick={() => handleRejectCotisation(c.id)}
-                                  leftIcon={<X className="w-4 h-4" />}
-                                >
-                                  Rejeter
-                                </Button>
-                              </div>
-                            )}
                           </td>
                         </tr>
                       ))
@@ -496,6 +594,82 @@ export default function AdminMembersPage() {
             </div>
           )}
         </>
+      )}
+
+      {tab === 'avantages' && (
+        <div className="bg-white rounded-xl shadow-sm border border-neutral-100 overflow-hidden">
+          <div className="p-6 border-b border-neutral-100 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold text-neutral-900 flex items-center gap-2">
+                <Gift className="w-5 h-5 text-[var(--accent)]" />
+                Avantages adhérent
+              </h2>
+              <p className="text-sm text-neutral-600 mt-1">
+                Gérez les avantages affichés dans l&apos;espace membre.
+              </p>
+            </div>
+            <Button onClick={openAddAvantage} size="sm" leftIcon={<Plus className="w-4 h-4" />}>
+              Ajouter
+            </Button>
+          </div>
+
+          <div className="p-6">
+            {loadingAvantages ? (
+              <div className="flex justify-center py-8">
+                <LoadingSpinner size="lg" />
+              </div>
+            ) : avantages.length === 0 ? (
+              <p className="text-neutral-500 text-sm py-2">
+                Aucun avantage. Ajoutez-en pour qu&apos;ils s&apos;affichent dans l&apos;espace membre.
+              </p>
+            ) : (
+              <ul className="space-y-0 divide-y divide-neutral-100">
+                {avantages.map((a) => (
+                  <li
+                    key={a.id}
+                    className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 ${
+                          a.type_avantage === 'reduction'
+                            ? 'bg-amber-100 text-amber-800'
+                            : a.type_avantage === 'autre'
+                              ? 'bg-neutral-100 text-neutral-700'
+                              : 'bg-primary-100 text-primary-700'
+                        }`}
+                      >
+                        {a.type_avantage}
+                      </span>
+                      <span className={a.is_active ? 'text-neutral-900' : 'text-neutral-400 line-through'}>
+                        {a.libelle}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditAvantage(a)}
+                        leftIcon={<Edit className="w-3.5 h-3.5" />}
+                      >
+                        Modifier
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                        onClick={() => setDeleteAvantageTarget(a)}
+                        leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                      >
+                        Supprimer
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Modal édition membre */}
@@ -543,6 +717,7 @@ export default function AdminMembersPage() {
                 type="number"
                 min={1}
                 max={6}
+                required
                 value={editForm.annee}
                 onChange={(e) =>
                   setEditForm({ ...editForm, annee: e.target.value === '' ? '' : Number(e.target.value) })
@@ -554,6 +729,7 @@ export default function AdminMembersPage() {
               <label className="block text-sm font-medium text-neutral-700 mb-1">Téléphone</label>
               <input
                 type="text"
+                required
                 value={editForm.telephone}
                 onChange={(e) => setEditForm({ ...editForm, telephone: e.target.value })}
                 className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
@@ -624,11 +800,12 @@ export default function AdminMembersPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">Année (1-6)</label>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Année (1-6) *</label>
             <input
               type="number"
               min={1}
               max={6}
+                required
               value={createForm.annee}
               onChange={(e) =>
                 setCreateForm((f) => ({ ...f, annee: e.target.value === '' ? '' : Number(e.target.value) }))
@@ -637,9 +814,10 @@ export default function AdminMembersPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">Téléphone</label>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Téléphone *</label>
             <input
               type="text"
+                required
               value={createForm.telephone}
               onChange={(e) => setCreateForm((f) => ({ ...f, telephone: e.target.value }))}
               className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
@@ -656,6 +834,64 @@ export default function AdminMembersPage() {
         </form>
       </Modal>
 
+      <Modal
+        isOpen={avantageModalOpen}
+        onClose={() => setAvantageModalOpen(false)}
+        title={editingAvantage ? "Modifier l'avantage" : 'Ajouter un avantage'}
+        size="md"
+      >
+        <form onSubmit={handleSaveAvantage} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Libellé *</label>
+            <input
+              type="text"
+              required
+              value={avantageForm.libelle}
+              onChange={(e) => setAvantageForm((f) => ({ ...f, libelle: e.target.value }))}
+              placeholder="ex. Tarifs préférentiels sur les congrès"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Type</label>
+            <select
+              value={avantageForm.type_avantage}
+              onChange={(e) =>
+                setAvantageForm((f) => ({
+                  ...f,
+                  type_avantage: e.target.value as 'avantage' | 'reduction' | 'autre',
+                }))
+              }
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="avantage">Avantage</option>
+              <option value="reduction">Réduction</option>
+              <option value="autre">Autre</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="avantage_visible"
+              checked={avantageForm.is_active}
+              onChange={(e) => setAvantageForm((f) => ({ ...f, is_active: e.target.checked }))}
+              className="rounded border-neutral-300 text-[var(--accent)]"
+            />
+            <label htmlFor="avantage_visible" className="text-sm font-medium text-neutral-700">
+              Visible dans l&apos;espace membre
+            </label>
+          </div>
+          <div className="flex gap-3 justify-end pt-4">
+            <Button type="button" variant="secondary" onClick={() => setAvantageModalOpen(false)}>
+              Annuler
+            </Button>
+            <Button type="submit" loading={savingAvantage}>
+              {editingAvantage ? 'Enregistrer' : 'Ajouter'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
       <ConfirmModal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
@@ -666,6 +902,16 @@ export default function AdminMembersPage() {
             ? `Êtes-vous sûr de vouloir supprimer ${deleteTarget.prenom} ${deleteTarget.nom} ? Cette action est irréversible.`
             : ''
         }
+        confirmLabel="Supprimer"
+        dangerMode
+      />
+
+      <ConfirmModal
+        isOpen={!!deleteAvantageTarget}
+        onClose={() => setDeleteAvantageTarget(null)}
+        onConfirm={handleDeleteAvantage}
+        title="Supprimer l'avantage"
+        message={deleteAvantageTarget ? `Supprimer « ${deleteAvantageTarget.libelle} » ?` : ''}
         confirmLabel="Supprimer"
         dangerMode
       />

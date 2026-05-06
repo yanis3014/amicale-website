@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { ApiUser, ApiRegistration } from './types';
+import type { ApiUser, ApiRegistration, ApiMemberCertificate } from './types';
 
 export async function getMyProfile(): Promise<ApiUser> {
   return api.get<ApiUser>('/api/members/me/profile');
@@ -7,6 +7,10 @@ export async function getMyProfile(): Promise<ApiUser> {
 
 export async function getMyEvents(): Promise<ApiRegistration[]> {
   return api.get<ApiRegistration[]>('/api/members/me/events');
+}
+
+export async function getMyCertificates(): Promise<ApiMemberCertificate[]> {
+  return api.get<ApiMemberCertificate[]>('/api/members/me/certificates');
 }
 
 // Admin
@@ -20,8 +24,8 @@ export interface CreateMemberPayload {
   prenom: string;
   email: string;
   password: string;
-  annee?: number;
-  telephone?: string;
+  annee: number;
+  telephone: string;
 }
 
 export async function createMember(data: CreateMemberPayload): Promise<ApiUser> {

@@ -97,6 +97,9 @@ exports.login = [
         return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
       }
       const user = result.rows[0];
+      if (!user.password_hash) {
+        return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+      }
       const valid = await bcrypt.compare(password, user.password_hash);
       if (!valid) {
         return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
@@ -118,7 +121,7 @@ exports.login = [
         },
       });
     } catch (err) {
-      console.error(err);
+      console.error('[auth/login]', err.message, err.code || '', err.stack);
       return res.status(500).json({ error: 'Erreur lors de la connexion' });
     }
   },

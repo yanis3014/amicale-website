@@ -6,10 +6,25 @@ function sslForDatabaseUrl(url) {
   if (!url) return false;
   const u = url.toLowerCase();
   if (u.includes('localhost') || u.includes('127.0.0.1')) return false;
-  const ca = process.env.DB_SSL_CA;
+
+  const relaxTls =
+    process.env.DB_SSL_REJECT_UNAUTHORIZED === 'false' ||
+    process.env.DB_SSL_REJECT_UNAUTHORIZED === '0';
+  if (relaxTls) {
+    return { rejectUnauthorized: false };
+  }
+
+  const ca = process.env.DB_SSL_CA?.trim();
   if (ca) {
     return { rejectUnauthorized: true, ca: ca.replace(/\\n/g, '\n') };
   }
+
+  // Neon / Supabase pooler / Postgres managé Render : Node peut refuser la chaîne sans CA dédiée.
+  // En prod stricte, utiliser DB_SSL_CA ; ou DB_SSL_REJECT_UNAUTHORIZED=false explicitement.
+  if (/supabase\.co|neon\.tech|pooler|\.render\.com/i.test(url)) {
+    return { rejectUnauthorized: false };
+  }
+
   return { rejectUnauthorized: true };
 }
 

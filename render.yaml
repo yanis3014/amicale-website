@@ -18,3 +18,4 @@ services:
       # - FRONTEND_URL (ex: https://votre-app.vercel.app)
       # - PORT (défini automatiquement par Render)
       # Optionnel : SMTP (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, MAIL_FROM)
+      # Si la connexion DB échoue encore : DB_SSL_REJECT_UNAUTHORIZED=false (puis vérifier les logs)

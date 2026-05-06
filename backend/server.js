@@ -66,9 +66,23 @@ app.use(morgan('dev'));
 // Static uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Health check
+const { pool } = require('./src/config/db');
+
+// Health check (sans DB)
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, message: 'Amicale FPHM API' });
+});
+
+// Smoke test PostgreSQL (diagnostic Render : 503 si DATABASE_URL / TLS / droits KO)
+app.get('/api/health/db', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    return res.json({ ok: true, db: true });
+  } catch (err) {
+    console.error('[health/db]', err.message, err.code || '');
+    const detail = process.env.NODE_ENV !== 'production' ? err.message : undefined;
+    return res.status(503).json({ ok: false, db: false, detail });
+  }
 });
 
 // API routes

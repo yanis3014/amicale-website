@@ -22,8 +22,15 @@ const avantageRoutes = require('./src/routes/avantageRoutes');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-/** Derriere nginx / load balancer OVH : activer TRUST_PROXY=1 pour X-Forwarded-* et IPs client fiables. */
-if (process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true') {
+/**
+ * Derriere reverse proxy : X-Forwarded-* et IP client fiables (rate limiting, logs).
+ * Render envoie X-Forwarded-For ; sans cela express-rate-limit leve une erreur → 500 sur /login.
+ */
+const trustProxyEnv =
+  process.env.TRUST_PROXY === '1' ||
+  process.env.TRUST_PROXY === 'true' ||
+  process.env.RENDER === 'true';
+if (trustProxyEnv) {
   app.set('trust proxy', 1);
 }
 

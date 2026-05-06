@@ -85,6 +85,25 @@ export async function uploadHomeHeroImage(file: File): Promise<{ key: string; va
   return res.json();
 }
 
+export async function uploadCertificateTemplatePdf(file: File): Promise<{ key: string; value: string }> {
+  const formData = new FormData();
+  formData.append('template', file);
+  const base = process.env.NEXT_PUBLIC_API_URL || '';
+  const url = `${base.replace(/\/$/, '')}/api/admin/pages/certificates/template`;
+  const token = getToken();
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data?.error || res.statusText || 'Upload échoué');
+  }
+  return res.json();
+}
+
 export async function uploadAdministrativeDocument(
   file: File,
   title: string

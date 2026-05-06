@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Award, Loader2, Send } from 'lucide-react';
+import { Award, Lightbulb, Loader2, Save, Send } from 'lucide-react';
 import {
   getAdminEvents,
   getAdminCertificateEligibleByEvent,
@@ -12,6 +12,7 @@ import {
 import type { ApiEvent } from '@/lib/api/types';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
+import { getPageSetting, setPageSetting, uploadCertificateTemplatePdf } from '@/lib/api/settings';
 
 function formatDate(value?: string | null): string {
   if (!value) return '—';
@@ -30,6 +31,13 @@ export default function AdminCertificatesPage() {
   const [eligibleRows, setEligibleRows] = useState<AdminCertificateEligibleItem[]>([]);
   const [sendingOneId, setSendingOneId] = useState<number | null>(null);
   const [sendingBatch, setSendingBatch] = useState(false);
+  const [showTemplateHelp, setShowTemplateHelp] = useState(false);
+  const [templateUrl, setTemplateUrl] = useState('');
+  const [nameX, setNameX] = useState('170');
+  const [nameY, setNameY] = useState('255');
+  const [nameSize, setNameSize] = useState('28');
+  const [uploadingTemplate, setUploadingTemplate] = useState(false);
+  const [savingTemplateConfig, setSavingTemplateConfig] = useState(false);
 
   useEffect(() => {
     setLoadingEvents(true);
@@ -43,6 +51,31 @@ export default function AdminCertificatesPage() {
         setEvents([]);
       })
       .finally(() => setLoadingEvents(false));
+  }, [toast]);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const [templateRes, xRes, yRes, sizeRes] = await Promise.all([
+          getPageSetting('certificate_event_template_pdf'),
+          getPageSetting('certificate_event_name_x'),
+          getPageSetting('certificate_event_name_y'),
+          getPageSetting('certificate_event_name_size'),
+        ]);
+        if (!alive) return;
+        setTemplateUrl(templateRes.value || '');
+        setNameX(xRes.value || '170');
+        setNameY(yRes.value || '255');
+        setNameSize(sizeRes.value || '28');
+      } catch {
+        if (!alive) return;
+        toast.error('Impossible de charger la configuration du template PDF');
+      }
+    })();
+    return () => {
+      alive = false;
+    };
   }, [toast]);
 
   const loadEligible = async (eventId: number) => {
@@ -98,6 +131,40 @@ export default function AdminCertificatesPage() {
     }
   };
 
+  const handleTemplateUpload = async (file?: File | null) => {
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      toast.error('Veuillez sélectionner un fichier PDF');
+      return;
+    }
+    setUploadingTemplate(true);
+    try {
+      const res = await uploadCertificateTemplatePdf(file);
+      setTemplateUrl(res.value || '');
+      toast.success('Template PDF importé');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erreur lors de l’upload du template');
+    } finally {
+      setUploadingTemplate(false);
+    }
+  };
+
+  const handleSaveTemplateConfig = async () => {
+    setSavingTemplateConfig(true);
+    try {
+      await Promise.all([
+        setPageSetting('certificate_event_name_x', nameX.trim() || '170'),
+        setPageSetting('certificate_event_name_y', nameY.trim() || '255'),
+        setPageSetting('certificate_event_name_size', nameSize.trim() || '28'),
+      ]);
+      toast.success('Configuration du template enregistrée');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erreur lors de la sauvegarde');
+    } finally {
+      setSavingTemplateConfig(false);
+    }
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
@@ -108,6 +175,93 @@ export default function AdminCertificatesPage() {
         <p className="text-neutral-600">
           Sélectionnez un événement, puis envoyez les certificats aux inscrits éligibles.
         </p>
+      </div>
+
+      <div className="bg-white rounded-xl border border-neutral-100 p-4 space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="font-semibold text-neutral-900">Template PDF personnalisé</h2>
+            <p className="text-sm text-neutral-600">
+              Importez votre PDF officiel (tampon/logo), puis réglez la position du nom.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowTemplateHelp((v) => !v)}
+            leftIcon={<Lightbulb className="w-4 h-4" />}
+          >
+            Lampe aide
+          </Button>
+        </div>
+
+        {showTemplateHelp && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 text-amber-900 text-sm p-3 space-y-2">
+            <p><strong>Comment préparer le PDF :</strong></p>
+            <p>1) Dans votre modèle, laissez une zone vide à l’endroit exact du nom du participant.</p>
+            <p>2) Mettez un repère temporaire visuel (ex: "NOM ICI") lors des tests puis retirez-le.</p>
+            <p>3) Réglez X / Y / Taille ci-dessous, envoyez un certificat test et ajustez jusqu’à alignement parfait.</p>
+            <p>4) Le système remplit automatiquement le nom complet au moment de l’envoi.</p>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3">
+          <div className="flex-1 min-w-0">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Template PDF</label>
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => void handleTemplateUpload(e.target.files?.[0])}
+              className="block w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-neutral-900 file:px-3 file:py-2 file:text-white hover:file:bg-neutral-800"
+              disabled={uploadingTemplate}
+            />
+          </div>
+        </div>
+
+        {templateUrl && (
+          <p className="text-sm text-neutral-600 break-all">
+            Template actif: <span className="font-medium text-neutral-900">{templateUrl}</span>
+          </p>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Position X</label>
+            <input
+              type="number"
+              value={nameX}
+              onChange={(e) => setNameX(e.target.value)}
+              className="w-full rounded-lg border border-[var(--line)] px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Position Y</label>
+            <input
+              type="number"
+              value={nameY}
+              onChange={(e) => setNameY(e.target.value)}
+              className="w-full rounded-lg border border-[var(--line)] px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Taille du nom</label>
+            <input
+              type="number"
+              value={nameSize}
+              onChange={(e) => setNameSize(e.target.value)}
+              className="w-full rounded-lg border border-[var(--line)] px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            />
+          </div>
+        </div>
+        <div>
+          <Button
+            onClick={handleSaveTemplateConfig}
+            disabled={savingTemplateConfig}
+            leftIcon={savingTemplateConfig ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          >
+            {savingTemplateConfig ? 'Enregistrement…' : 'Enregistrer la configuration'}
+          </Button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-neutral-100 p-4 flex flex-col lg:flex-row gap-3 lg:items-end">

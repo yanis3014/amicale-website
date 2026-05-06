@@ -28,6 +28,11 @@ const ALLOWED_KEYS = [
   'adhesion_fee_amount',
   // Liste JSON des pièces administratives uploadées
   'documents_files',
+  // Configuration template PDF certificats événements
+  'certificate_event_template_pdf',
+  'certificate_event_name_x',
+  'certificate_event_name_y',
+  'certificate_event_name_size',
 ];
 
 const A_PROPOS_PAGE_KEYS = [
@@ -116,6 +121,26 @@ exports.uploadHomeHeroImage = async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'Fichier image requis' });
     const url = `/uploads/pages/${req.file.filename}`;
     const key = 'home_hero_image';
+    await query(
+      `INSERT INTO page_settings (key, value) VALUES ($1, $2)
+       ON CONFLICT (key) DO UPDATE SET value = $2`,
+      [key, url]
+    );
+    return res.json({ key, value: url });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
+
+exports.uploadCertificateTemplatePdf = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'Fichier PDF requis' });
+    if (req.file.mimetype !== 'application/pdf') {
+      return res.status(400).json({ error: 'Seuls les fichiers PDF sont autorisés' });
+    }
+    const url = `/uploads/certificates/templates/${req.file.filename}`;
+    const key = 'certificate_event_template_pdf';
     await query(
       `INSERT INTO page_settings (key, value) VALUES ($1, $2)
        ON CONFLICT (key) DO UPDATE SET value = $2`,

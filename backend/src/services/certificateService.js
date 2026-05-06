@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const PDFDocument = require('pdfkit');
+const PDFKitDocument = require('pdfkit');
+const { PDFDocument: PDFLibDocument, StandardFonts, rgb } = require('pdf-lib');
 const { query } = require('../config/db');
 const { sendMail } = require('./emailService');
 
@@ -27,7 +28,7 @@ function formatDateFR(value) {
 
 function buildPdfBuffer(lines) {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const doc = new PDFKitDocument({ size: 'A4', margin: 50 });
     const chunks = [];
 
     doc.on('data', (chunk) => chunks.push(chunk));
@@ -49,6 +50,61 @@ function buildPdfBuffer(lines) {
     doc.fontSize(10).fillColor('#666').text(`Genere automatiquement le ${new Date().toLocaleString('fr-FR')}`, { align: 'right' });
     doc.end();
   });
+}
+
+function parseNumberOrDefault(value, fallback) {
+  if (value == null || value === '') return fallback;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+async function getSettingValue(key) {
+  const result = await query('SELECT value FROM page_settings WHERE key = $1 LIMIT 1', [key]);
+  return result.rows[0]?.value || null;
+}
+
+async function buildEventCertificateFromTemplate({ fullName }) {
+  const templateUrl = await getSettingValue('certificate_event_template_pdf');
+  if (!templateUrl || !templateUrl.startsWith('/uploads/')) return null;
+
+  const templateDiskPath = path.join(__dirname, '../../', templateUrl);
+  let templateBytes;
+  try {
+    templateBytes = await fs.promises.readFile(templateDiskPath);
+  } catch (err) {
+    console.error('Impossible de lire le template PDF certificat:', err?.message || err);
+    return null;
+  }
+
+  try {
+    const [xValue, yValue, sizeValue] = await Promise.all([
+      getSettingValue('certificate_event_name_x'),
+      getSettingValue('certificate_event_name_y'),
+      getSettingValue('certificate_event_name_size'),
+    ]);
+    const x = parseNumberOrDefault(xValue, 170);
+    const y = parseNumberOrDefault(yValue, 255);
+    const size = parseNumberOrDefault(sizeValue, 28);
+
+    const pdfDoc = await PDFLibDocument.load(templateBytes);
+    const pages = pdfDoc.getPages();
+    if (pages.length === 0) return null;
+    const firstPage = pages[0];
+    const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    firstPage.drawText(fullName, {
+      x,
+      y,
+      size,
+      font,
+      color: rgb(0.08, 0.08, 0.08),
+    });
+
+    return Buffer.from(await pdfDoc.save());
+  } catch (err) {
+    console.error('Erreur de personnalisation du template PDF certificat:', err?.message || err);
+    return null;
+  }
 }
 
 async function saveCertificateFile({ fileName, buffer }) {
@@ -130,8 +186,10 @@ async function generateEventCertificate({ user, event }) {
   const safeTitle = sanitizeFilePart(event.titre);
   const fileName = `cert-event-${event.id}-user-${user.id}-${Date.now()}-${safeTitle}.pdf`;
 
-  const pdfBuffer = await buildPdfBuffer([
-    `Ce document atteste que ${user.prenom} ${user.nom} est inscrit(e) a l'evenement suivant :`,
+  const fullName = `${user.prenom} ${user.nom}`.trim();
+  const templateBuffer = await buildEventCertificateFromTemplate({ fullName });
+  const pdfBuffer = templateBuffer || await buildPdfBuffer([
+    `Ce document atteste que ${fullName} est inscrit(e) a l'evenement suivant :`,
     `Titre : ${event.titre}`,
     event.date ? `Date : ${formatDateFR(event.date)}` : '',
     event.lieu ? `Lieu : ${event.lieu}` : '',
@@ -150,7 +208,7 @@ async function generateEventCertificate({ user, event }) {
   if (!certificate) return null;
   await sendCertificateEmail({
     toEmail: user.email,
-    fullName: `${user.prenom} ${user.nom}`.trim(),
+    fullName,
     title,
     fileUrl,
   });

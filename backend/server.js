@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 4000;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 // Create upload directories on startup
-const uploadDirs = ['./uploads', './uploads/events', './uploads/activities', './uploads/enseignants', './uploads/pages', './uploads/pages/documents', './uploads/partenaires', './uploads/certificates'];
+const uploadDirs = ['./uploads', './uploads/events', './uploads/activities', './uploads/enseignants', './uploads/pages', './uploads/pages/documents', './uploads/partenaires', './uploads/certificates', './uploads/certificates/templates'];
 uploadDirs.forEach((dir) => {
   fs.mkdirSync(path.join(__dirname, dir), { recursive: true });
 });

@@ -29,6 +29,11 @@ const documentsStorage = multer.diskStorage({
   filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/\s/g, '-')}`),
 });
 const uploadDocument = multer({ storage: documentsStorage, limits: { fileSize: 15 * 1024 * 1024 } });
+const certificateTemplateStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, '../../uploads/certificates/templates')),
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/\s/g, '-')}`),
+});
+const uploadCertificateTemplate = multer({ storage: certificateTemplateStorage, limits: { fileSize: 10 * 1024 * 1024 } });
 
 router.use(authMiddleware);
 router.use(adminMiddleware);
@@ -46,6 +51,7 @@ router.put('/settings/:key', pageSettingsController.set);
 router.post('/pages/enseignants/header', uploadPage.single('image'), pageSettingsController.uploadEnseignantsHeader);
 router.post('/pages/a-propos/:pageKey/image', uploadPage.single('image'), pageSettingsController.uploadAProposImage);
 router.post('/pages/home/hero-image', uploadPage.single('image'), pageSettingsController.uploadHomeHeroImage);
+router.post('/pages/certificates/template', uploadCertificateTemplate.single('template'), pageSettingsController.uploadCertificateTemplatePdf);
 router.post('/pages/documents/upload', uploadDocument.single('file'), pageSettingsController.uploadAdministrativeDocument);
 router.get('/pages/documents', pageSettingsController.listAdministrativeDocuments);
 router.delete('/pages/documents/:docId', pageSettingsController.deleteAdministrativeDocument);

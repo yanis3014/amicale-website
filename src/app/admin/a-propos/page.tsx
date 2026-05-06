@@ -45,29 +45,33 @@ export default function AdminAProposPage() {
     setLoading(true);
     const contentKeys = SECTIONS.map((s) => s.key);
     const imageKeys = SECTIONS.map((s) => `${s.key}_image`);
+    const contentPromises = contentKeys.map((k) => getPageSetting(k));
+    const imagePromises = imageKeys.map((k) => getPageSetting(k));
     Promise.all([
-      ...contentKeys.map((k) => getPageSetting(k)),
-      ...imageKeys.map((k) => getPageSetting(k)),
+      ...contentPromises,
+      ...imagePromises,
       getAdministrativeDocumentsAdmin(),
     ])
       .then((results) => {
         const next: Record<string, string> = {};
         const nextEdits: Record<string, string> = {};
         const nextImages: Record<string, string> = {};
+        const contentResults = results.slice(0, contentKeys.length) as Array<{ key: string; value: string | null }>;
+        const imageResults = results.slice(contentKeys.length, contentKeys.length + imageKeys.length) as Array<{ key: string; value: string | null }>;
+        const docs = results[contentKeys.length + imageKeys.length] as ApiAdministrativeDocument[];
         SECTIONS.forEach((s, i) => {
-          const v = results[i]?.value ?? '';
+          const v = contentResults[i]?.value ?? '';
           next[s.key] = v;
           nextEdits[s.key] = v;
         });
         SECTIONS.forEach((s, i) => {
-          const imgVal = results[contentKeys.length + i]?.value ?? '';
+          const imgVal = imageResults[i]?.value ?? '';
           nextImages[s.key] = imgVal;
         });
-        const docs = results[contentKeys.length + imageKeys.length];
         setValues(next);
         setEdits(nextEdits);
         setImages(nextImages);
-        setDocumentsFiles(Array.isArray(docs) ? (docs as ApiAdministrativeDocument[]) : []);
+        setDocumentsFiles(Array.isArray(docs) ? docs : []);
       })
       .catch(() => toast.error('Erreur lors du chargement des contenus'))
       .finally(() => setLoading(false));

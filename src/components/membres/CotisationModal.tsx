@@ -65,7 +65,7 @@ export function CotisationModal({ isOpen, onClose, onSuccess }: CotisationModalP
       await submitCotisation({
         montant: amount,
         annee_universitaire: anneeUniversitaire,
-        methode_paiement,
+        methode_paiement: methodePaiement,
         reference,
       });
       toast.success('Demande de cotisation enregistrée. Elle sera traitée par l\'équipe.');

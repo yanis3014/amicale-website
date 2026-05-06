@@ -505,7 +505,7 @@ export default function AdminMembersPage() {
               value={cotisationStatut}
               onChange={(e) =>
                 setCotisationStatut(
-                  e.target.value as 'pending' | 'confirmed' | 'rejected' | ''
+                  e.target.value as 'confirmed' | 'rejected' | ''
                 )
               }
               className="px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"

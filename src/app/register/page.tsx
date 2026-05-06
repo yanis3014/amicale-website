@@ -98,7 +98,7 @@ export default function RegisterPage() {
         montant: MONTANT_ADHESION,
         annee_universitaire: ANNEE_UNIVERSITAIRE,
         methode_paiement: 'carte',
-        reference: last4 ? `****${last4}` : undefined,
+        reference: last4 ? `****${last4}` : '****0000',
       });
       router.push('/membres');
     } catch (err) {

@@ -17,6 +17,7 @@ import {
   FileText,
   Mail,
   Home,
+  Award,
 } from 'lucide-react';
 import { AdminGuard } from '@/components/auth/AdminGuard';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,6 +30,7 @@ const navItems: { href: string; label: string; icon: typeof Users }[] = [
   { href: '/admin/a-propos', label: 'Contenus À propos', icon: FileText },
   { href: '/admin/accueil', label: 'Page d\'accueil', icon: Home },
   { href: '/admin/members', label: 'Membres & Cotisations', icon: Users },
+  { href: '/admin/certificats', label: 'Certificats', icon: Award },
   { href: '/admin/emails', label: 'Envoi d\'emails', icon: Mail },
   { href: '/admin/finances', label: 'Finances', icon: Wallet },
   { href: '/admin/partenaires', label: 'Partenaires', icon: Handshake },

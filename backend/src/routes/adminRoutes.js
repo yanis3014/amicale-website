@@ -12,6 +12,7 @@ const avantageController = require('../controllers/avantageController');
 const auditController = require('../controllers/auditController');
 const financeController = require('../controllers/financeController');
 const emailController = require('../controllers/emailController');
+const adminCertificateController = require('../controllers/adminCertificateController');
 const { authMiddleware } = require('../middleware/authMiddleware');
 const { adminMiddleware } = require('../middleware/adminMiddleware');
 const { auditMiddleware } = require('../middleware/auditMiddleware');
@@ -62,5 +63,8 @@ router.post('/avantages', avantageController.create);
 router.put('/avantages/:id', avantageController.update);
 router.delete('/avantages/:id', avantageController.remove);
 router.post('/emails/send', emailController.send);
+router.get('/certificates/events/:eventId/eligible', adminCertificateController.listEligibleByEvent);
+router.post('/certificates/events/:eventId/send/:registrationId', adminCertificateController.sendOneByRegistration);
+router.post('/certificates/events/:eventId/send-batch', adminCertificateController.sendBatchByEvent);
 
 module.exports = router;

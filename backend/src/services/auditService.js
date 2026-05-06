@@ -44,7 +44,6 @@ const PATH_LABELS = {
     stats: 'Consultation statistiques',
     events: 'Événements',
     members: 'Membres',
-    cotisations: 'Cotisations',
     enseignants: 'Enseignants',
     partenaires: 'Partenaires',
     settings: 'Paramètres',
@@ -74,12 +73,10 @@ function getActionLabel(method, path) {
   const labels = isAdmin ? PATH_LABELS.admin : PATH_LABELS.api;
   const resource = labels[segment] || segment;
   if (method === 'GET') {
-    if (second === 'confirm' || second === 'reject') return null;
+    if (second === 'confirm') return null;
     return id ? `Consultation ${resource}` : `Liste ${resource}`;
   }
   if (method === 'PUT' || method === 'PATCH') {
-    if (segment === 'cotisations' && second === 'confirm') return 'Confirmation cotisation';
-    if (segment === 'cotisations' && second === 'reject') return 'Rejet cotisation';
     if (segment === 'settings') return 'Modification paramètre';
     if (segment === 'pages') return 'Upload page';
     if (path.includes('publish')) return `Publication ${resource}`;

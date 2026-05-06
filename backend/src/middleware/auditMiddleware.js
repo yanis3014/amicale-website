@@ -38,6 +38,9 @@ function isImportantAction(method, path) {
   // Finances (entrées manuelles / sponsors)
   if (norm === '/api/admin/finances/entries' && method === 'POST') return true;
   if (/^\/api\/admin\/finances\/entries\/:id$/.test(norm) && (method === 'PUT' || method === 'DELETE')) return true;
+  // Certificats événements (admin) : envoi unitaire et en lot
+  if (/^\/api\/admin\/certificates\/events\/:id\/send\/:id$/.test(norm) && method === 'POST') return true;
+  if (/^\/api\/admin\/certificates\/events\/:id\/send-batch$/.test(norm) && method === 'POST') return true;
 
   return false;
 }

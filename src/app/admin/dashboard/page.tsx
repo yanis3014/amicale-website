@@ -260,8 +260,8 @@ export default function AdminDashboardPage() {
                   <UsersIcon className="w-6 h-6 text-forest-600" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-neutral-900 group-hover:text-forest-700">Membres & cotisations</p>
-                  <p className="text-sm text-neutral-500">Gérer les membres et cotisations</p>
+                  <p className="font-semibold text-neutral-900 group-hover:text-forest-700">Membres</p>
+                  <p className="text-sm text-neutral-500">Gérer les membres et avantages</p>
                 </div>
                 <ArrowRight className="w-5 h-5 text-neutral-300 group-hover:text-forest-500 flex-shrink-0" />
               </Link>

@@ -9,9 +9,6 @@ import {
   deleteMember,
 } from '@/lib/api/members';
 import {
-  getCotisations,
-} from '@/lib/api/cotisations';
-import {
   getAdminAvantages,
   createAvantage,
   updateAvantage,
@@ -20,7 +17,6 @@ import {
 import { getPageSetting, setPageSetting } from '@/lib/api/settings';
 import { getToken } from '@/lib/api/client';
 import type { ApiUser } from '@/lib/api/types';
-import type { ApiCotisation } from '@/lib/api/types';
 import type { ApiAvantage } from '@/lib/api/types';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -28,7 +24,7 @@ import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { useToast } from '@/components/ui/Toast';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
-type Tab = 'membres' | 'cotisations' | 'avantages';
+type Tab = 'membres' | 'avantages';
 
 function exportMembersToCsv(members: ApiUser[]) {
   const headers = [
@@ -60,13 +56,10 @@ function exportMembersToCsv(members: ApiUser[]) {
 export default function AdminMembersPage() {
   const [tab, setTab] = useState<Tab>('membres');
   const [members, setMembers] = useState<ApiUser[]>([]);
-  const [cotisations, setCotisations] = useState<ApiCotisation[]>([]);
   const [avantages, setAvantages] = useState<ApiAvantage[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
-  const [loadingCotisations, setLoadingCotisations] = useState(false);
   const [loadingAvantages, setLoadingAvantages] = useState(false);
   const [search, setSearch] = useState('');
-  const [cotisationStatut, setCotisationStatut] = useState<'confirmed' | 'rejected' | ''>('');
   const [editMember, setEditMember] = useState<ApiUser | null>(null);
   const [editForm, setEditForm] = useState({
     nom: '',
@@ -126,26 +119,6 @@ export default function AdminMembersPage() {
     // toast exclu des deps pour éviter boucle de re-renders
   }, [search]);
 
-  const loadCotisations = useCallback(() => {
-    if (!getToken()) {
-      setLoadingCotisations(false);
-      return;
-    }
-    setLoadingCotisations(true);
-    const statut =
-      cotisationStatut === ''
-        ? undefined
-        : (cotisationStatut as 'confirmed' | 'rejected');
-    getCotisations(statut)
-      .then(setCotisations)
-      .catch(() => {
-        toast.error('Erreur chargement des cotisations');
-        setCotisations([]);
-      })
-      .finally(() => setLoadingCotisations(false));
-    // toast exclu des deps pour éviter boucle de re-renders
-  }, [cotisationStatut]);
-
   const loadAvantages = useCallback(() => {
     if (!getToken()) {
       setLoadingAvantages(false);
@@ -164,10 +137,6 @@ export default function AdminMembersPage() {
   useEffect(() => {
     if (tab === 'membres') loadMembers();
   }, [tab, loadMembers]);
-
-  useEffect(() => {
-    if (tab === 'cotisations') loadCotisations();
-  }, [tab, loadCotisations]);
 
   useEffect(() => {
     if (tab === 'avantages') loadAvantages();
@@ -330,10 +299,10 @@ export default function AdminMembersPage() {
     <div className="p-6 lg:p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-          Membres & Cotisations
+          Membres
         </h1>
         <p className="text-neutral-600">
-          Gestion des membres et des cotisations
+          Gestion des membres et des avantages
         </p>
       </div>
 
@@ -349,17 +318,6 @@ export default function AdminMembersPage() {
           }`}
         >
           Membres
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab('cotisations')}
-          className={`px-4 py-2 font-medium border-b-2 -mb-px transition-colors flex items-center gap-2 ${
-            tab === 'cotisations'
-              ? 'border-primary-500 text-[var(--accent)]'
-              : 'border-transparent text-neutral-600 hover:text-neutral-900'
-          }`}
-        >
-          Cotisations
         </button>
         <button
           type="button"
@@ -398,6 +356,25 @@ export default function AdminMembersPage() {
             >
               Exporter CSV
             </Button>
+          </div>
+          <div className="mb-6 rounded-xl border border-[var(--line)] bg-white p-4">
+            <p className="text-sm font-semibold text-neutral-800 mb-2">Tarif adhésion annuelle</p>
+            <p className="text-xs text-neutral-500 mb-3">
+              Ce montant est appliqué automatiquement aux nouvelles demandes de cotisation.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                type="text"
+                inputMode="decimal"
+                value={adhesionFee}
+                onChange={(e) => setAdhesionFee(e.target.value)}
+                className="w-32 px-3 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
+              />
+              <span className="text-sm text-neutral-600">DT</span>
+              <Button size="sm" onClick={handleSaveAdhesionFee} loading={savingAdhesionFee}>
+                Enregistrer
+              </Button>
+            </div>
           </div>
 
           {loadingMembers ? (
@@ -466,124 +443,6 @@ export default function AdminMembersPage() {
                                 Supprimer
                               </Button>
                             </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {tab === 'cotisations' && (
-        <>
-          <div className="mb-6 rounded-xl border border-[var(--line)] bg-white p-4">
-            <p className="text-sm font-semibold text-neutral-800 mb-2">Tarif adhésion annuelle</p>
-            <p className="text-xs text-neutral-500 mb-3">
-              Ce montant est appliqué automatiquement aux nouvelles demandes de cotisation.
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <input
-                type="text"
-                inputMode="decimal"
-                value={adhesionFee}
-                onChange={(e) => setAdhesionFee(e.target.value)}
-                className="w-32 px-3 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
-              />
-              <span className="text-sm text-neutral-600">DT</span>
-              <Button size="sm" onClick={handleSaveAdhesionFee} loading={savingAdhesionFee}>
-                Enregistrer
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4 mb-6">
-            <select
-              value={cotisationStatut}
-              onChange={(e) =>
-                setCotisationStatut(
-                  e.target.value as 'confirmed' | 'rejected' | ''
-                )
-              }
-              className="px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="">Tous les statuts</option>
-              <option value="confirmed">Confirmées</option>
-              <option value="rejected">Rejetées</option>
-            </select>
-          </div>
-
-          {loadingCotisations ? (
-            <div className="flex justify-center py-12">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : (
-            <div className="bg-white rounded-xl shadow-sm border border-neutral-100 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-[var(--bg)] border-b border-neutral-100">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
-                        Membre
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
-                        Montant
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
-                        Année univ.
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
-                        Statut
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
-                        Date
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-100">
-                    {cotisations.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="px-6 py-12 text-center text-neutral-500">
-                          Aucune cotisation trouvée
-                        </td>
-                      </tr>
-                    ) : (
-                      cotisations.map((c) => (
-                        <tr key={c.id} className="hover:bg-[var(--bg)]/50">
-                          <td className="px-6 py-4">
-                            <div className="font-medium text-neutral-900">
-                              {c.prenom} {c.nom}
-                            </div>
-                            <div className="text-sm text-neutral-500">{c.email}</div>
-                          </td>
-                          <td className="px-6 py-4 font-semibold text-neutral-900">
-                            {c.montant} DT
-                          </td>
-                          <td className="px-6 py-4 text-sm text-neutral-600">
-                            {c.annee_universitaire}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span
-                              className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                                c.statut === 'confirmed'
-                                  ? 'bg-green-100 text-green-700'
-                                  : c.statut === 'rejected'
-                                    ? 'bg-red-100 text-red-700'
-                                    : 'bg-amber-100 text-amber-700'
-                              }`}
-                            >
-                              {c.statut === 'confirmed'
-                                ? 'Confirmée'
-                                : c.statut === 'rejected'
-                                  ? 'Rejetée'
-                                  : 'Confirmée'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-neutral-600">
-                            {new Date(c.created_at).toLocaleDateString('fr-FR')}
                           </td>
                         </tr>
                       ))

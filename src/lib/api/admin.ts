@@ -105,3 +105,61 @@ export interface SendEmailResponse {
 export async function sendAdminEmail(payload: SendEmailPayload): Promise<SendEmailResponse> {
   return api.post<SendEmailResponse>('/api/admin/emails/send', payload);
 }
+
+export interface AdminCertificateEligibleItem {
+  registration_id: number;
+  user_id: number;
+  statut: 'pending' | 'confirmed' | 'cancelled';
+  created_at: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  has_certificate: boolean;
+  certificate_id: number | null;
+  certificate_file_url: string | null;
+  certificate_created_at: string | null;
+  eligible: boolean;
+}
+
+export interface AdminCertificateEligibleResponse {
+  event: Pick<ApiEvent, 'id' | 'titre' | 'date' | 'lieu'>;
+  items: AdminCertificateEligibleItem[];
+}
+
+export interface AdminCertificateSendOneResponse {
+  sent: boolean;
+  already_exists: boolean;
+  certificate: unknown | null;
+}
+
+export interface AdminCertificateSendBatchResponse {
+  attempted: number;
+  sent: number;
+  failed: Array<{
+    registration_id: number;
+    user_id: number;
+    email: string;
+    error: string;
+  }>;
+}
+
+export async function getAdminCertificateEligibleByEvent(
+  eventId: number
+): Promise<AdminCertificateEligibleResponse> {
+  return api.get<AdminCertificateEligibleResponse>(`/api/admin/certificates/events/${eventId}/eligible`);
+}
+
+export async function sendAdminCertificateForRegistration(
+  eventId: number,
+  registrationId: number
+): Promise<AdminCertificateSendOneResponse> {
+  return api.post<AdminCertificateSendOneResponse>(
+    `/api/admin/certificates/events/${eventId}/send/${registrationId}`
+  );
+}
+
+export async function sendAdminCertificatesBatch(
+  eventId: number
+): Promise<AdminCertificateSendBatchResponse> {
+  return api.post<AdminCertificateSendBatchResponse>(`/api/admin/certificates/events/${eventId}/send-batch`);
+}

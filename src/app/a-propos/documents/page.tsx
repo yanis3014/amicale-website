@@ -11,6 +11,7 @@ export default function DocumentsPage() {
     <DynamicPageContent
       settingKey="documents"
       imageKey="documents_image"
+      filesSettingKey="documents_files"
       pageTitle="Documents administratifs"
       placeholder="Statuts, JORT, RNE, RIB et autres documents officiels — contenu à venir."
       excludeFromRelated="documents"

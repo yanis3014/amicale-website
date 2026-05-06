@@ -13,9 +13,3 @@ export async function submitCotisation(
 ): Promise<ApiCotisation> {
   return api.post<ApiCotisation>('/api/cotisations/submit', payload);
 }
-
-// Admin
-export async function getCotisations(statut?: 'confirmed' | 'rejected'): Promise<ApiCotisation[]> {
-  const q = statut ? `?statut=${statut}` : '';
-  return api.get<ApiCotisation[]>(`/api/admin/cotisations${q}`);
-}

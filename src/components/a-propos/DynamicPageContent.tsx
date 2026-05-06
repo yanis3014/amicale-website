@@ -8,6 +8,7 @@ import { getPageSetting } from '@/lib/api/settings';
 import { getImageUrl } from '@/lib/api/utils/imageUrl';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Card } from '@/components/ui/Card';
+import type { ApiAdministrativeDocument } from '@/lib/api/types';
 
 const PLACEHOLDER = 'Contenu à venir.';
 
@@ -28,8 +29,26 @@ interface DynamicPageContentProps {
   placeholder?: string;
   /** Clé du réglage pour l'image de la page. Si fournie, l'image s'affiche en en-tête. */
   imageKey?: string;
+  /** Clé JSON contenant une liste de documents à afficher. */
+  filesSettingKey?: string;
   /** Clé de la page courante pour l'exclure du bloc « Découvrir aussi ». */
   excludeFromRelated?: string;
+}
+
+function parseAdministrativeDocuments(value: string | null | undefined): ApiAdministrativeDocument[] {
+  if (!value?.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((doc): doc is ApiAdministrativeDocument => (
+      !!doc &&
+      typeof doc === 'object' &&
+      typeof (doc as { id?: unknown }).id === 'string' &&
+      typeof (doc as { url?: unknown }).url === 'string'
+    ));
+  } catch {
+    return [];
+  }
 }
 
 export function DynamicPageContent({
@@ -37,10 +56,12 @@ export function DynamicPageContent({
   pageTitle,
   placeholder = PLACEHOLDER,
   imageKey,
+  filesSettingKey,
   excludeFromRelated,
 }: DynamicPageContentProps) {
   const [content, setContent] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [documentsFiles, setDocumentsFiles] = useState<ApiAdministrativeDocument[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,13 +77,23 @@ export function DynamicPageContent({
         })
       );
     }
+    if (filesSettingKey) {
+      promises.push(
+        getPageSetting(filesSettingKey).then((s) => {
+          if (!cancelled) setDocumentsFiles(parseAdministrativeDocuments(s.value));
+        })
+      );
+    }
     Promise.all(promises).catch(() => {
-      if (!cancelled) setContent('');
+      if (!cancelled) {
+        setContent('');
+        setDocumentsFiles([]);
+      }
     }).finally(() => {
       if (!cancelled) setLoading(false);
     });
     return () => { cancelled = true; };
-  }, [settingKey, imageKey]);
+  }, [settingKey, imageKey, filesSettingKey]);
 
   if (loading) {
     return (
@@ -125,6 +156,48 @@ export function DynamicPageContent({
             {content ? <ReactMarkdown>{content}</ReactMarkdown> : <p>{placeholder}</p>}
           </div>
         </div>
+
+        {filesSettingKey && (
+          <section className="mb-16 max-w-4xl" aria-label="Documents administratifs">
+            <h2 className="[font-family:'Newsreader',serif] text-2xl md:text-3xl font-medium text-[var(--ink)] mb-5">
+              Documents disponibles
+            </h2>
+            {documentsFiles.length === 0 ? (
+              <p className="text-[var(--ink-2)]">Aucun document disponible pour le moment.</p>
+            ) : (
+              <div className="border border-[var(--line)] rounded-xl overflow-hidden bg-white">
+                <div className="divide-y divide-[var(--line)]">
+                  {documentsFiles.map((doc) => (
+                    <div key={doc.id} className="px-4 py-4 sm:px-5 flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="text-[15px] font-medium text-[var(--ink)] truncate">
+                          {doc.title || doc.original_name || 'Document administratif'}
+                        </p>
+                        {doc.uploaded_at && (
+                          <p className="text-xs text-[var(--ink-3)] mt-1">
+                            {new Date(doc.uploaded_at).toLocaleDateString('fr-FR', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })}
+                          </p>
+                        )}
+                      </div>
+                      <a
+                        href={getImageUrl(doc.url)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm text-[var(--accent)] hover:underline whitespace-nowrap"
+                      >
+                        Ouvrir / Télécharger
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Découvrir aussi — autres pages À propos */}
         <section className="mb-20" aria-label="Découvrir aussi">

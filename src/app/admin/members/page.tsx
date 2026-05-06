@@ -240,13 +240,13 @@ export default function AdminMembersPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-neutral-200 mb-6">
+      <div className="flex gap-2 border-b border-[var(--line)] mb-6">
         <button
           type="button"
           onClick={() => setTab('membres')}
           className={`px-4 py-2 font-medium border-b-2 -mb-px transition-colors ${
             tab === 'membres'
-              ? 'border-primary-500 text-primary-600'
+              ? 'border-primary-500 text-[var(--accent)]'
               : 'border-transparent text-neutral-600 hover:text-neutral-900'
           }`}
         >
@@ -257,7 +257,7 @@ export default function AdminMembersPage() {
           onClick={() => setTab('cotisations')}
           className={`px-4 py-2 font-medium border-b-2 -mb-px transition-colors flex items-center gap-2 ${
             tab === 'cotisations'
-              ? 'border-primary-500 text-primary-600'
+              ? 'border-primary-500 text-[var(--accent)]'
               : 'border-transparent text-neutral-600 hover:text-neutral-900'
           }`}
         >
@@ -278,7 +278,7 @@ export default function AdminMembersPage() {
               placeholder="Rechercher par nom ou email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 min-w-[200px] px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="flex-1 min-w-[200px] px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
             <Button
               leftIcon={<Plus className="w-4 h-4" />}
@@ -304,7 +304,7 @@ export default function AdminMembersPage() {
             <div className="bg-white rounded-xl shadow-sm border border-neutral-100 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-neutral-50 border-b border-neutral-100">
+                  <thead className="bg-[var(--bg)] border-b border-neutral-100">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
                         Nom
@@ -329,7 +329,7 @@ export default function AdminMembersPage() {
                       </tr>
                     ) : (
                       members.map((m) => (
-                        <tr key={m.id} className="hover:bg-neutral-50/50">
+                        <tr key={m.id} className="hover:bg-[var(--bg)]/50">
                           <td className="px-6 py-4">
                             <div className="font-medium text-neutral-900">
                               {m.prenom} {m.nom}
@@ -384,7 +384,7 @@ export default function AdminMembersPage() {
                   e.target.value as 'pending' | 'confirmed' | 'rejected' | ''
                 )
               }
-              className="px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+              className="px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Tous les statuts</option>
               <option value="pending">En attente</option>
@@ -401,7 +401,7 @@ export default function AdminMembersPage() {
             <div className="bg-white rounded-xl shadow-sm border border-neutral-100 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-neutral-50 border-b border-neutral-100">
+                  <thead className="bg-[var(--bg)] border-b border-neutral-100">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
                         Membre
@@ -435,7 +435,7 @@ export default function AdminMembersPage() {
                       </tr>
                     ) : (
                       cotisations.map((c) => (
-                        <tr key={c.id} className="hover:bg-neutral-50/50">
+                        <tr key={c.id} className="hover:bg-[var(--bg)]/50">
                           <td className="px-6 py-4">
                             <div className="font-medium text-neutral-900">
                               {c.prenom} {c.nom}
@@ -529,7 +529,7 @@ export default function AdminMembersPage() {
                 required
                 value={editForm.nom}
                 onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <div>
@@ -539,7 +539,7 @@ export default function AdminMembersPage() {
                 required
                 value={editForm.prenom}
                 onChange={(e) => setEditForm({ ...editForm, prenom: e.target.value })}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <div>
@@ -549,7 +549,7 @@ export default function AdminMembersPage() {
                 required
                 value={editForm.email}
                 onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <div>
@@ -562,7 +562,7 @@ export default function AdminMembersPage() {
                 onChange={(e) =>
                   setEditForm({ ...editForm, annee: e.target.value === '' ? '' : Number(e.target.value) })
                 }
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <div>
@@ -571,7 +571,7 @@ export default function AdminMembersPage() {
                 type="text"
                 value={editForm.telephone}
                 onChange={(e) => setEditForm({ ...editForm, telephone: e.target.value })}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <div className="flex gap-3 justify-end pt-4">
@@ -604,7 +604,7 @@ export default function AdminMembersPage() {
               required
               value={createForm.nom}
               onChange={(e) => setCreateForm((f) => ({ ...f, nom: e.target.value }))}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -614,7 +614,7 @@ export default function AdminMembersPage() {
               required
               value={createForm.prenom}
               onChange={(e) => setCreateForm((f) => ({ ...f, prenom: e.target.value }))}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -624,7 +624,7 @@ export default function AdminMembersPage() {
               required
               value={createForm.email}
               onChange={(e) => setCreateForm((f) => ({ ...f, email: e.target.value }))}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -635,7 +635,7 @@ export default function AdminMembersPage() {
               minLength={8}
               value={createForm.password}
               onChange={(e) => setCreateForm((f) => ({ ...f, password: e.target.value }))}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -648,7 +648,7 @@ export default function AdminMembersPage() {
               onChange={(e) =>
                 setCreateForm((f) => ({ ...f, annee: e.target.value === '' ? '' : Number(e.target.value) }))
               }
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -657,7 +657,7 @@ export default function AdminMembersPage() {
               type="text"
               value={createForm.telephone}
               onChange={(e) => setCreateForm((f) => ({ ...f, telephone: e.target.value }))}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div className="flex gap-3 justify-end pt-4">

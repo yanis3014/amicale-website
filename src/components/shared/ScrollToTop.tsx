@@ -19,7 +19,7 @@ export function ScrollToTop() {
   return (
     <button
       onClick={scroll}
-      className={`fixed bottom-6 right-6 z-40 w-12 h-12 bg-primary-500 text-white rounded-full flex items-center justify-center shadow-card-lg transition-all duration-300 hover:bg-primary-600 hover:shadow-glow ${
+      className={`fixed bottom-6 right-6 z-40 w-12 h-12 bg-[var(--accent)] text-white rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(20,50,38,0.12)] transition-all duration-300 hover:bg-[var(--accent-deep)] ${
         visible ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'
       }`}
       aria-label="Retour en haut"

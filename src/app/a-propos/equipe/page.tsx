@@ -45,7 +45,7 @@ export default function EquipePage() {
   const headerImageUrl = headerImage ? getImageUrl(headerImage) : '';
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-[var(--bg)]">
       {/* Hero pleine page pour que la photo soit bien visible */}
       <div className="relative min-h-screen flex flex-col justify-end text-white overflow-hidden">
         {headerImageUrl ? (
@@ -111,7 +111,7 @@ export default function EquipePage() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="w-full h-full flex items-center justify-center text-3xl font-display font-bold text-primary-600">
+                        <span className="w-full h-full flex items-center justify-center text-3xl font-display font-bold text-[var(--accent)]">
                           {getInitials(ens.nom, ens.titre)}
                         </span>
                       )}
@@ -120,7 +120,7 @@ export default function EquipePage() {
                       {ens.nom}
                     </h2>
                     {ens.titre && (
-                      <p className="text-sm text-primary-600 font-medium mb-2">
+                      <p className="text-sm text-[var(--accent)] font-medium mb-2">
                         {ens.titre}
                       </p>
                     )}
@@ -133,7 +133,7 @@ export default function EquipePage() {
                       {ens.email && (
                         <a
                           href={`mailto:${ens.email}`}
-                          className="inline-flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 font-medium"
+                          className="inline-flex items-center gap-1.5 text-sm text-[var(--accent)] hover:text-primary-700 font-medium"
                           aria-label={`Email ${ens.nom}`}
                         >
                           <Mail className="w-4 h-4" />
@@ -145,7 +145,7 @@ export default function EquipePage() {
                           href={ens.linkedin}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 font-medium"
+                          className="inline-flex items-center gap-1.5 text-sm text-[var(--accent)] hover:text-primary-700 font-medium"
                           aria-label={`LinkedIn ${ens.nom}`}
                         >
                           <Linkedin className="w-4 h-4" />
@@ -171,7 +171,7 @@ export default function EquipePage() {
             </p>
             <Link
               href="/adhesion"
-              className="inline-flex items-center justify-center gap-2 rounded-xl font-body font-semibold px-6 py-3 text-lg bg-primary-500 text-white hover:bg-primary-600 shadow-sm hover:shadow-glow transition-all"
+              className="inline-flex items-center justify-center gap-2 rounded-full font-body font-semibold px-6 py-3 text-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-deep)] shadow-sm transition-all"
             >
               Devenir membre
               <ArrowRight className="w-5 h-5" />

@@ -8,11 +8,11 @@ const variantStyles: Record<string, string> = {
   danger: 'bg-red-100 text-red-700',
   info: 'bg-blue-100 text-blue-700',
   neutral: 'bg-neutral-100 text-neutral-700',
-  primary: 'bg-primary-100 text-primary-700',
+  primary: 'bg-[var(--accent-tint)] text-[var(--accent)] border border-[var(--accent-soft)]',
   purple: 'bg-purple-100 text-purple-700',
   orange: 'bg-orange-100 text-orange-700',
   teal: 'bg-teal-100 text-teal-700',
-  gold: 'bg-gold-500/20 text-gold-600',
+  gold: 'bg-[var(--gold-soft)] text-[var(--gold)] border border-[var(--gold-soft)]',
 };
 
 interface BadgeProps {

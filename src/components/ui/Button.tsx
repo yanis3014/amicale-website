@@ -24,15 +24,15 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseClasses =
-    'rounded-xl font-body font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2';
+    'rounded-full font-body font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2';
 
   const variantClasses = {
     primary:
-      'bg-primary-500 text-white hover:bg-primary-600 shadow-sm hover:shadow-glow',
+      'bg-[var(--accent)] text-white hover:bg-[var(--accent-deep)] shadow-sm',
     secondary: 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200',
     outline:
-      'border-2 border-primary-500 text-primary-600 hover:bg-primary-50',
-    ghost: 'text-primary-600 hover:bg-primary-50',
+      'rounded-full border border-[var(--line-strong)] bg-transparent text-[var(--ink-2)] hover:bg-[var(--surface)]',
+    ghost: 'border border-[var(--line-strong)] bg-transparent text-[var(--ink-2)] hover:bg-[var(--accent-tint)]',
     danger: 'bg-red-500 text-white hover:bg-red-600',
   };
 

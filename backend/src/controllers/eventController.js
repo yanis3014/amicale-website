@@ -17,8 +17,11 @@ exports.listAdmin = async (req, res) => {
     const result = await query(sql);
     return res.json(result.rows);
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Erreur serveur' });
+    console.error('[listAdmin]', err.message, err.stack);
+    return res.status(500).json({
+      error: 'Erreur serveur',
+      hint: process.env.NODE_ENV !== 'production' ? err.message : undefined,
+    });
   }
 };
 

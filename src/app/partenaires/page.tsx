@@ -30,7 +30,7 @@ export default function PartenairesPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-[var(--bg)]">
       <div className="relative bg-gradient-to-br from-primary-700 to-forest-800 text-white py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 bg-black/20" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -81,7 +81,7 @@ export default function PartenairesPage() {
                         />
                       </div>
                     ) : (
-                      <span className="text-xl font-display font-bold text-primary-600">
+                      <span className="text-xl font-display font-bold text-[var(--accent)]">
                         {p.nom.slice(0, 2).toUpperCase()}
                       </span>
                     )}
@@ -100,7 +100,7 @@ export default function PartenairesPage() {
                         />
                       </div>
                     ) : (
-                      <span className="text-xl font-display font-bold text-primary-600">
+                      <span className="text-xl font-display font-bold text-[var(--accent)]">
                         {p.nom.slice(0, 2).toUpperCase()}
                       </span>
                     )}

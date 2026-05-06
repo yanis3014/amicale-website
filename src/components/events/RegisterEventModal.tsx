@@ -180,7 +180,7 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
               <Link
                 href={loginRedirect}
                 onClick={handleClose}
-                className="flex-1 flex items-center justify-center gap-2 rounded-xl font-semibold px-6 py-3 bg-primary-500 text-white hover:bg-primary-600 shadow-sm transition-all"
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl font-semibold px-6 py-3 bg-[var(--accent)] text-white hover:bg-primary-600 shadow-sm transition-all"
               >
                 <LogIn className="w-4 h-4" />
                 Se connecter
@@ -258,7 +258,7 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
                   placeholder="Nom sur la carte"
                   value={cardGuest.name}
                   onChange={(e) => setCardGuest((p) => ({ ...p, name: e.target.value }))}
-                  className="w-full py-2 px-3 rounded-lg border-2 border-neutral-200 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                  className="w-full py-2 px-3 rounded-lg border-2 border-[var(--line)] text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
                   required={isPaidEvent}
                 />
                 <input
@@ -266,7 +266,7 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
                   placeholder="Numéro carte (16 chiffres)"
                   value={cardGuest.number}
                   onChange={(e) => handleCardNumberChange(e, setCardGuest)}
-                  className="w-full py-2 px-3 rounded-lg border-2 border-neutral-200 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                  className="w-full py-2 px-3 rounded-lg border-2 border-[var(--line)] text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
                   required={isPaidEvent}
                 />
                 <div className="grid grid-cols-2 gap-3">
@@ -275,7 +275,7 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
                     placeholder="MM/AA"
                     value={cardGuest.expiry}
                     onChange={(e) => handleExpiryChange(e, setCardGuest)}
-                    className="w-full py-2 px-3 rounded-lg border-2 border-neutral-200 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                    className="w-full py-2 px-3 rounded-lg border-2 border-[var(--line)] text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
                     required={isPaidEvent}
                   />
                   <input
@@ -286,7 +286,7 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
                       const v = e.target.value;
                       if (v.length <= 4 && /^\d*$/.test(v)) setCardGuest((p) => ({ ...p, cvv: v }));
                     }}
-                    className="w-full py-2 px-3 rounded-lg border-2 border-neutral-200 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                    className="w-full py-2 px-3 rounded-lg border-2 border-[var(--line)] text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
                     required={isPaidEvent}
                   />
                 </div>
@@ -337,7 +337,7 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
                   placeholder="Nom sur la carte"
                   value={cardMember.name}
                   onChange={(e) => setCardMember((p) => ({ ...p, name: e.target.value }))}
-                  className="w-full py-2 px-3 rounded-lg border-2 border-neutral-200 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                  className="w-full py-2 px-3 rounded-lg border-2 border-[var(--line)] text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
                   required={isPaidEvent}
                 />
                 <input
@@ -345,7 +345,7 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
                   placeholder="Numéro carte (16 chiffres)"
                   value={cardMember.number}
                   onChange={(e) => handleCardNumberChange(e, setCardMember)}
-                  className="w-full py-2 px-3 rounded-lg border-2 border-neutral-200 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                  className="w-full py-2 px-3 rounded-lg border-2 border-[var(--line)] text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
                   required={isPaidEvent}
                 />
                 <div className="grid grid-cols-2 gap-3">
@@ -354,7 +354,7 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
                     placeholder="MM/AA"
                     value={cardMember.expiry}
                     onChange={(e) => handleExpiryChange(e, setCardMember)}
-                    className="w-full py-2 px-3 rounded-lg border-2 border-neutral-200 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                    className="w-full py-2 px-3 rounded-lg border-2 border-[var(--line)] text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
                     required={isPaidEvent}
                   />
                   <input
@@ -365,13 +365,13 @@ export function RegisterEventModal({ event, isOpen, onClose, onSuccess }: Regist
                       const v = e.target.value;
                       if (v.length <= 4 && /^\d*$/.test(v)) setCardMember((p) => ({ ...p, cvv: v }));
                     }}
-                    className="w-full py-2 px-3 rounded-lg border-2 border-neutral-200 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                    className="w-full py-2 px-3 rounded-lg border-2 border-[var(--line)] text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
                     required={isPaidEvent}
                   />
                 </div>
               </div>
             )}
-            <p className="text-sm text-primary-600 font-medium">
+            <p className="text-sm text-[var(--accent)] font-medium">
               Vous recevrez une confirmation par email ainsi qu’un rappel avant l’événement.
             </p>
             <div className="flex gap-3 justify-end pt-4">

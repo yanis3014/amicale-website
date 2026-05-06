@@ -189,7 +189,7 @@ export default function AdminPartenairesPage() {
                     href={p.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-primary-600 hover:underline truncate max-w-full"
+                    className="text-sm text-[var(--accent)] hover:underline truncate max-w-full"
                   >
                     {p.url}
                   </a>
@@ -240,7 +240,7 @@ export default function AdminPartenairesPage() {
               required
               value={formData.nom}
               onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
           <div>
@@ -250,7 +250,7 @@ export default function AdminPartenairesPage() {
               value={formData.url}
               onChange={(e) => setFormData({ ...formData, url: e.target.value })}
               placeholder="https://..."
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
           <div>
@@ -260,7 +260,7 @@ export default function AdminPartenairesPage() {
               min={0}
               value={formData.ordre}
               onChange={(e) => setFormData({ ...formData, ordre: Number(e.target.value) || 0 })}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -269,7 +269,7 @@ export default function AdminPartenairesPage() {
               id="is_active_part"
               checked={formData.is_active}
               onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-              className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+              className="rounded border-neutral-300 text-[var(--accent)] focus:ring-primary-500"
             />
             <label htmlFor="is_active_part" className="text-sm font-medium text-neutral-700">
               Visible sur le site

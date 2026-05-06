@@ -19,7 +19,7 @@ function passwordStrength(pwd: string): { score: number; label: string; color: s
   if (/\d/.test(pwd)) score++;
   if (/[^A-Za-z0-9]/.test(pwd)) score++;
   const labels = ['Faible', 'Moyen', 'Bon', 'Fort'];
-  const colors = ['bg-red-500', 'bg-amber-500', 'bg-primary-500', 'bg-primary-600'];
+  const colors = ['bg-red-500', 'bg-amber-500', 'bg-[var(--accent)]', 'bg-[var(--accent-deep)]'];
   return { score, label: labels[score - 1] || '', color: colors[score - 1] || 'bg-neutral-200' };
 }
 
@@ -109,9 +109,9 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col md:flex-row overflow-hidden bg-neutral-50">
+    <div className="h-screen flex flex-col md:flex-row overflow-hidden bg-[var(--bg)]">
       {/* Panneau gauche */}
-      <div className="hidden md:flex md:w-[38%] relative bg-gradient-to-br from-primary-600 to-forest-800 text-white flex-shrink-0 overflow-hidden">
+      <div className="hidden md:flex md:w-[38%] relative bg-[var(--accent-deep)] text-white flex-shrink-0 overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -141,12 +141,12 @@ export default function RegisterPage() {
       {/* Contenu droit : formulaire + paiement, sans scroll page */}
       <div className="flex-1 flex flex-col min-h-0 md:justify-center p-4 md:p-6">
         <div className="md:hidden mb-4 flex-shrink-0">
-          <Link href="/" className="font-display font-bold text-primary-600 text-lg">
+          <Link href="/" className="font-display font-bold text-[var(--accent)] text-lg">
             Amicale FPHM
           </Link>
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <Card variant="elevated" className="max-w-lg w-full mx-auto p-5 md:p-6">
+          <Card variant="elevated" className="max-w-lg w-full mx-auto p-5 md:p-6 bg-[var(--surface)] border-[var(--line)]">
             <h2 className="font-display text-xl font-bold text-neutral-900 mb-1">
               Créer un compte — Adhésion obligatoire
             </h2>
@@ -240,7 +240,7 @@ export default function RegisterPage() {
                   <select
                     value={grade}
                     onChange={(e) => setGrade(e.target.value)}
-                    className="w-full py-2 px-3 rounded-lg border-2 border-neutral-200 bg-white font-body text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                    className="w-full py-2 px-3 rounded-[var(--radius,10px)] border border-[var(--line-strong)] bg-[var(--surface)] font-body text-sm focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
                     required
                   >
                     <option value="">Sélectionner...</option>
@@ -269,9 +269,9 @@ export default function RegisterPage() {
               />
 
               {/* Bloc paiement adhésion */}
-              <div className="border-t border-neutral-200 pt-4 mt-4">
+              <div className="border border-[var(--line)] bg-[var(--surface-2)] rounded-[var(--radius,10px)] p-4 mt-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <CreditCard className="w-4 h-4 text-primary-600" />
+                  <CreditCard className="w-4 h-4 text-[var(--accent)]" />
                   <span className="text-sm font-semibold text-neutral-800">Paiement adhésion {MONTANT_ADHESION} DT</span>
                   <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
                     <Lock className="w-3 h-3" />
@@ -284,7 +284,7 @@ export default function RegisterPage() {
                     placeholder="Nom sur la carte"
                     value={cardData.name}
                     onChange={(e) => setCardData((prev) => ({ ...prev, name: e.target.value }))}
-                    className="w-full py-2 px-3 rounded-lg border-2 border-neutral-200 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                    className="w-full py-2 px-3 rounded-[var(--radius,10px)] border border-[var(--line-strong)] bg-[var(--surface)] text-sm focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
                     required
                     disabled={submitting}
                   />
@@ -293,7 +293,7 @@ export default function RegisterPage() {
                     placeholder="Numéro carte (16 chiffres)"
                     value={cardData.number}
                     onChange={handleCardNumberChange}
-                    className="w-full py-2 px-3 rounded-lg border-2 border-neutral-200 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                    className="w-full py-2 px-3 rounded-[var(--radius,10px)] border border-[var(--line-strong)] bg-[var(--surface)] text-sm focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
                     required
                     disabled={submitting}
                   />
@@ -302,7 +302,7 @@ export default function RegisterPage() {
                     placeholder="MM/AA"
                     value={cardData.expiry}
                     onChange={handleExpiryChange}
-                    className="w-full py-2 px-3 rounded-lg border-2 border-neutral-200 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                    className="w-full py-2 px-3 rounded-[var(--radius,10px)] border border-[var(--line-strong)] bg-[var(--surface)] text-sm focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
                     required
                     disabled={submitting}
                   />
@@ -314,7 +314,7 @@ export default function RegisterPage() {
                       const v = e.target.value;
                       if (v.length <= 3 && /^\d*$/.test(v)) setCardData((prev) => ({ ...prev, cvv: v }));
                     }}
-                    className="w-full py-2 px-3 rounded-lg border-2 border-neutral-200 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                    className="w-full py-2 px-3 rounded-[var(--radius,10px)] border border-[var(--line-strong)] bg-[var(--surface)] text-sm focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
                     required
                     disabled={submitting}
                   />
@@ -327,7 +327,7 @@ export default function RegisterPage() {
             </form>
             <p className="mt-4 text-center text-neutral-500 text-xs">
               Déjà un compte ?{' '}
-              <Link href="/login" className="text-primary-600 font-semibold hover:underline">
+              <Link href="/login" className="text-[var(--accent)] font-semibold hover:underline">
                 Se connecter
               </Link>
             </p>

@@ -45,17 +45,14 @@ function LoginContent() {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
-      <div className="hidden md:flex md:w-[40%] bg-gradient-to-br from-primary-600 to-forest-800 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="pharma-login" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M10 2v6M10 12v6M2 10h6M12 10h6" stroke="currentColor" strokeWidth="0.8" fill="none" />
-              </pattern>
-            </defs>
-            <rect width="100" height="100" fill="url(#pharma-login)" />
-          </svg>
-        </div>
+      <div
+        className="hidden md:flex md:w-[40%] text-white relative overflow-hidden"
+        style={{
+          backgroundColor: 'var(--accent-deep)',
+          backgroundImage:
+            'repeating-linear-gradient(135deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 16px)',
+        }}
+      >
         <div className="relative z-10 flex flex-col justify-center p-12">
           <h1 className="font-display text-2xl font-bold mb-2">Amicale FPHM</h1>
           <p className="text-primary-200 italic text-sm mb-12">Unis pour l&apos;excellence de l&apos;enseignement pharmaceutique</p>
@@ -67,11 +64,11 @@ function LoginContent() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col md:justify-center bg-neutral-50 p-6 md:p-12">
+      <div className="flex-1 flex flex-col md:justify-center bg-[var(--bg)] p-6 md:p-12">
         <div className="md:hidden mb-8">
-          <Link href="/" className="font-display font-bold text-primary-600 text-xl">Amicale FPHM</Link>
+          <Link href="/" className="font-display font-bold text-[var(--accent)] text-xl">Amicale FPHM</Link>
         </div>
-        <Card variant="elevated" className="max-w-md w-full mx-auto p-8 md:p-10">
+        <Card variant="elevated" className="max-w-md w-full mx-auto p-8 md:p-10 bg-[var(--surface)] border-[var(--line)] shadow-[0_4px_16px_rgba(20,50,38,0.06)]">
           <h2 className="font-display text-2xl font-bold text-neutral-900 mb-2">Connexion</h2>
           <p className="text-neutral-600 text-sm mb-6">Espace réservé aux enseignants membres de l&apos;Amicale.</p>
           {error && (
@@ -84,11 +81,11 @@ function LoginContent() {
               {submitting ? 'Connexion...' : 'Se connecter'}
             </Button>
             <p className="text-center text-sm">
-              <Link href="/forgot-password" className="text-primary-600 hover:underline font-medium">Mot de passe oublié ?</Link>
+              <Link href="/forgot-password" className="text-[var(--accent)] hover:underline font-medium">Mot de passe oublié ?</Link>
             </p>
           </form>
           <p className="mt-6 text-center text-neutral-600 text-sm">
-            Pas encore de compte ? <Link href="/register" className="text-primary-600 font-semibold hover:underline">S&apos;inscrire</Link>
+            Pas encore de compte ? <Link href="/register" className="text-[var(--accent)] font-semibold hover:underline">S&apos;inscrire</Link>
           </p>
         </Card>
       </div>
@@ -98,7 +95,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-neutral-50"><div className="animate-pulse text-neutral-500">Chargement...</div></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[var(--bg)]"><div className="animate-pulse text-neutral-500">Chargement...</div></div>}>
       <LoginContent />
     </Suspense>
   );

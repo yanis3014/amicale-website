@@ -87,7 +87,7 @@ function AdminLayoutInner({
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                 isActive
-                  ? 'bg-primary-500/20 text-primary-300 border-l-2 border-primary-400 rounded-l-lg rounded-r-none'
+                  ? 'bg-[rgba(255,255,255,0.08)] text-white border-l-2 border-[var(--accent)] rounded-l-lg rounded-r-none'
                   : 'text-white/60 hover:bg-white/8 hover:text-white'
               }`}
             >
@@ -105,7 +105,7 @@ function AdminLayoutInner({
 
       <div className="flex-shrink-0 p-2 border-t border-white/10 space-y-1">
         <div className="px-2 py-2 rounded-lg flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary-500/30 flex items-center justify-center font-display font-bold text-primary-300 text-xs flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[var(--accent)]/30 flex items-center justify-center font-display font-bold text-primary-300 text-xs flex-shrink-0">
             {initials}
           </div>
           <div className="min-w-0 flex-1">
@@ -134,7 +134,7 @@ function AdminLayoutInner({
   );
 
   return (
-    <div className="h-screen bg-neutral-50 flex overflow-hidden">
+    <div className="h-screen bg-[var(--bg)] flex overflow-hidden">
       {/* Desktop Sidebar — fixe, ne défile pas */}
       <div className="hidden lg:flex flex-shrink-0 w-56 h-full overflow-hidden">
         {sidebar}
@@ -160,7 +160,7 @@ function AdminLayoutInner({
 
       {/* Zone droite — scroll seule si le contenu dépasse */}
       <main className="flex-1 min-h-0 flex flex-col overflow-hidden">
-        <div className="lg:hidden flex-shrink-0 flex items-center gap-4 bg-neutral-50 border-b border-neutral-100 px-4 py-3">
+        <div className="lg:hidden flex-shrink-0 flex items-center gap-4 bg-[var(--bg)] border-b border-neutral-100 px-4 py-3">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}

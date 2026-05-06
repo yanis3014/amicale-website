@@ -120,10 +120,10 @@ export default function AdminAProposPage() {
         {SECTIONS.map(({ key, label, icon: Icon }) => (
           <section
             key={key}
-            className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden"
+            className="bg-white rounded-xl border border-[var(--line)] shadow-sm overflow-hidden"
           >
-            <div className="px-6 py-4 border-b border-neutral-100 bg-neutral-50 flex items-center gap-3">
-              <Icon className="w-5 h-5 text-primary-600" />
+            <div className="px-6 py-4 border-b border-neutral-100 bg-[var(--bg)] flex items-center gap-3">
+              <Icon className="w-5 h-5 text-[var(--accent)]" />
               <h2 className="font-display font-semibold text-neutral-900">{label}</h2>
             </div>
             <div className="p-6 space-y-6">
@@ -134,7 +134,7 @@ export default function AdminAProposPage() {
                 </h3>
                 <div className="flex flex-wrap items-center gap-4">
                   {images[key] ? (
-                    <div className="relative w-40 h-28 rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200">
+                    <div className="relative w-40 h-28 rounded-xl overflow-hidden bg-neutral-100 border border-[var(--line)]">
                       <img
                         src={getImageUrl(images[key])}
                         alt=""
@@ -142,7 +142,7 @@ export default function AdminAProposPage() {
                       />
                     </div>
                   ) : (
-                    <div className="w-40 h-28 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-400">
+                    <div className="w-40 h-28 rounded-xl bg-neutral-100 border border-[var(--line)] flex items-center justify-center text-neutral-400">
                       <ImageIcon className="w-10 h-10" />
                     </div>
                   )}
@@ -173,7 +173,7 @@ export default function AdminAProposPage() {
                 value={edits[key] ?? ''}
                 onChange={(e) => setEdits((prev) => ({ ...prev, [key]: e.target.value }))}
                 rows={12}
-                className="w-full px-4 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 font-mono text-sm"
+                className="w-full px-4 py-3 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 font-mono text-sm"
                 placeholder={`Contenu de la page "${label}" en Markdown…`}
               />
               <div className="mt-4 flex items-center justify-between">

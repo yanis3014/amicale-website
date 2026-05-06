@@ -49,7 +49,7 @@ export default function EventDetailPage() {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4">
         <p className="text-neutral-600">Événement introuvable</p>
-        <Link href="/evenements" className="text-primary-600 font-semibold hover:underline">
+        <Link href="/evenements" className="text-[var(--accent)] font-semibold hover:underline">
           Retour aux événements
         </Link>
       </div>
@@ -69,7 +69,7 @@ export default function EventDetailPage() {
   const heroImage = event.image_url || event.gallery_images?.[0];
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-[var(--bg)]">
       <div className="relative h-[55vh] min-h-[320px] w-full overflow-hidden">
         {heroImage ? (
           <img
@@ -112,7 +112,7 @@ export default function EventDetailPage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Link
           href="/evenements"
-          className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium mb-8 transition-colors"
+          className="inline-flex items-center gap-2 text-[var(--accent)] hover:text-primary-700 font-medium mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Retour aux événements
@@ -146,18 +146,18 @@ export default function EventDetailPage() {
             </p>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-neutral-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-[var(--line)]">
             {previousEvent ? (
               <Link
                 href={`/evenements/${previousEvent.id}`}
                 className="group flex items-center gap-4 p-6 rounded-2xl bg-primary-50 border-2 border-transparent hover:border-primary-500 transition-all"
               >
                 <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 group-hover:bg-primary-200 transition-colors">
-                  <ChevronLeft className="w-5 h-5 text-primary-600" />
+                  <ChevronLeft className="w-5 h-5 text-[var(--accent)]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-neutral-500 mb-1">Événement précédent</p>
-                  <h3 className="font-semibold text-neutral-900 group-hover:text-primary-600 transition-colors line-clamp-2">
+                  <h3 className="font-semibold text-neutral-900 group-hover:text-[var(--accent)] transition-colors line-clamp-2">
                     {previousEvent.titre}
                   </h3>
                 </div>
@@ -172,12 +172,12 @@ export default function EventDetailPage() {
               >
                 <div className="flex-1 min-w-0 md:order-2">
                   <p className="text-sm text-neutral-500 mb-1">Événement suivant</p>
-                  <h3 className="font-semibold text-neutral-900 group-hover:text-primary-600 transition-colors line-clamp-2">
+                  <h3 className="font-semibold text-neutral-900 group-hover:text-[var(--accent)] transition-colors line-clamp-2">
                     {nextEvent.titre}
                   </h3>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 group-hover:bg-primary-200 transition-colors md:order-1">
-                  <ChevronRight className="w-5 h-5 text-primary-600" />
+                  <ChevronRight className="w-5 h-5 text-[var(--accent)]" />
                 </div>
               </Link>
             ) : (

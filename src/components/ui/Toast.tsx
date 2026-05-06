@@ -29,7 +29,7 @@ const variantStyles: Record<ToastVariant, string> = {
 };
 
 const variantIcons: Record<ToastVariant, React.ReactNode> = {
-  success: <CheckCircle2 className="w-5 h-5 text-primary-600" />,
+  success: <CheckCircle2 className="w-5 h-5 text-[var(--accent)]" />,
   error: <XCircle className="w-5 h-5 text-red-600" />,
   warning: <AlertTriangle className="w-5 h-5 text-amber-600" />,
   info: <Info className="w-5 h-5 text-blue-600" />,

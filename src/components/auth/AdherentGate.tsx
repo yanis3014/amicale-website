@@ -40,7 +40,7 @@ export function AdherentGate({ children, fallback }: AdherentGateProps) {
       </p>
       <Link
         href="/adhesion"
-        className="inline-flex items-center justify-center gap-2 rounded-xl font-body font-semibold transition-all duration-200 bg-primary-500 text-white hover:bg-primary-600 shadow-sm hover:shadow-glow px-5 py-2.5 text-base"
+        className="inline-flex items-center justify-center gap-2 rounded-full font-body font-semibold transition-all duration-200 bg-[var(--accent)] text-white hover:bg-[var(--accent-deep)] shadow-sm px-5 py-2.5 text-base"
       >
         Voir l&apos;adhésion
       </Link>

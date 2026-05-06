@@ -66,7 +66,7 @@ export function DynamicPageContent({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-50">
+      <div className="min-h-screen bg-[var(--bg)]">
         {imageKey && (
           <div className="h-[40vh] min-h-[240px] bg-neutral-200 animate-pulse" />
         )}
@@ -91,7 +91,7 @@ export function DynamicPageContent({
     : PAGES_POUR_DECOUVRIR;
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-[var(--bg)]">
       {/* Bannière */}
       {bannerUrl && (
         <div className="relative w-full h-[40vh] min-h-[260px] overflow-hidden">
@@ -114,44 +114,38 @@ export function DynamicPageContent({
       <div className={`container mx-auto px-4 sm:px-6 lg:px-8 ${bannerUrl ? 'py-12 md:py-16' : 'pt-16 pb-12 md:pb-16'}`}>
         {/* Titre si pas de bannière */}
         {!bannerUrl && (
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-neutral-900 mb-8">
-            {pageTitle}
-          </h1>
+          <>
+            <p className="font-mono text-[12px] tracking-[0.1em] text-[var(--accent)]">— À PROPOS</p>
+            <h1 className="[font-family:'Newsreader',serif] text-[48px] leading-[1.02] font-normal text-[var(--ink)] mt-3 mb-8">
+              {pageTitle}
+            </h1>
+          </>
         )}
 
-        {/* Bloc contenu principal — carte pour le faire ressortir */}
-        <Card variant="default" className="p-6 md:p-10 lg:p-12 mb-16 max-w-4xl">
-          <div className="prose prose-neutral prose-lg max-w-none prose-headings:font-display prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-p:leading-relaxed prose-a:text-primary-600 prose-a:no-underline hover:prose-a:underline prose-ul:text-neutral-600 prose-ol:text-neutral-600 prose-li:leading-relaxed">
-            {content ? (
-              <ReactMarkdown>{content}</ReactMarkdown>
-            ) : (
-              <p className="text-neutral-600 leading-relaxed text-lg">{placeholder}</p>
-            )}
+        <div className="py-4 md:py-6 mb-16 max-w-4xl">
+          <div className="prose prose-neutral max-w-none prose-headings:[font-family:'Newsreader',serif] prose-headings:text-[var(--ink)] prose-p:text-[17px] prose-p:text-[var(--ink-2)] prose-p:leading-[1.65] prose-a:text-[var(--accent)] prose-a:no-underline hover:prose-a:underline prose-ul:text-[var(--ink-2)] prose-ol:text-[var(--ink-2)] prose-li:leading-[1.65]">
+            {content ? <ReactMarkdown>{content}</ReactMarkdown> : <p>{placeholder}</p>}
           </div>
-        </Card>
+        </div>
 
         {/* Découvrir aussi — autres pages À propos */}
         <section className="mb-20" aria-label="Découvrir aussi">
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-neutral-900 mb-6 text-center">
+          <h2 className="[font-family:'Newsreader',serif] text-2xl md:text-3xl font-medium text-[var(--ink)] mb-6 text-center">
             Découvrir aussi
           </h2>
-          <p className="text-neutral-600 text-center max-w-2xl mx-auto mb-10">
+          <p className="text-[var(--ink-2)] text-center max-w-2xl mx-auto mb-8">
             Explorez les autres rubriques pour mieux connaître l&apos;Amicale.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto border-y border-[var(--line)]">
             {relatedPages.map(({ href, label, icon: Icon }) => (
-              <Link key={href} href={href} className="group block">
-                <Card variant="default" hover className="h-full p-5 transition-all duration-200">
-                  <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center flex-shrink-0 group-hover:bg-primary-200 transition-colors">
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <span className="font-display font-semibold text-neutral-900 group-hover:text-primary-600 transition-colors">
-                      {label}
-                    </span>
-                    <ArrowRight className="w-5 h-5 text-neutral-300 group-hover:text-primary-500 ml-auto flex-shrink-0 transition-colors" />
-                  </div>
-                </Card>
+              <Link
+                key={href}
+                href={href}
+                className="group flex items-center gap-3 border-b border-[var(--line)] last:border-b-0 px-4 py-4 sm:px-5 hover:bg-[var(--surface)] transition-colors"
+              >
+                <Icon className="w-4 h-4 text-[var(--ink-3)] flex-shrink-0" />
+                <span className="text-[15px] text-[var(--ink-2)] group-hover:text-[var(--accent)] transition-colors">{label}</span>
+                <span className="ml-auto text-[18px] text-[var(--ink-3)] group-hover:text-[var(--accent)] transition-colors">→</span>
               </Link>
             ))}
           </div>
@@ -169,14 +163,14 @@ export function DynamicPageContent({
             <div className="flex flex-wrap gap-4 justify-center">
               <Link
                 href="/adhesion"
-                className="inline-flex items-center justify-center gap-2 rounded-xl font-body font-semibold px-6 py-3 text-lg bg-primary-500 text-white hover:bg-primary-600 shadow-sm hover:shadow-glow transition-all"
+                className="inline-flex items-center justify-center gap-2 rounded-full font-body font-semibold px-6 py-3 text-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-deep)] shadow-sm transition-all"
               >
                 Devenir membre
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
                 href="/evenements"
-                className="inline-flex items-center justify-center gap-2 rounded-xl font-body font-semibold px-6 py-3 text-lg border-2 border-primary-500 text-primary-600 hover:bg-primary-50 transition-all"
+                className="inline-flex items-center justify-center gap-2 rounded-xl font-body font-semibold px-6 py-3 text-lg border-2 border-primary-500 text-[var(--accent)] hover:bg-primary-50 transition-all"
               >
                 Voir les événements
               </Link>

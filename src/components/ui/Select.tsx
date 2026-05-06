@@ -43,7 +43,7 @@ export const Select: React.FC<SelectProps> = ({
     'relative w-full rounded-xl border-2 bg-white font-body transition-all cursor-pointer',
     error
       ? 'border-red-400 ring-2 ring-red-100'
-      : 'border-neutral-200 focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-100',
+      : 'border-[var(--line)] focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-100',
     sizeClasses[size],
     disabled && 'opacity-50 cursor-not-allowed',
     className,

@@ -163,22 +163,22 @@ export default function AdminDashboardPage() {
   ];
 
   const colorClasses = {
-    primary: 'bg-primary-500/10 text-primary-600 border-primary-200',
+    primary: 'bg-[var(--accent)]/10 text-[var(--accent)] border-primary-200',
     forest: 'bg-forest-500/10 text-forest-600 border-forest-200',
     blue: 'bg-blue-500/10 text-blue-600 border-blue-200',
     amber: 'bg-amber-500/10 text-amber-600 border-amber-200',
   } as const;
 
   return (
-    <div className="min-h-screen bg-neutral-50/80">
+    <div className="min-h-screen bg-[var(--bg)]/80">
       {/* En-tête */}
-      <div className="border-b border-neutral-200 bg-white">
+      <div className="border-b border-[var(--line)] bg-white">
         <div className="p-6 lg:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl md:text-3xl font-display font-bold text-neutral-900 flex items-center gap-3">
-                <span className="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center">
-                  <LayoutDashboard className="w-5 h-5 text-primary-600" />
+                <span className="w-10 h-10 rounded-xl bg-[var(--accent)]/10 flex items-center justify-center">
+                  <LayoutDashboard className="w-5 h-5 text-[var(--accent)]" />
                 </span>
                 Vue d&apos;ensemble
               </h1>
@@ -225,7 +225,7 @@ export default function AdminDashboardPage() {
                 <Link
                   key={kpi.label}
                   href={kpi.href}
-                  className="group bg-white rounded-2xl border border-neutral-100 shadow-sm p-6 hover:shadow-md hover:border-neutral-200 transition-all duration-200"
+                  className="group bg-white rounded-2xl border border-neutral-100 shadow-sm p-6 hover:shadow-md hover:border-[var(--line)] transition-all duration-200"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <span className={`w-12 h-12 rounded-xl flex items-center justify-center border ${classes}`}>
@@ -256,7 +256,7 @@ export default function AdminDashboardPage() {
           <section className="lg:col-span-2 bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-neutral-100">
               <h2 className="text-lg font-display font-bold text-neutral-900 flex items-center gap-2">
-                <ClipboardList className="w-5 h-5 text-primary-600" />
+                <ClipboardList className="w-5 h-5 text-[var(--accent)]" />
                 Actions rapides
               </h2>
               <p className="text-sm text-neutral-600 mt-1">
@@ -268,8 +268,8 @@ export default function AdminDashboardPage() {
                 href="/admin/evenements"
                 className="flex items-center gap-4 p-4 rounded-xl border-2 border-neutral-100 hover:border-primary-200 hover:bg-primary-50/50 transition-all group"
               >
-                <span className="w-12 h-12 rounded-xl bg-primary-500/10 flex items-center justify-center group-hover:bg-primary-500/20 transition-colors">
-                  <Calendar className="w-6 h-6 text-primary-600" />
+                <span className="w-12 h-12 rounded-xl bg-[var(--accent)]/10 flex items-center justify-center group-hover:bg-[var(--accent)]/20 transition-colors">
+                  <Calendar className="w-6 h-6 text-[var(--accent)]" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-neutral-900 group-hover:text-primary-700">Événements</p>
@@ -315,7 +315,7 @@ export default function AdminDashboardPage() {
           <section className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-neutral-100">
               <h2 className="text-lg font-display font-bold text-neutral-900 flex items-center gap-2">
-                <CalendarCheck className="w-5 h-5 text-primary-600" />
+                <CalendarCheck className="w-5 h-5 text-[var(--accent)]" />
                 Activité du mois
               </h2>
               <p className="text-sm text-neutral-600 mt-1">
@@ -346,7 +346,7 @@ export default function AdminDashboardPage() {
         <section className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-neutral-100">
             <h2 className="text-lg font-display font-bold text-neutral-900 flex items-center gap-2">
-              <Star className="w-5 h-5 text-primary-600" />
+              <Star className="w-5 h-5 text-[var(--accent)]" />
               Événements à la une (accueil)
             </h2>
             <p className="text-sm text-neutral-600 mt-1">
@@ -369,7 +369,7 @@ export default function AdminDashboardPage() {
                         checked={ev.featured_on_home ?? false}
                         disabled={savingFeatured === ev.id}
                         onChange={(e) => handleFeaturedChange(ev, e.target.checked, ev.home_order ?? 0)}
-                        className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500 w-4 h-4"
+                        className="rounded border-neutral-300 text-[var(--accent)] focus:ring-primary-500 w-4 h-4"
                       />
                       <span className="font-medium text-neutral-900 truncate">{ev.titre}</span>
                       <span className="text-sm text-neutral-500 whitespace-nowrap">
@@ -387,7 +387,7 @@ export default function AdminDashboardPage() {
                           const v = parseInt(e.target.value, 10) || 0;
                           handleFeaturedChange(ev, ev.featured_on_home ?? false, v);
                         }}
-                        className="w-14 px-2 py-1.5 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        className="w-14 px-2 py-1.5 border border-[var(--line)] rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       />
                     </div>
                     {savingFeatured === ev.id && (
@@ -407,7 +407,7 @@ export default function AdminDashboardPage() {
             <div className="p-6 border-b border-neutral-100 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-display font-bold text-neutral-900 flex items-center gap-2">
-                  <Gift className="w-5 h-5 text-primary-600" />
+                  <Gift className="w-5 h-5 text-[var(--accent)]" />
                   Avantages adhérent
                 </h2>
                 <p className="text-sm text-neutral-600 mt-1">
@@ -452,7 +452,7 @@ export default function AdminDashboardPage() {
           <section className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-neutral-100">
               <h2 className="text-lg font-display font-bold text-neutral-900 flex items-center gap-2">
-                <Percent className="w-5 h-5 text-primary-600" />
+                <Percent className="w-5 h-5 text-[var(--accent)]" />
                 Tarifs événements
               </h2>
               <p className="text-sm text-neutral-600 mt-1">
@@ -473,12 +473,12 @@ export default function AdminDashboardPage() {
                           <span className="text-sm text-neutral-600">
                             {Number(ev.prix) === 0 ? 'Gratuit' : `${Number(ev.prix)} DT`}
                             {hasReduction && (
-                              <span className="ml-2 text-primary-600 font-semibold">
+                              <span className="ml-2 text-[var(--accent)] font-semibold">
                                 → {Number(ev.prix_adherent)} DT adh.
                               </span>
                             )}
                           </span>
-                          <Link href="/admin/annonces" className="text-sm text-primary-600 hover:underline font-medium">
+                          <Link href="/admin/annonces" className="text-sm text-[var(--accent)] hover:underline font-medium">
                             Modifier
                           </Link>
                         </div>
@@ -488,7 +488,7 @@ export default function AdminDashboardPage() {
                 </ul>
               )}
               <div className="mt-4 pt-4 border-t border-neutral-100">
-                <Link href="/admin/annonces" className="text-primary-600 font-semibold hover:text-primary-700 text-sm inline-flex items-center gap-1">
+                <Link href="/admin/annonces" className="text-[var(--accent)] font-semibold hover:text-primary-700 text-sm inline-flex items-center gap-1">
                   Gérer les annonces et tarifs
                   <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -510,7 +510,7 @@ export default function AdminDashboardPage() {
             </div>
             <Link
               href="/admin/evenements"
-              className="text-sm font-semibold text-primary-600 hover:text-primary-700 inline-flex items-center gap-1"
+              className="text-sm font-semibold text-[var(--accent)] hover:text-primary-700 inline-flex items-center gap-1"
             >
               Voir tout
               <ArrowRight className="w-4 h-4" />
@@ -519,7 +519,7 @@ export default function AdminDashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[600px]">
               <thead>
-                <tr className="bg-neutral-50 border-b border-neutral-100">
+                <tr className="bg-[var(--bg)] border-b border-neutral-100">
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                     Membre
                   </th>
@@ -546,7 +546,7 @@ export default function AdminDashboardPage() {
                   </tr>
                 ) : (
                   stats.dernieres_inscriptions.map((reg) => (
-                    <tr key={reg.id} className="hover:bg-neutral-50/80 transition-colors">
+                    <tr key={reg.id} className="hover:bg-[var(--bg)]/80 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-medium text-neutral-900">{reg.prenom} {reg.nom}</div>
                         <div className="text-sm text-neutral-500">{reg.email}</div>
@@ -595,7 +595,7 @@ export default function AdminDashboardPage() {
               value={avantageForm.libelle}
               onChange={(e) => setAvantageForm((f) => ({ ...f, libelle: e.target.value }))}
               placeholder="ex. Tarifs préférentiels sur les congrès"
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
           <div>
@@ -603,7 +603,7 @@ export default function AdminDashboardPage() {
             <select
               value={avantageForm.type_avantage}
               onChange={(e) => setAvantageForm((f) => ({ ...f, type_avantage: e.target.value as 'avantage' | 'reduction' | 'autre' }))}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="avantage">Avantage</option>
               <option value="reduction">Réduction</option>
@@ -616,7 +616,7 @@ export default function AdminDashboardPage() {
               id="avantage_visible"
               checked={avantageForm.is_active}
               onChange={(e) => setAvantageForm((f) => ({ ...f, is_active: e.target.checked }))}
-              className="rounded border-neutral-300 text-primary-600"
+              className="rounded border-neutral-300 text-[var(--accent)]"
             />
             <label htmlFor="avantage_visible" className="text-sm font-medium text-neutral-700">
               Visible dans l&apos;espace membre

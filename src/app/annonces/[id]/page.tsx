@@ -59,7 +59,7 @@ export default function AnnonceDetailPage() {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4">
         <p className="text-neutral-600">Annonce introuvable</p>
-        <Link href="/annonces" className="text-primary-600 font-semibold hover:underline">
+        <Link href="/annonces" className="text-[var(--accent)] font-semibold hover:underline">
           Retour aux annonces
         </Link>
       </div>
@@ -88,7 +88,7 @@ export default function AnnonceDetailPage() {
   const imageUrl = getImageUrl(event.image_url);
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-[var(--bg)]">
       <div className="relative h-[50vh] min-h-[320px] w-full overflow-hidden">
         {imageUrl ? (
           <Image
@@ -137,7 +137,7 @@ export default function AnnonceDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
-                    <Calendar className="w-5 h-5 text-primary-600" />
+                    <Calendar className="w-5 h-5 text-[var(--accent)]" />
                   </div>
                   <div>
                     <p className="text-sm text-neutral-500">Date</p>
@@ -146,7 +146,7 @@ export default function AnnonceDetailPage() {
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-5 h-5 text-primary-600" />
+                    <Clock className="w-5 h-5 text-[var(--accent)]" />
                   </div>
                   <div>
                     <p className="text-sm text-neutral-500">Heure</p>
@@ -156,7 +156,7 @@ export default function AnnonceDetailPage() {
                 {event.lieu && (
                   <div className="flex items-start gap-3 sm:col-span-2">
                     <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-5 h-5 text-primary-600" />
+                      <MapPin className="w-5 h-5 text-[var(--accent)]" />
                     </div>
                     <div>
                       <p className="text-sm text-neutral-500">Lieu</p>
@@ -166,7 +166,7 @@ export default function AnnonceDetailPage() {
                 )}
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
-                    <Users className="w-5 h-5 text-primary-600" />
+                    <Users className="w-5 h-5 text-[var(--accent)]" />
                   </div>
                   <div>
                     <p className="text-sm text-neutral-500">Places</p>
@@ -201,7 +201,7 @@ export default function AnnonceDetailPage() {
             <div className="sticky top-24 space-y-6">
               <Card
                 variant="elevated"
-                className={`p-6 ${fewPlaces ? 'animate-pulse-glow' : ''}`}
+                className="p-6"
               >
                 <h3 className="text-lg font-display font-bold text-neutral-900 mb-4">
                   Inscription
@@ -209,7 +209,7 @@ export default function AnnonceDetailPage() {
                 <div className="mb-6">
                   {showAdherentPrice ? (
                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span className="text-2xl font-display font-bold text-primary-600">
+                      <span className="text-2xl font-display font-bold text-[var(--accent)]">
                         {Number(prixAdherent).toFixed(2)} DT
                       </span>
                       <Badge variant="gold" size="sm">
@@ -220,7 +220,7 @@ export default function AnnonceDetailPage() {
                       </span>
                     </div>
                   ) : (
-                    <p className="text-3xl md:text-4xl font-display font-bold text-primary-600">
+                    <p className="text-3xl md:text-4xl font-display font-bold text-[var(--accent)]">
                       {event.prix === 0 ? 'Gratuit' : `${Number(event.prix).toFixed(2)} DT`}
                     </p>
                   )}
@@ -234,7 +234,7 @@ export default function AnnonceDetailPage() {
                     <div
                       className={`h-full rounded-full transition-all ${
                         placesPct > 50
-                          ? 'bg-primary-500'
+                          ? 'bg-[var(--accent)]'
                           : placesPct > 20
                           ? 'bg-amber-500'
                           : 'bg-red-500'

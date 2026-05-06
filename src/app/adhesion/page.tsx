@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Gift, ArrowRight, Users, CheckCircle2, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { getAvantages } from '@/lib/api/avantages';
 import type { ApiAvantage } from '@/lib/api/types';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 
 export default function AdhesionPage() {
   const [avantages, setAvantages] = useState<ApiAvantage[]>([]);
@@ -28,15 +27,14 @@ export default function AdhesionPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Hero */}
-      <div className="relative bg-gradient-to-br from-primary-600 to-forest-700 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-5" aria-hidden />
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative z-10">
-          <h1 className="font-display text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
+    <div className="min-h-screen bg-[var(--bg)]">
+      <div className="bg-[var(--bg)] pt-16">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+          <p className="font-mono text-[12px] tracking-[0.1em] text-[var(--accent)]">— REJOINDRE L&apos;AMICALE</p>
+          <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(48px,6vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
             Adhésion
           </h1>
-          <p className="text-lg md:text-xl text-primary-100 max-w-2xl">
+          <p className="mt-4 text-[17px] leading-relaxed text-[var(--ink-2)] max-w-2xl">
             Rejoignez l&apos;Amicale des Enseignants de la Faculté de Pharmacie de Monastir
             et bénéficiez d&apos;avantages réservés aux membres.
           </p>
@@ -46,11 +44,10 @@ export default function AdhesionPage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         {/* Principe de l'adhésion */}
         <section className="max-w-3xl mx-auto mb-16">
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-neutral-900 mb-6 flex items-center gap-3">
-            <Users className="w-8 h-8 text-primary-600" />
+          <h2 className="[font-family:'Newsreader',serif] text-2xl md:text-3xl font-medium text-[var(--ink)] mb-6">
             Principe de l&apos;adhésion
           </h2>
-          <div className="prose prose-neutral text-neutral-600 space-y-4 font-body">
+          <div className="prose prose-neutral text-[var(--ink-2)] space-y-4 font-body">
             <p className="leading-relaxed">
               L&apos;<strong>Amicale</strong> rassemble les enseignants de la Faculté de Pharmacie de Monastir
               autour de la vie associative, des événements scientifiques et de la solidarité entre pairs.
@@ -70,11 +67,10 @@ export default function AdhesionPage() {
 
         {/* Avantages (définis par l'admin dans le dashboard) */}
         <section className="max-w-4xl mx-auto mb-16">
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-neutral-900 mb-6 flex items-center gap-3">
-            <Gift className="w-8 h-8 text-primary-600" />
+          <h2 className="[font-family:'Newsreader',serif] text-2xl md:text-3xl font-medium text-[var(--ink)] mb-6">
             Les avantages adhérent
           </h2>
-          <p className="text-neutral-600 mb-8 font-body">
+          <p className="text-[var(--ink-2)] mb-8 font-body">
             Les avantages ci-dessous sont accordés aux membres à jour de leur cotisation.
             Ils sont définis et mis à jour par l&apos;Amicale.
           </p>
@@ -92,26 +88,18 @@ export default function AdhesionPage() {
               </p>
             </Card>
           ) : (
-            <ul className="space-y-4">
-              {avantages.map((a) => (
-                <li key={a.id}>
-                  <Card variant="default" className="p-4 flex items-start gap-4">
-                    <span
-                      className={`shrink-0 rounded-lg px-2.5 py-1 text-sm font-medium ${
-                        a.type_avantage === 'reduction'
-                          ? 'bg-amber-100 text-amber-800'
-                          : a.type_avantage === 'autre'
-                            ? 'bg-neutral-100 text-neutral-700'
-                            : 'bg-primary-100 text-primary-700'
-                      }`}
-                    >
+            <ul className="border-t border-[var(--line)]">
+              {avantages.map((a, index) => (
+                <li key={a.id} className="grid grid-cols-[56px_1fr] gap-4 border-b border-[var(--line)] py-5">
+                  <span className="font-mono text-[12px] tracking-[0.08em] text-[var(--accent)]">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <div>
+                    <span className="text-[11px] uppercase tracking-[0.08em] text-[var(--ink-3)]">
                       {a.type_avantage === 'reduction' ? 'Réduction' : a.type_avantage === 'autre' ? 'Autre' : 'Avantage'}
                     </span>
-                    <span className="flex items-center gap-2 text-neutral-800 font-body">
-                      <CheckCircle2 className="w-5 h-5 text-primary-600 shrink-0" />
-                      {a.libelle}
-                    </span>
-                  </Card>
+                    <p className="mt-2 text-[16px] text-[var(--ink)]">{a.libelle}</p>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -119,31 +107,44 @@ export default function AdhesionPage() {
         </section>
 
         {/* CTA Devenir membre */}
-        <section className="max-w-2xl mx-auto text-center">
-          <Card variant="bordered" className="p-8 md:p-12">
-            <h2 className="font-display text-2xl font-bold text-neutral-900 mb-3">
-              Devenir membre
-            </h2>
-            <p className="text-neutral-600 mb-6 font-body">
+        <section className="max-w-5xl mx-auto">
+          <div
+            className="p-10 md:p-[72px] text-[var(--bg)]"
+            style={{ background: 'var(--accent-deep)', borderRadius: 'var(--radius-xl, 28px)' }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-end">
+              <div>
+                <h2 className="[font-family:'Newsreader',serif] text-[clamp(36px,4.5vw,54px)] leading-[1.02] font-normal mb-4">
+                  Devenez membre de l&apos;
+                  <span className="italic text-[var(--gold)]">amicale</span>.
+                </h2>
+                <p className="text-[15px] leading-relaxed opacity-85">
+                  Enseignant à la FPHM ? Créez votre compte et soumettez votre demande d&apos;adhésion.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 md:justify-end">
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-[14px] font-medium transition-colors"
+                  style={{ background: 'var(--bg)', color: 'var(--accent-deep)' }}
+                >
+                  Créer un compte et adhérer
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-[14px] font-medium border transition-colors"
+                  style={{ borderColor: 'rgba(255,255,255,0.3)' }}
+                >
+                  Se connecter
+                </Link>
+              </div>
+            </div>
+            <p className="text-sm opacity-70 mt-8">
               Enseignant à la FPHM ? Créez votre compte et soumettez votre demande d&apos;adhésion.
               Après validation de votre cotisation, vous aurez accès à votre espace membre et à tous les avantages.
             </p>
-            <Link href="/register">
-              <Button
-                size="xl"
-                className="inline-flex items-center gap-2 bg-primary-500 text-white hover:bg-primary-600"
-              >
-                Créer un compte et adhérer
-                <ArrowRight className="w-5 h-5" />
-              </Button>
-            </Link>
-            <p className="text-sm text-neutral-500 mt-6 font-body">
-              Vous avez déjà un compte ?{' '}
-              <Link href="/login" className="text-primary-600 font-medium hover:underline">
-                Se connecter
-              </Link>
-            </p>
-          </Card>
+          </div>
         </section>
       </div>
     </div>

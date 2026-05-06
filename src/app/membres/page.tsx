@@ -100,7 +100,7 @@ export default function DashboardMembrePage() {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="text-primary-600 font-medium hover:underline"
+            className="text-[var(--accent)] font-medium hover:underline"
           >
             Réessayer
           </button>
@@ -112,23 +112,23 @@ export default function DashboardMembrePage() {
   const isAdherent = displayProfile.is_adherent && (displayProfile.adherent_expires_at ? new Date(displayProfile.adherent_expires_at) > now : true);
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <div className="bg-gradient-to-r from-primary-600 to-forest-700 text-white py-8">
+    <div className="min-h-screen bg-[var(--bg)]">
+      <div className="bg-[var(--surface-2)] text-[var(--ink)] py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center font-display font-bold text-xl">
+              <div className="w-16 h-16 rounded-full bg-[var(--accent)] text-[var(--bg)] flex items-center justify-center [font-family:'Newsreader',serif] font-medium text-xl">
                 {displayProfile.prenom?.[0]}
                 {displayProfile.nom?.[0]}
               </div>
               <div>
-                <h1 className="font-display text-2xl md:text-3xl font-bold">
+                <h1 className="[font-family:'Newsreader',serif] text-2xl md:text-3xl font-normal">
                   {displayProfile.prenom} {displayProfile.nom}
                 </h1>
               </div>
             </div>
             {isAdherent && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-gold-500 text-white rounded-full font-semibold">
+              <div className="flex items-center gap-2 px-4 py-2 bg-[var(--accent)] text-[var(--bg)] rounded-full font-medium">
                 {formatAdherentBadge(displayProfile.adherent_expires_at)}
               </div>
             )}
@@ -136,7 +136,7 @@ export default function DashboardMembrePage() {
         </div>
       </div>
 
-      <div className="bg-white border-b border-neutral-100 sticky top-0 z-10">
+      <div className="bg-[var(--bg)] border-b border-[var(--line)] sticky top-0 z-10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative flex gap-2 overflow-x-auto">
             {tabs.map((tab) => {
@@ -146,15 +146,15 @@ export default function DashboardMembrePage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex items-center gap-2 px-6 py-4 font-semibold transition-colors whitespace-nowrap ${
-                    isActive ? 'text-primary-600' : 'text-neutral-600 hover:text-neutral-900'
+                  className={`relative flex items-center gap-2 px-6 py-4 font-medium transition-colors whitespace-nowrap ${
+                    isActive ? 'text-[var(--ink)]' : 'text-[var(--ink-3)] hover:text-[var(--ink)]'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
                   {tab.label}
                   {isActive && (
                     <span
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-500 transition-transform duration-200"
+                      className="absolute bottom-0 left-0 right-0 h-px bg-[var(--accent)] transition-transform duration-200"
                       style={{ transform: 'translateX(0)' }}
                     />
                   )}
@@ -168,7 +168,7 @@ export default function DashboardMembrePage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'profil' && (
           <div className="space-y-8">
-            <div className="bg-gradient-to-br from-primary-700 to-forest-800 p-8 rounded-2xl shadow-2xl text-white max-w-2xl relative overflow-hidden">
+            <div className="p-8 rounded-2xl shadow-2xl text-[var(--bg)] max-w-2xl relative overflow-hidden bg-[var(--accent-deep)]">
               <div className="absolute inset-0 opacity-5">
                 <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                   <defs>
@@ -182,7 +182,7 @@ export default function DashboardMembrePage() {
               <div className="relative z-10">
                 <div className="flex items-start justify-between mb-8">
                   <div>
-                    <h3 className="text-sm font-semibold uppercase tracking-wide opacity-90">
+                    <h3 className="[font-family:'Newsreader',serif] text-lg font-medium tracking-wide opacity-95">
                       Amicale de la Faculté
                     </h3>
                     <p className="text-xs opacity-75">de Pharmacie de Monastir</p>
@@ -200,7 +200,7 @@ export default function DashboardMembrePage() {
                 <div className="flex items-end justify-between">
                   <div>
                     <p className="text-sm opacity-90 mb-1">Titulaire</p>
-                    <p className="text-2xl font-bold">
+                    <p className="[font-family:'Newsreader',serif] text-2xl font-medium">
                       {displayProfile.prenom} {displayProfile.nom}
                     </p>
                   </div>
@@ -219,7 +219,7 @@ export default function DashboardMembrePage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-[var(--line)] p-6">
               <h2 className="text-2xl font-bold text-neutral-900 mb-6">
                 Informations personnelles
               </h2>
@@ -305,7 +305,7 @@ export default function DashboardMembrePage() {
                         </span>
                         <button
                           onClick={() => handleShowTicket(event)}
-                          className="px-4 py-2 bg-primary-500 text-white rounded-lg font-semibold hover:bg-primary-600 transition-colors flex items-center gap-2"
+                          className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg font-semibold hover:bg-primary-600 transition-colors flex items-center gap-2"
                         >
                           <QrCode className="w-4 h-4" />
                           Mon Ticket
@@ -324,9 +324,9 @@ export default function DashboardMembrePage() {
               {pastEvents.length === 0 ? (
                 <p className="text-neutral-600">Aucun événement passé.</p>
               ) : (
-                <div className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+                <div className="bg-white rounded-xl shadow-sm border border-[var(--line)] overflow-hidden">
                   <table className="w-full">
-                    <thead className="bg-neutral-50 border-b border-neutral-200">
+                    <thead className="bg-[var(--bg)] border-b border-[var(--line)]">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
                           Événement
@@ -341,7 +341,7 @@ export default function DashboardMembrePage() {
                     </thead>
                     <tbody className="divide-y divide-neutral-200">
                       {pastEvents.map((event) => (
-                        <tr key={event.id} className="hover:bg-neutral-50">
+                        <tr key={event.id} className="hover:bg-[var(--bg)]">
                           <td className="px-6 py-4 font-medium text-neutral-900">
                             {event.titre}
                           </td>
@@ -374,7 +374,7 @@ export default function DashboardMembrePage() {
                     className="bg-white rounded-2xl shadow-card border border-neutral-100 p-6 flex items-start gap-4"
                   >
                     <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-6 h-6 text-primary-600" />
+                      <CheckCircle className="w-6 h-6 text-[var(--accent)]" />
                     </div>
                     <p className="text-neutral-900 font-medium pt-2">{advantage.libelle}</p>
                   </div>

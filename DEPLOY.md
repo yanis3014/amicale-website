@@ -1,4 +1,4 @@
-# Déploiement : Vercel (frontend) + Render (backend)
+Déploiement : Vercel (frontend) + Render (backend)
 
 ## Frontend (Vercel)
 

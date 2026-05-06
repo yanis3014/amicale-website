@@ -33,10 +33,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     };
 
     const inputClasses = [
-      'w-full rounded-xl border-2 bg-white font-body transition-all',
+      'w-full rounded-[var(--radius,10px)] border bg-[var(--surface)] font-body transition-all',
       error
         ? 'border-red-400 ring-2 ring-red-100'
-        : 'border-neutral-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100',
+        : 'border-[var(--line-strong)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]',
       sizeClasses[size],
       leftIcon && 'pl-10',
       rightIcon && 'pr-10',

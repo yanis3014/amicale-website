@@ -47,10 +47,10 @@ export const Modal: React.FC<ModalProps> = ({
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-3xl shadow-card-lg w-full ${sizeClasses[size]} animate-fade-up my-auto max-h-[90vh] flex flex-col`}
+        className={`bg-[var(--surface)] rounded-[28px] border border-[var(--line)] shadow-[0_8px_24px_rgba(20,50,38,0.08)] w-full ${sizeClasses[size]} animate-fade-up my-auto max-h-[90vh] flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0 border-b border-neutral-100">
+        <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0 border-b border-[var(--line)]">
           {title && (
             <h2 className="text-xl font-display font-bold text-neutral-900">
               {title}

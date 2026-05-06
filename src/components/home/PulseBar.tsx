@@ -13,7 +13,7 @@ export const PulseBar: React.FC<PulseBarProps> = ({ banderole }) => {
   if (!banderole || !isVisible) return null;
 
   return (
-    <div className="bg-primary-500 text-white py-2.5 px-4 relative overflow-hidden">
+    <div className="bg-[var(--accent)] text-white py-2.5 px-4 relative overflow-hidden">
       <div className="container mx-auto flex items-center justify-between">
         <div className="flex-1 overflow-hidden">
           <div className="animate-marquee whitespace-nowrap text-sm font-medium flex items-center gap-2">

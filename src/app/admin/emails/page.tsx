@@ -57,7 +57,7 @@ export default function AdminEmailsPage() {
     : null;
 
   return (
-    <div className="h-full max-h-full min-h-0 flex flex-col overflow-hidden bg-neutral-50/50">
+    <div className="h-full max-h-full min-h-0 flex flex-col overflow-hidden bg-[var(--bg)]/50">
       {/* En-tête compact */}
       <div className="flex-shrink-0 border-b border-neutral-100 bg-white px-4 py-3 lg:px-6">
         <div className="flex items-center gap-3">
@@ -88,9 +88,9 @@ export default function AdminEmailsPage() {
           >
             {/* Colonne 1 : Destinataire */}
             <div className="flex flex-col min-h-0 bg-white rounded-xl border border-neutral-100 shadow-sm overflow-hidden">
-              <div className="flex-shrink-0 px-4 py-2.5 border-b border-neutral-100 bg-neutral-50/50">
+              <div className="flex-shrink-0 px-4 py-2.5 border-b border-neutral-100 bg-[var(--bg)]/50">
                 <h2 className="font-semibold text-sm text-neutral-900 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-primary-600" />
+                  <Users className="w-4 h-4 text-[var(--accent)]" />
                   Destinataire
                 </h2>
               </div>
@@ -102,10 +102,10 @@ export default function AdminEmailsPage() {
                     className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 transition-all text-left ${
                       emailTo === 'all'
                         ? 'border-primary-500 bg-primary-50/80'
-                        : 'border-neutral-100 hover:border-neutral-200'
+                        : 'border-neutral-100 hover:border-[var(--line)]'
                     }`}
                   >
-                    <Users className={`w-5 h-5 flex-shrink-0 ${emailTo === 'all' ? 'text-primary-600' : 'text-neutral-400'}`} />
+                    <Users className={`w-5 h-5 flex-shrink-0 ${emailTo === 'all' ? 'text-[var(--accent)]' : 'text-neutral-400'}`} />
                     <div className="min-w-0">
                       <p className="font-medium text-sm text-neutral-900">Tous</p>
                       <p className="text-xs text-neutral-500 truncate">{membersWithEmail.length} membre(s)</p>
@@ -117,10 +117,10 @@ export default function AdminEmailsPage() {
                     className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 transition-all text-left ${
                       emailTo !== 'all'
                         ? 'border-primary-500 bg-primary-50/80'
-                        : 'border-neutral-100 hover:border-neutral-200'
+                        : 'border-neutral-100 hover:border-[var(--line)]'
                     }`}
                   >
-                    <User className={`w-5 h-5 flex-shrink-0 ${emailTo !== 'all' ? 'text-primary-600' : 'text-neutral-400'}`} />
+                    <User className={`w-5 h-5 flex-shrink-0 ${emailTo !== 'all' ? 'text-[var(--accent)]' : 'text-neutral-400'}`} />
                     <div className="min-w-0">
                       <p className="font-medium text-sm text-neutral-900">Un membre</p>
                     </div>
@@ -130,7 +130,7 @@ export default function AdminEmailsPage() {
                   <select
                     value={typeof emailTo === 'number' && emailTo > 0 ? emailTo : ''}
                     onChange={(e) => setEmailTo(parseInt(e.target.value, 10) || 0)}
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 flex-shrink-0"
+                    className="w-full rounded-lg border border-[var(--line)] px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 flex-shrink-0"
                   >
                     <option value="">Choisir un membre…</option>
                     {membersWithEmail.map((m) => (
@@ -145,9 +145,9 @@ export default function AdminEmailsPage() {
 
             {/* Colonne 2 : Objet + Message + Bouton */}
             <div className="flex flex-col min-h-0 bg-white rounded-xl border border-neutral-100 shadow-sm overflow-hidden">
-              <div className="flex-shrink-0 px-4 py-2.5 border-b border-neutral-100 bg-neutral-50/50">
+              <div className="flex-shrink-0 px-4 py-2.5 border-b border-neutral-100 bg-[var(--bg)]/50">
                 <h2 className="font-semibold text-sm text-neutral-900 flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-primary-600" />
+                  <Mail className="w-4 h-4 text-[var(--accent)]" />
                   Contenu
                 </h2>
               </div>
@@ -159,7 +159,7 @@ export default function AdminEmailsPage() {
                   onChange={(e) => setEmailSubject(e.target.value)}
                   placeholder="Objet"
                   required
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 flex-shrink-0"
+                  className="w-full rounded-lg border border-[var(--line)] px-3 py-2 text-sm placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 flex-shrink-0"
                 />
                 <textarea
                   id="emailMessage"
@@ -168,7 +168,7 @@ export default function AdminEmailsPage() {
                   placeholder="Message (personnalisé avec « Bonjour Prénom Nom »)"
                   required
                   rows={3}
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 resize-none flex-1 min-h-0"
+                  className="w-full rounded-lg border border-[var(--line)] px-3 py-2 text-sm placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 resize-none flex-1 min-h-0"
                 />
                 <div className="flex items-center justify-between gap-3 flex-shrink-0 pt-1">
                   {(emailTo === 'all' || selectedMember) && (

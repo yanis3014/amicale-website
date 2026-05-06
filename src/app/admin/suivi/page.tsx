@@ -183,7 +183,7 @@ export default function AdminSuiviPage() {
   const hasPrev = offset > 0;
 
   return (
-    <div className="h-full max-h-full min-h-0 flex flex-col overflow-hidden bg-neutral-50/50">
+    <div className="h-full max-h-full min-h-0 flex flex-col overflow-hidden bg-[var(--bg)]/50">
       {/* En-tête compact */}
       <div className="flex-shrink-0 px-4 py-3 lg:px-5 border-b border-neutral-100 bg-white">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -202,7 +202,7 @@ export default function AdminSuiviPage() {
                 setFilterUserId(e.target.value);
                 setOffset(0);
               }}
-              className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="rounded-lg border border-[var(--line)] bg-white px-3 py-1.5 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
               <option value="">Tous</option>
               {admins.map((a) => (
@@ -219,7 +219,7 @@ export default function AdminSuiviPage() {
                 setOffset(0);
               }}
               placeholder="Action…"
-              className="w-32 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="w-32 rounded-lg border border-[var(--line)] bg-white px-3 py-1.5 text-sm text-neutral-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
             <button
               type="button"
@@ -232,7 +232,7 @@ export default function AdminSuiviPage() {
               type="button"
               onClick={() => exportToCsv(items, formatDetails)}
               disabled={items.length === 0}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--line)] bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-[var(--bg)] disabled:opacity-50"
             >
               <Download className="w-3.5 h-3.5" />
               CSV
@@ -248,9 +248,9 @@ export default function AdminSuiviPage() {
         </div>
       ) : (
         <>
-          <div className="flex-1 min-h-0 overflow-auto rounded-b-xl border border-neutral-200 border-t-0 bg-white">
+          <div className="flex-1 min-h-0 overflow-auto rounded-b-xl border border-[var(--line)] border-t-0 bg-white">
             <table className="w-full min-w-[560px] text-left text-xs">
-              <thead className="sticky top-0 z-10 border-b border-neutral-200 bg-neutral-50">
+              <thead className="sticky top-0 z-10 border-b border-[var(--line)] bg-[var(--bg)]">
                 <tr>
                   <th className="px-3 py-2 font-semibold text-neutral-700">Date / Heure</th>
                   <th className="px-3 py-2 font-semibold text-neutral-700">Utilisateur</th>
@@ -268,7 +268,7 @@ export default function AdminSuiviPage() {
                   </tr>
                 ) : (
                   items.map((entry) => (
-                    <tr key={entry.id} className="hover:bg-neutral-50/80">
+                    <tr key={entry.id} className="hover:bg-[var(--bg)]/80">
                       <td className="whitespace-nowrap px-3 py-2 text-neutral-600">
                         {formatDate(entry.created_at)}
                       </td>
@@ -289,7 +289,7 @@ export default function AdminSuiviPage() {
                         <button
                           type="button"
                           onClick={() => setDetailEntry(entry)}
-                          className="inline-flex items-center justify-center rounded-md px-2 py-1 text-primary-600 hover:bg-primary-50 transition-colors"
+                          className="inline-flex items-center justify-center rounded-md px-2 py-1 text-[var(--accent)] hover:bg-primary-50 transition-colors"
                           title="Voir le détail"
                         >
                           <Eye className="w-3.5 h-3.5" />
@@ -314,7 +314,7 @@ export default function AdminSuiviPage() {
                 type="button"
                 disabled={!hasPrev}
                 onClick={() => setOffset((o) => Math.max(0, o - PAGE_SIZE))}
-                className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-700 disabled:opacity-50 hover:bg-neutral-50"
+                className="rounded-lg border border-[var(--line)] bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-700 disabled:opacity-50 hover:bg-[var(--bg)]"
               >
                 Préc.
               </button>
@@ -322,7 +322,7 @@ export default function AdminSuiviPage() {
                 type="button"
                 disabled={!hasMore}
                 onClick={() => setOffset((o) => o + PAGE_SIZE)}
-                className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-700 disabled:opacity-50 hover:bg-neutral-50"
+                className="rounded-lg border border-[var(--line)] bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-700 disabled:opacity-50 hover:bg-[var(--bg)]"
               >
                 Suiv.
               </button>
@@ -368,7 +368,7 @@ export default function AdminSuiviPage() {
                   </div>
                   <div>
                     <dt className="text-neutral-500 font-medium">Détails</dt>
-                    <dd className="text-neutral-700 mt-1 rounded-lg bg-neutral-50 p-3">
+                    <dd className="text-neutral-700 mt-1 rounded-lg bg-[var(--bg)] p-3">
                       {detailEntry.details && Object.keys(detailEntry.details).length > 0 ? (
                         formatDetails(detailEntry.action, detailEntry.details)
                       ) : (

@@ -350,7 +350,7 @@ export default function AdminAnnoncesPage() {
                   <p className="text-neutral-600 line-clamp-2 text-sm">
                     {event.description || '—'}
                   </p>
-                  <p className="mt-2 text-lg font-semibold text-primary-600">
+                  <p className="mt-2 text-lg font-semibold text-[var(--accent)]">
                     {event.prix === 0
                       ? 'Gratuit'
                       : `${event.prix} DT`}
@@ -418,7 +418,7 @@ export default function AdminAnnoncesPage() {
                 required
                 value={formData.titre}
                 onChange={(e) => setFormData({ ...formData, titre: e.target.value })}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div>
@@ -430,7 +430,7 @@ export default function AdminAnnoncesPage() {
                 required
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div>
@@ -441,7 +441,7 @@ export default function AdminAnnoncesPage() {
                 type="datetime-local"
                 value={formData.date_fin}
                 onChange={(e) => setFormData({ ...formData, date_fin: e.target.value })}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 title="L'annonce reste affichée sur la page Annonces jusqu'à cette date, puis passe dans les événements passés."
               />
               <p className="text-xs text-neutral-500 mt-1">
@@ -456,7 +456,7 @@ export default function AdminAnnoncesPage() {
                 type="text"
                 value={formData.lieu}
                 onChange={(e) => setFormData({ ...formData, lieu: e.target.value })}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div>
@@ -469,7 +469,7 @@ export default function AdminAnnoncesPage() {
                 step="0.01"
                 value={formData.prix}
                 onChange={(e) => setFormData({ ...formData, prix: Number(e.target.value) || 0 })}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div>
@@ -487,7 +487,7 @@ export default function AdminAnnoncesPage() {
                     prix_adherent: e.target.value === '' ? '' : Number(e.target.value),
                   })
                 }
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 placeholder="Optionnel"
               />
             </div>
@@ -500,7 +500,7 @@ export default function AdminAnnoncesPage() {
                 min="0"
                 value={formData.capacite}
                 onChange={(e) => setFormData({ ...formData, capacite: Number(e.target.value) || 0 })}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div>
@@ -511,7 +511,7 @@ export default function AdminAnnoncesPage() {
                 type="text"
                 value={formData.categorie}
                 onChange={(e) => setFormData({ ...formData, categorie: e.target.value })}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 placeholder="ex: gala, atelier"
               />
             </div>
@@ -523,7 +523,7 @@ export default function AdminAnnoncesPage() {
                 rows={2}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div className="md:col-span-2">
@@ -534,7 +534,7 @@ export default function AdminAnnoncesPage() {
                 rows={3}
                 value={formData.long_description}
                 onChange={(e) => setFormData({ ...formData, long_description: e.target.value })}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div className="md:col-span-2">
@@ -593,7 +593,7 @@ export default function AdminAnnoncesPage() {
             ) : (
               <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-neutral-50 sticky top-0">
+                  <thead className="bg-[var(--bg)] sticky top-0">
                     <tr>
                       <th className="px-4 py-2 text-left font-semibold text-neutral-700">
                         Membre

@@ -14,12 +14,12 @@ export function AnimatedLink({ href, children, className = '' }: AnimatedLinkPro
     <Link
       href={href}
       className={
-        'relative font-body font-medium text-neutral-600 hover:text-primary-600 transition-colors group ' +
+        'relative font-body font-medium text-neutral-600 hover:text-[var(--accent)] transition-colors group ' +
         className
       }
     >
       {children}
-      <span className="absolute bottom-0 left-0 w-full h-[1.5px] bg-primary-500 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
+      <span className="absolute bottom-0 left-0 w-full h-[1.5px] bg-[var(--accent)] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
     </Link>
   );
 }

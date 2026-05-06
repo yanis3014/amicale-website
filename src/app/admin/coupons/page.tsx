@@ -150,7 +150,7 @@ export default function AdminCouponsPage() {
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-neutral-900 mb-2 flex items-center gap-2">
-            <Tag className="w-8 h-8 text-primary-600" />
+            <Tag className="w-8 h-8 text-[var(--accent)]" />
             Coupons de réduction
           </h1>
           <p className="text-neutral-600">
@@ -166,7 +166,7 @@ export default function AdminCouponsPage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px]">
             <thead>
-              <tr className="bg-neutral-50 border-b border-neutral-100">
+              <tr className="bg-[var(--bg)] border-b border-neutral-100">
                 <th className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-600 uppercase">Code</th>
                 <th className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-600 uppercase">Type</th>
                 <th className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-600 uppercase">Réduction</th>
@@ -185,7 +185,7 @@ export default function AdminCouponsPage() {
                 </tr>
               ) : (
                 coupons.map((c) => (
-                  <tr key={c.id} className="hover:bg-neutral-50/50">
+                  <tr key={c.id} className="hover:bg-[var(--bg)]/50">
                     <td className="px-6 py-4 font-mono font-semibold text-neutral-900">{c.code}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-0.5 rounded-lg text-xs font-semibold ${
@@ -244,7 +244,7 @@ export default function AdminCouponsPage() {
               value={form.code}
               onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
               placeholder="ex. BIENVENUE2025"
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
             />
             {editing && <p className="text-xs text-neutral-500 mt-1">Le code ne peut pas être modifié.</p>}
           </div>
@@ -254,7 +254,7 @@ export default function AdminCouponsPage() {
               value={form.type_coupon}
               disabled={!!editing}
               onChange={(e) => setForm((f) => ({ ...f, type_coupon: e.target.value as 'adhesion' | 'event' }))}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
             >
               <option value="adhesion">Adhésion (cotisation)</option>
               <option value="event">Événement</option>
@@ -267,7 +267,7 @@ export default function AdminCouponsPage() {
                 value={form.event_id ?? ''}
                 required={form.type_coupon === 'event'}
                 onChange={(e) => setForm((f) => ({ ...f, event_id: e.target.value ? Number(e.target.value) : undefined }))}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">Sélectionner un événement</option>
                 {events.map((ev) => (
@@ -285,7 +285,7 @@ export default function AdminCouponsPage() {
                 value={form.discount_type}
                 disabled={!!editing}
                 onChange={(e) => setForm((f) => ({ ...f, discount_type: e.target.value as 'percent' | 'fixed' }))}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
               >
                 <option value="percent">Pourcentage</option>
                 <option value="fixed">Montant fixe (DT)</option>
@@ -301,7 +301,7 @@ export default function AdminCouponsPage() {
                 disabled={!!editing}
                 value={form.discount_value}
                 onChange={(e) => setForm((f) => ({ ...f, discount_value: Number(e.target.value) || 0 }))}
-                className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
+                className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
               />
             </div>
           </div>
@@ -311,7 +311,7 @@ export default function AdminCouponsPage() {
               type="datetime-local"
               value={form.valid_until ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, valid_until: e.target.value || '' }))}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -321,7 +321,7 @@ export default function AdminCouponsPage() {
               min={1}
               value={form.max_uses === '' || form.max_uses == null ? '' : String(form.max_uses)}
               onChange={(e) => setForm((f) => ({ ...f, max_uses: e.target.value === '' ? '' : Number(e.target.value) }))}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500"
             />
           </div>
           {editing && (
@@ -331,7 +331,7 @@ export default function AdminCouponsPage() {
                 id="coupon_active"
                 checked={form.is_active}
                 onChange={(e) => setForm((f) => ({ ...f, is_active: e.target.checked }))}
-                className="rounded border-neutral-300 text-primary-600"
+                className="rounded border-neutral-300 text-[var(--accent)]"
               />
               <label htmlFor="coupon_active" className="text-sm font-medium text-neutral-700">
                 Coupon actif

@@ -32,7 +32,7 @@ const categoryVariant = {
 
 function getPlacesColor(restantes: number, capacite: number) {
   const ratio = capacite > 0 ? restantes / capacite : 1;
-  if (ratio > 0.5) return 'bg-primary-500';
+  if (ratio > 0.5) return 'bg-[var(--accent)]';
   if (ratio > 0.2) return 'bg-amber-500';
   return 'bg-red-500';
 }
@@ -84,7 +84,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
           </div>
         </div>
         <div className="p-6">
-          <h3 className="text-xl font-display font-bold text-neutral-900 mb-3 line-clamp-2 group-hover:text-primary-600 transition-colors">
+          <h3 className="text-xl font-display font-bold text-neutral-900 mb-3 line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
             {event.titre}
           </h3>
           {event.description && (
@@ -109,7 +109,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
               style={{ width: `${Math.max(0, Math.min(100, placesRatio))}%` }}
             />
           </div>
-          <span className="inline-flex items-center justify-center w-full px-6 py-3 text-lg rounded-xl font-body font-semibold bg-primary-500 text-white hover:bg-primary-600 shadow-sm hover:shadow-glow transition-all duration-200">
+          <span className="inline-flex items-center justify-center w-full px-6 py-3 text-lg rounded-full font-body font-semibold bg-[var(--accent)] text-white hover:bg-[var(--accent-deep)] shadow-sm transition-all duration-200">
             S&apos;inscrire
           </span>
         </div>

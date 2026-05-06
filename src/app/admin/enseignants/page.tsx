@@ -215,7 +215,7 @@ export default function AdminEnseignantsPage() {
         </p>
         <div className="flex flex-wrap items-end gap-4">
           {headerImage && (
-            <div className="w-48 h-24 rounded-lg overflow-hidden bg-neutral-100 border border-neutral-200">
+            <div className="w-48 h-24 rounded-lg overflow-hidden bg-neutral-100 border border-[var(--line)]">
               <img
                 src={getImageUrl(headerImage)}
                 alt="Header actuel"
@@ -267,7 +267,7 @@ export default function AdminEnseignantsPage() {
                       sizes="64px"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center font-display font-bold text-primary-600 text-xl">
+                    <div className="w-full h-full flex items-center justify-center font-display font-bold text-[var(--accent)] text-xl">
                       {e.nom.slice(0, 2).toUpperCase()}
                     </div>
                   )}
@@ -360,7 +360,7 @@ export default function AdminEnseignantsPage() {
               required
               value={formData.nom}
               onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
           <div>
@@ -371,7 +371,7 @@ export default function AdminEnseignantsPage() {
               type="text"
               value={formData.titre}
               onChange={(e) => setFormData({ ...formData, titre: e.target.value })}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="ex: Professeur"
             />
           </div>
@@ -383,7 +383,7 @@ export default function AdminEnseignantsPage() {
               type="text"
               value={formData.specialite}
               onChange={(e) => setFormData({ ...formData, specialite: e.target.value })}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
           <div>
@@ -394,7 +394,7 @@ export default function AdminEnseignantsPage() {
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
           <div>
@@ -405,7 +405,7 @@ export default function AdminEnseignantsPage() {
               type="url"
               value={formData.linkedin}
               onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="https://..."
             />
           </div>
@@ -418,7 +418,7 @@ export default function AdminEnseignantsPage() {
               min={0}
               value={formData.ordre}
               onChange={(e) => setFormData({ ...formData, ordre: Number(e.target.value) || 0 })}
-              className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-4 py-2 border border-[var(--line)] rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -427,7 +427,7 @@ export default function AdminEnseignantsPage() {
               id="is_active"
               checked={formData.is_active}
               onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-              className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+              className="rounded border-neutral-300 text-[var(--accent)] focus:ring-primary-500"
             />
             <label htmlFor="is_active" className="text-sm font-medium text-neutral-700">
               Visible sur le site (actif)

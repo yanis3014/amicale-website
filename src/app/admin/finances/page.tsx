@@ -165,7 +165,7 @@ export default function AdminFinancesPage() {
 
       {/* Vue d'ensemble */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-[var(--line)] bg-white p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-lg bg-forest-100 flex items-center justify-center">
               <Wallet className="w-5 h-5 text-forest-600" />
@@ -174,17 +174,17 @@ export default function AdminFinancesPage() {
           </div>
           <p className="text-2xl font-bold text-forest-900">{formatDt(total)}</p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-[var(--line)] bg-white p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
-              <Users className="w-5 h-5 text-primary-600" />
+              <Users className="w-5 h-5 text-[var(--accent)]" />
             </div>
             <span className="text-sm font-medium text-neutral-600">Cotisations (adhésions)</span>
           </div>
           <p className="text-2xl font-bold text-forest-900">{formatDt(revCot)}</p>
           <p className="text-xs text-neutral-500 mt-1">{overview?.nb_cotisations ?? 0} cotisation(s) confirmée(s)</p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-[var(--line)] bg-white p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
               <Calendar className="w-5 h-5 text-amber-600" />
@@ -194,7 +194,7 @@ export default function AdminFinancesPage() {
           <p className="text-2xl font-bold text-forest-900">{formatDt(revEvents)}</p>
           <p className="text-xs text-neutral-500 mt-1">{overview?.nb_inscriptions_payantes ?? 0} inscription(s) — paiement simulé</p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-[var(--line)] bg-white p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center">
               <Handshake className="w-5 h-5 text-violet-600" />
@@ -207,7 +207,7 @@ export default function AdminFinancesPage() {
       </div>
 
       {/* Répartition */}
-      <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm mb-8">
+      <div className="rounded-xl border border-[var(--line)] bg-white p-6 shadow-sm mb-8">
         <h2 className="text-lg font-semibold text-forest-900 mb-4">Répartition des revenus</h2>
         <div className="space-y-3">
           <div>
@@ -217,7 +217,7 @@ export default function AdminFinancesPage() {
             </div>
             <div className="h-3 bg-neutral-100 rounded-full overflow-hidden">
               <div
-                className="h-full bg-primary-500 rounded-full transition-all"
+                className="h-full bg-[var(--accent)] rounded-full transition-all"
                 style={{ width: `${total ? (revCot / total) * 100 : 0}%` }}
               />
             </div>
@@ -250,8 +250,8 @@ export default function AdminFinancesPage() {
       </div>
 
       {/* Détail : entrées manuelles (avec suivi qui a ajouté) */}
-      <div className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
+      <div className="rounded-xl border border-[var(--line)] bg-white shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between border-b border-[var(--line)] px-6 py-4">
           <h2 className="text-lg font-semibold text-forest-900">Entrées manuelles (sponsors, dons)</h2>
           <button
             type="button"
@@ -264,7 +264,7 @@ export default function AdminFinancesPage() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-neutral-200 bg-neutral-50">
+            <thead className="border-b border-[var(--line)] bg-[var(--bg)]">
               <tr>
                 <th className="px-4 py-3 font-semibold text-neutral-700">Date</th>
                 <th className="px-4 py-3 font-semibold text-neutral-700">Libellé</th>
@@ -283,7 +283,7 @@ export default function AdminFinancesPage() {
                 </tr>
               ) : (
                 entries.map((entry) => (
-                  <tr key={entry.id} className="hover:bg-neutral-50/80">
+                  <tr key={entry.id} className="hover:bg-[var(--bg)]/80">
                     <td className="px-4 py-3 text-neutral-600">{formatDate(entry.date_entree)}</td>
                     <td className="px-4 py-3 font-medium text-forest-900">{entry.libelle}</td>
                     <td className="px-4 py-3">
@@ -340,7 +340,7 @@ export default function AdminFinancesPage() {
               value={form.montant}
               onChange={(e) => setForm((f) => ({ ...f, montant: e.target.value }))}
               placeholder="Ex. 500"
-              className="w-full rounded-xl border border-neutral-200 px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="w-full rounded-xl border border-[var(--line)] px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -350,7 +350,7 @@ export default function AdminFinancesPage() {
               value={form.libelle}
               onChange={(e) => setForm((f) => ({ ...f, libelle: e.target.value }))}
               placeholder="Ex. Sponsor Entreprise XYZ"
-              className="w-full rounded-xl border border-neutral-200 px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="w-full rounded-xl border border-[var(--line)] px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -358,7 +358,7 @@ export default function AdminFinancesPage() {
             <select
               value={form.type_entree}
               onChange={(e) => setForm((f) => ({ ...f, type_entree: e.target.value as 'sponsor' | 'don' | 'autre' }))}
-              className="w-full rounded-xl border border-neutral-200 px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="w-full rounded-xl border border-[var(--line)] px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
               <option value="sponsor">Sponsor</option>
               <option value="don">Don</option>
@@ -371,14 +371,14 @@ export default function AdminFinancesPage() {
               type="date"
               value={form.date_entree}
               onChange={(e) => setForm((f) => ({ ...f, date_entree: e.target.value }))}
-              className="w-full rounded-xl border border-neutral-200 px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="w-full rounded-xl border border-[var(--line)] px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={() => setModalOpen(false)}
-              className="rounded-xl border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+              className="rounded-xl border border-[var(--line)] px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-[var(--bg)]"
             >
               Annuler
             </button>

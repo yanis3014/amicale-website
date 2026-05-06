@@ -25,7 +25,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg)]">
         <LoadingSpinner size="lg" />
       </div>
     );

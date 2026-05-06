@@ -1,6 +1,8 @@
 import { PulseBar } from '@/components/home/PulseBar';
 import { HeroSection } from '@/components/home/HeroSection';
 import { EventsSection } from '@/components/home/EventsSection';
+import { MissionSection } from '@/components/home/MissionSection';
+import { AnnoncesSection } from '@/components/home/AnnoncesSection';
 import { VideoSection } from '@/components/home/VideoSection';
 import { PartnersSection } from '@/components/home/PartnersSection';
 import { getPageSetting } from '@/lib/api/settings';
@@ -75,6 +77,8 @@ export default async function HomePage() {
         membersCountText={membersCountText}
       />
       <EventsSection />
+      <MissionSection />
+      <AnnoncesSection />
       <VideoSection videoUrl={videoUrl || null} />
       <PartnersSection partenaires={partenaires} />
     </div>

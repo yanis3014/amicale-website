@@ -75,7 +75,7 @@ export function CotisationModal({ isOpen, onClose, onSuccess }: CotisationModalP
           <select
             value={anneeUniversitaire}
             onChange={(e) => setAnneeUniversitaire(e.target.value)}
-            className="w-full py-2.5 px-4 rounded-xl border-2 border-neutral-200 bg-white font-body focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all"
+            className="w-full py-2.5 px-4 rounded-xl border-2 border-[var(--line)] bg-white font-body focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all"
             required
           >
             {ANNEES_UNIVERSITAIRES.map((a) => (

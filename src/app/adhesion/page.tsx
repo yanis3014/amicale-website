@@ -31,7 +31,7 @@ export default function AdhesionPage() {
       <div className="bg-[var(--bg)] pt-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-8">
           <p className="font-mono text-[12px] tracking-[0.1em] text-[var(--accent)]">— REJOINDRE L&apos;AMICALE</p>
-          <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(48px,6vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
+          <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(36px,8vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
             Adhésion
           </h1>
           <p className="mt-4 text-[17px] leading-relaxed text-[var(--ink-2)] max-w-2xl">
@@ -90,7 +90,7 @@ export default function AdhesionPage() {
           ) : (
             <ul className="border-t border-[var(--line)]">
               {avantages.map((a, index) => (
-                <li key={a.id} className="grid grid-cols-[56px_1fr] gap-4 border-b border-[var(--line)] py-5">
+                <li key={a.id} className="grid grid-cols-[44px_1fr] sm:grid-cols-[56px_1fr] gap-3 sm:gap-4 border-b border-[var(--line)] py-5">
                   <span className="font-mono text-[12px] tracking-[0.08em] text-[var(--accent)]">
                     {String(index + 1).padStart(2, '0')}
                   </span>
@@ -109,7 +109,7 @@ export default function AdhesionPage() {
         {/* CTA Devenir membre */}
         <section className="max-w-5xl mx-auto">
           <div
-            className="p-10 md:p-[72px] text-[var(--bg)]"
+            className="p-6 sm:p-8 md:p-[72px] text-[var(--bg)]"
             style={{ background: 'var(--accent-deep)', borderRadius: 'var(--radius-xl, 28px)' }}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-end">

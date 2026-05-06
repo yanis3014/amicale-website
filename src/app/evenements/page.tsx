@@ -47,7 +47,7 @@ export default function EventsPage() {
       <div className="pt-16 bg-[var(--bg)]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <p className="font-mono text-[12px] tracking-[0.1em] text-[var(--accent)]">— PROGRAMME 2025-2026</p>
-          <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(48px,6vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
+          <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(36px,8vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
             Les <span className="italic text-[var(--accent)]">archives</span> de l&apos;amicale
           </h1>
           <div className="mt-8 border-b border-[var(--line)] pb-6">
@@ -87,7 +87,7 @@ export default function EventsPage() {
               <Link
                 key={event.id}
                 href={`/evenements/${event.id}`}
-                className="group grid grid-cols-1 md:grid-cols-[200px_1fr_220px_140px_40px] items-center gap-4 border-b border-[var(--line)] py-5 px-1 hover:bg-[var(--surface)] transition-colors"
+                className="group grid grid-cols-1 md:grid-cols-[200px_1fr_220px_140px_40px] items-start md:items-center gap-2 md:gap-4 border-b border-[var(--line)] py-4 md:py-5 px-1 hover:bg-[var(--surface)] transition-colors"
               >
                 <div className="font-mono text-[13px] uppercase tracking-[0.06em] text-[var(--accent)]">
                   {new Date(event.date).toLocaleDateString('fr-FR', {
@@ -107,7 +107,7 @@ export default function EventsPage() {
                     {event.categorie ?? 'Autre'}
                   </span>
                 </div>
-                <div className="text-[20px] text-[var(--ink-2)] transition-transform duration-200 group-hover:translate-x-[3px]">
+                <div className="hidden md:block text-[20px] text-[var(--ink-2)] transition-transform duration-200 group-hover:translate-x-[3px]">
                   →
                 </div>
               </Link>

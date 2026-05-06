@@ -10,7 +10,6 @@ export default function PresentationPage() {
   return (
     <DynamicPageContent
       settingKey="presentation"
-      imageKey="presentation_image"
       pageTitle="Présentation"
       placeholder="Contenu à venir : présentation de l'Amicale, ses objectifs et son rôle au sein de la Faculté de Pharmacie de Monastir."
       excludeFromRelated="presentation"

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Users, Mail, Linkedin, ArrowRight } from 'lucide-react';
 import { getEnseignants } from '@/lib/api/enseignants';
-import { getPageSetting } from '@/lib/api/settings';
 import { getImageUrl } from '@/lib/api/utils/imageUrl';
 import type { ApiEnseignant } from '@/lib/api/types';
 import { Card } from '@/components/ui/Card';
@@ -20,17 +19,15 @@ function getInitials(nom: string, titre?: string | null): string {
 
 export default function EquipePage() {
   const [enseignants, setEnseignants] = useState<ApiEnseignant[]>([]);
-  const [headerImage, setHeaderImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    Promise.all([getEnseignants(), getPageSetting('enseignants_header_image')])
-      .then(([data, setting]) => {
+    getEnseignants()
+      .then((data) => {
         if (!cancelled) {
           setEnseignants(data);
-          setHeaderImage(setting.value || null);
         }
       })
       .catch(() => {
@@ -42,42 +39,24 @@ export default function EquipePage() {
     return () => { cancelled = true; };
   }, []);
 
-  const headerImageUrl = headerImage ? getImageUrl(headerImage) : '';
-
   return (
     <div className="min-h-screen bg-[var(--bg)]">
-      {/* Hero pleine page pour que la photo soit bien visible */}
-      <div className="relative min-h-screen flex flex-col justify-end text-white overflow-hidden">
-        {headerImageUrl ? (
-          <>
-            <img
-              src={headerImageUrl}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-          </>
-        ) : (
-          <>
-            <img
-              src="/images/enseignants.jpeg"
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-br from-forest-900/70 via-primary-800/50 to-primary-800/40" />
-          </>
-        )}
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pb-20 md:pb-28 pt-24">
-          <h1 className="font-display text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
+      <div className="pt-16 bg-[var(--bg)]">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="font-mono text-[12px] tracking-[0.1em] text-[var(--accent)]">
+            — À PROPOS
+          </p>
+          <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(36px,8vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
             Équipe
           </h1>
-          <p className="text-lg md:text-xl text-white/95 max-w-2xl drop-shadow-md">
+          <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-[var(--ink-2)]">
             Le Bureau et le Conseil d&apos;Administration qui font vivre l&apos;Amicale.
           </p>
+          <div className="mt-8 border-b border-[var(--line)]" />
         </div>
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-12">
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
@@ -162,7 +141,7 @@ export default function EquipePage() {
 
         {/* CTA section */}
         <div className="mt-16 text-center">
-          <Card variant="bordered" className="p-8 md:p-12 inline-block">
+          <Card variant="bordered" className="p-6 md:p-12 inline-block">
             <h2 className="font-display text-2xl font-bold text-neutral-900 mb-2">
               Rejoindre l&apos;Amicale
             </h2>

@@ -60,7 +60,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-10 lg:gap-14 items-start">
           <div>
-            <h1 className="[font-family:'Newsreader',serif] text-[clamp(56px,7.5vw,104px)] leading-[0.98] font-normal text-[var(--ink)]">
+            <h1 className="[font-family:'Newsreader',serif] text-[clamp(38px,9vw,104px)] leading-[0.98] font-normal text-[var(--ink)]">
               {titleLines.map((line, index) => (
                 <span key={`${line}-${index}`} className="block">
                   {parseHeroTitle(line)}
@@ -68,7 +68,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               ))}
             </h1>
 
-            <div className="mt-10 flex flex-wrap gap-4">
+            <div className="mt-8 md:mt-10 flex flex-wrap gap-3 sm:gap-4">
               <Link href="/register">
                 <span className="group inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-[14px] font-medium bg-[var(--accent)] text-[var(--bg)] hover:bg-[var(--accent-deep)] transition-all duration-200">
                   Devenir membre
@@ -110,7 +110,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               )}
             </div>
 
-            <p className="mt-8 text-[19px] leading-relaxed text-[var(--ink-2)] max-w-[42ch]">
+            <p className="mt-6 md:mt-8 text-[16px] md:text-[19px] leading-relaxed text-[var(--ink-2)] max-w-[42ch]">
               {heroText}
             </p>
             <div className="mt-10 grid grid-cols-2 border border-[var(--line)] rounded-xl overflow-hidden">

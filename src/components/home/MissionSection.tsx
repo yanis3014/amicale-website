@@ -56,16 +56,16 @@ export const MissionSection: React.FC = () => {
             {MISSION_ITEMS.map((item, index) => (
               <article
                 key={item.title}
-                className="grid grid-cols-[60px_1fr] gap-5 border-t border-[var(--line)] py-7 first:pt-2 last:border-b"
+                className="grid grid-cols-[44px_1fr] sm:grid-cols-[60px_1fr] gap-3 sm:gap-5 border-t border-[var(--line)] py-6 sm:py-7 first:pt-2 last:border-b"
               >
                 <div className="font-mono text-[13px] tracking-[0.06em] text-[var(--accent)]">
                   {String(index + 1).padStart(2, '0')}
                 </div>
                 <div>
-                  <h3 className="[font-family:'Newsreader',serif] text-[26px] leading-tight font-medium text-[var(--ink)]">
+                  <h3 className="[font-family:'Newsreader',serif] text-[22px] sm:text-[26px] leading-tight font-medium text-[var(--ink)]">
                     {item.title}
                   </h3>
-                  <p className="mt-3 text-[16px] leading-relaxed text-[var(--ink-2)]">{item.description}</p>
+                  <p className="mt-3 text-[15px] sm:text-[16px] leading-relaxed text-[var(--ink-2)]">{item.description}</p>
                 </div>
               </article>
             ))}

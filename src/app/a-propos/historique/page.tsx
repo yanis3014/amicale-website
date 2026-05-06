@@ -10,7 +10,6 @@ export default function HistoriquePage() {
   return (
     <DynamicPageContent
       settingKey="historique"
-      imageKey="historique_image"
       pageTitle="Historique"
       placeholder="Contenu à venir : dates clés et évolution de l'Amicale depuis sa création."
       excludeFromRelated="historique"

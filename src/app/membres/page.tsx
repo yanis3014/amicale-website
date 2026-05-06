@@ -345,7 +345,8 @@ export default function DashboardMembrePage() {
                 <p className="text-neutral-600">Aucun événement passé.</p>
               ) : (
                 <div className="bg-white rounded-xl shadow-sm border border-[var(--line)] overflow-hidden">
-                  <table className="w-full">
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[640px]">
                     <thead className="bg-[var(--bg)] border-b border-[var(--line)]">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
@@ -372,7 +373,8 @@ export default function DashboardMembrePage() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                    </table>
+                  </div>
                 </div>
               )}
             </div>
@@ -436,9 +438,10 @@ export default function DashboardMembrePage() {
                           </p>
                         </div>
                       </div>
-                      <span className="inline-flex items-center gap-2 text-[var(--accent)] font-medium flex-shrink-0">
+                      <span className="inline-flex items-center gap-2 text-[var(--accent)] font-medium flex-shrink-0 text-sm">
                         <Download className="w-4 h-4" />
-                        Ouvrir / Télécharger
+                        <span className="hidden sm:inline">Ouvrir / Télécharger</span>
+                        <span className="sm:hidden">Ouvrir</span>
                       </span>
                     </a>
                   ))}

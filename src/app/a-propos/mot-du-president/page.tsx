@@ -10,7 +10,6 @@ export default function MotDuPresidentPage() {
   return (
     <DynamicPageContent
       settingKey="mot_du_president"
-      imageKey="mot_du_president_image"
       pageTitle="Mot du Président"
       placeholder="Contenu à venir."
       excludeFromRelated="mot_du_president"

@@ -10,7 +10,6 @@ export default function MissionsVisionsPage() {
   return (
     <DynamicPageContent
       settingKey="missions_visions"
-      imageKey="missions_visions_image"
       pageTitle="Missions & Visions"
       placeholder="Contenu à venir : les missions et la vision de l'Amicale pour les enseignants et la vie associative de la faculté."
       excludeFromRelated="missions_visions"

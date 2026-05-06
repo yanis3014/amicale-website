@@ -36,7 +36,7 @@ export default function PartenairesPage() {
           <p className="font-mono text-[12px] tracking-[0.1em] text-[var(--accent)]">
             — AMICALE FPHM
           </p>
-          <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(48px,6vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
+          <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(36px,8vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
             Nos <span className="italic text-[var(--accent)]">partenaires</span>
           </h1>
           <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-[var(--ink-2)]">
@@ -46,7 +46,7 @@ export default function PartenairesPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-12">
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (

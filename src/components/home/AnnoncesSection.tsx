@@ -57,7 +57,7 @@ export const AnnoncesSection: React.FC = () => {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 border-t border-[var(--line)]">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="p-8 border-b border-[var(--line)] md:[&:nth-child(odd)]:border-r md:border-[var(--line)]">
+              <div key={i} className="p-5 md:p-8 border-b border-[var(--line)] md:[&:nth-child(odd)]:border-r md:border-[var(--line)]">
                 <div className="h-32 rounded-xl skeleton-shimmer" />
               </div>
             ))}
@@ -71,7 +71,7 @@ export const AnnoncesSection: React.FC = () => {
             {items.map((item, index) => (
               <article
                 key={item.id}
-                className={`p-8 border-b border-[var(--line)] ${index % 2 === 0 ? 'md:border-r' : ''}`}
+                className={`p-5 md:p-8 border-b border-[var(--line)] ${index % 2 === 0 ? 'md:border-r' : ''}`}
               >
                 <div className="font-mono text-[12px] uppercase tracking-[0.08em] text-[var(--accent)]">
                   Annonce · {formatDate(item.date)}

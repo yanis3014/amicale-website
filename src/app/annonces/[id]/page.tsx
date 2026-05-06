@@ -126,7 +126,7 @@ export default function AnnonceDetailPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
-      <div className="relative h-[50vh] min-h-[320px] w-full overflow-hidden">
+      <div className="relative h-[40vh] sm:h-[46vh] md:h-[50vh] min-h-[240px] sm:min-h-[320px] w-full overflow-hidden">
         {imageUrl ? (
           <Image
             src={imageUrl}
@@ -158,7 +158,7 @@ export default function AnnonceDetailPage() {
             <span className="mx-2">/</span>
             <span className="text-white">{event.titre}</span>
           </nav>
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-white">
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-white">
             {event.titre}
           </h1>
         </div>

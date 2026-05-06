@@ -40,7 +40,7 @@ export default function AProposIndexPage() {
           <p className="font-mono text-[12px] tracking-[0.1em] text-[var(--accent)]">
             — AMICALE FPHM
           </p>
-          <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(48px,6vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
+          <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(36px,8vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
             À <span className="italic text-[var(--accent)]">propos</span>
           </h1>
           <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-[var(--ink-2)]">
@@ -50,8 +50,8 @@ export default function AProposIndexPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <p className="max-w-2xl mx-auto text-center text-neutral-600 font-body text-lg mb-14">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
+        <p className="max-w-2xl mx-auto text-center text-neutral-600 font-body text-base md:text-lg mb-10 md:mb-14">
           Découvrez notre association, notre équipe, notre histoire et nos engagements.
         </p>
 

@@ -111,7 +111,7 @@ export const EventsSection: React.FC = () => {
                 href={featuredEvent.href}
                 className="group overflow-hidden rounded-[28px] border border-[var(--line)] bg-[var(--surface)] transition-all duration-250 hover:border-[var(--line-strong)] hover:shadow-[0_8px_30px_rgba(26,32,28,0.06)]"
               >
-                <div className="h-[280px] overflow-hidden border-b border-[var(--line)]">
+                <div className="h-[220px] sm:h-[260px] lg:h-[280px] overflow-hidden border-b border-[var(--line)]">
                   {featuredEvent.image ? (
                     <img src={featuredEvent.image} alt={featuredEvent.titre} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
                   ) : (
@@ -124,7 +124,7 @@ export const EventsSection: React.FC = () => {
                     />
                   )}
                 </div>
-                <div className="p-7">
+                <div className="p-5 sm:p-6 lg:p-7">
                   <div className="mb-5 flex flex-wrap gap-2">
                     <span className="rounded-full border border-[var(--line)] px-3 py-1 text-[11px] uppercase tracking-[0.08em] text-[var(--ink-3)]">
                       {featuredEvent.categorie}
@@ -133,7 +133,7 @@ export const EventsSection: React.FC = () => {
                       {featuredEvent.prix > 0 ? 'Payant' : 'Accès libre'}
                     </span>
                   </div>
-                  <h3 className="[font-family:'Newsreader',serif] text-[28px] leading-tight font-medium text-[var(--ink)]">
+                  <h3 className="[font-family:'Newsreader',serif] text-[24px] sm:text-[28px] leading-tight font-medium text-[var(--ink)]">
                     {featuredEvent.titre}
                   </h3>
                   <div className="mt-5 text-[13px] text-[var(--ink-2)]">
@@ -148,7 +148,7 @@ export const EventsSection: React.FC = () => {
               <Link
                 key={event.id}
                 href={event.href}
-                className="group flex min-h-[420px] flex-col rounded-[28px] border border-[var(--line)] bg-[var(--surface)] p-7 transition-all duration-250 hover:border-[var(--line-strong)] hover:shadow-[0_8px_30px_rgba(26,32,28,0.06)]"
+                className="group flex min-h-[320px] md:min-h-[420px] flex-col rounded-[28px] border border-[var(--line)] bg-[var(--surface)] p-5 sm:p-6 lg:p-7 transition-all duration-250 hover:border-[var(--line-strong)] hover:shadow-[0_8px_30px_rgba(26,32,28,0.06)]"
               >
                 <div className="font-mono text-[12px] uppercase tracking-[0.08em] text-[var(--accent)]">
                   {formatEventDate(event.date)}

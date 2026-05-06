@@ -10,7 +10,6 @@ export default function ValeursPage() {
   return (
     <DynamicPageContent
       settingKey="valeurs"
-      imageKey="valeurs_image"
       pageTitle="Valeurs"
       placeholder="Contenu à venir : les valeurs portées par l'Amicale (solidarité, excellence, engagement, etc.)."
       excludeFromRelated="valeurs"

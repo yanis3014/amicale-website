@@ -47,7 +47,7 @@ export default function AnnoncesPage() {
       <div className="pt-16 bg-[var(--bg)]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <p className="font-mono text-[12px] tracking-[0.1em] text-[var(--accent)]">— PROGRAMME 2025-2026</p>
-          <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(48px,6vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
+          <h1 className="mt-3 [font-family:'Newsreader',serif] text-[clamp(36px,8vw,80px)] leading-[0.98] font-normal text-[var(--ink)]">
             Les <span className="italic text-[var(--accent)]">événements</span> et inscriptions
           </h1>
           <div className="mt-8 border-b border-[var(--line)] pb-6">
@@ -78,7 +78,7 @@ export default function AnnoncesPage() {
           <Link href={`/annonces/${featuredEvent.id}`} className="group block">
             <div className="overflow-hidden border border-[var(--line)] rounded-[28px] bg-[var(--surface)]">
               <div className="grid grid-cols-1 lg:grid-cols-[40%_60%]">
-                <div className="h-[300px] overflow-hidden border-b lg:border-b-0 lg:border-r border-[var(--line)]">
+                <div className="h-[220px] sm:h-[260px] lg:h-[300px] overflow-hidden border-b lg:border-b-0 lg:border-r border-[var(--line)]">
                   {featuredEvent.image_url ? (
                     <img
                       src={getImageUrl(featuredEvent.image_url)}
@@ -95,7 +95,7 @@ export default function AnnoncesPage() {
                     />
                   )}
                 </div>
-                <div className="p-8 md:p-10">
+                <div className="p-5 sm:p-6 md:p-10">
                   <div className="font-mono text-[12px] uppercase tracking-[0.08em] text-[var(--accent)]">
                     {featuredEvent.categorie ?? 'Autre'} · {new Date(featuredEvent.date).toLocaleDateString('fr-FR', {
                       day: '2-digit',
@@ -103,7 +103,7 @@ export default function AnnoncesPage() {
                       year: 'numeric',
                     })}
                   </div>
-                  <h3 className="mt-5 [font-family:'Newsreader',serif] text-[32px] leading-tight font-medium text-[var(--ink)]">
+                  <h3 className="mt-4 md:mt-5 [font-family:'Newsreader',serif] text-[26px] md:text-[32px] leading-tight font-medium text-[var(--ink)]">
                     {featuredEvent.titre}
                   </h3>
                   <p className="mt-5 text-[15px] leading-relaxed text-[var(--ink-2)] line-clamp-4">

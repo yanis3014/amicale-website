@@ -70,7 +70,7 @@ export default function EventDetailPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
-      <div className="relative h-[55vh] min-h-[320px] w-full overflow-hidden">
+      <div className="relative h-[42vh] sm:h-[48vh] md:h-[55vh] min-h-[260px] sm:min-h-[320px] w-full overflow-hidden">
         {heroImage ? (
           <img
             src={getImageUrl(heroImage)}
@@ -85,13 +85,13 @@ export default function EventDetailPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 max-w-4xl mx-auto drop-shadow-lg">
+            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 max-w-4xl mx-auto drop-shadow-lg">
               {event.titre}
             </h1>
             <div className="flex items-center justify-center gap-4 text-white/90 flex-wrap">
               <span className="inline-flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
-                <time dateTime={event.date} className="text-lg">
+                <time dateTime={event.date} className="text-sm sm:text-base md:text-lg">
                   {new Date(event.date).toLocaleString('fr-FR', {
                     dateStyle: 'long',
                     timeStyle: 'short',
@@ -122,7 +122,7 @@ export default function EventDetailPage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="max-w-3xl mx-auto">
           {event.description && (
-            <p className="text-xl text-neutral-600 font-medium mb-10 font-body">
+            <p className="text-lg md:text-xl text-neutral-600 font-medium mb-10 font-body">
               {event.description}
             </p>
           )}
